@@ -5,7 +5,9 @@
 <!-- ===== FRAGMENT: HTML HEAD ===== -->
 <head th:fragment="html_head(title)">
     <meta charset="utf-8">
-    <title th:text="${title} + ' | Secret Coder'">Ganbatte</title>
+    <meta name="google-translate-customization" content="9f841e7780177523-3214ceb76f765f38-gc38c6fe6f9d06436-c">
+    </meta>
+    <title th:text="${title} + ' | Ganbatte'">Ganbatte</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
@@ -16,8 +18,13 @@
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap"
+    <link
+            href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap"
+            rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap"
           rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Coiny&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 
     <!-- Icon Font Stylesheet -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
@@ -60,17 +67,21 @@
             <a th:href="@{/}"        th:classappend="${currentPage == 'home'}        ? 'active' : ''" class="nav-item nav-link">Trang chủ</a>
             <a th:href="@{/about}"   th:classappend="${currentPage == 'about'}       ? 'active' : ''" class="nav-item nav-link">Giới thiệu</a>
             <div class="nav-item dropdown">
-                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Học tập</a>
+                <a href="#" class="nav-link dropdown-toggle"
+                   th:classappend="${currentPage == 'categories' || currentPage == 'instructor' || currentPage == 'team'} ? 'active' : ''"
+                   data-bs-toggle="dropdown">Học tập</a>
                 <div class="dropdown-menu fade-down m-0">
-                    <a th:href="@{/courses}"        class="dropdown-item">Từ vựng</a>
+                    <a th:href="@{/categories}"  th:classappend="${currentPage == 'categories'}   ? 'active' : ''"   class="dropdown-item">Từ vựng</a>
                     <a th:href="@{/instructor}" class="dropdown-item">Kanji</a>
                     <a th:href="@{/team}" class="dropdown-item">Bảng chữ cái</a>
                 </div>
             </div>
             <div class="nav-item dropdown">
-                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Luyện tập</a>
+                <a href="#" class="nav-link dropdown-toggle"
+                   th:classappend="${currentPage == 'quiz' || currentPage == 'test'} ? 'active' : ''"
+                   data-bs-toggle="dropdown">Luyện tập</a>
                 <div class="dropdown-menu fade-down m-0">
-                    <a th:href="@{/team}" class="dropdown-item">Quizz</a>
+                    <a th:href="@{/team}" class="dropdown-item">Quiz</a>
                     <a th:href="@{testimonial}" class="dropdown-item">Test</a>
 
                 </div>
@@ -89,18 +100,18 @@
         <div class="container py-5">
             <div class="row g-5">
                 <div class="col-lg-4 col-md-6">
-                    <h4 class="text-white mb-3">Quick Link</h4>
-                    <p><a class="text-light" th:href="@{/about}">About Us</a></p>
-                    <p><a class="text-light" th:href="@{/contact}">Contact Us</a></p>
-                    <p><a class="text-light" th:href="@{/privacy}">Privacy Policy</a></p>
-                    <p><a class="text-light" th:href="@{/terms}">Terms &amp; Condition</a></p>
-                    <p><a class="text-light" th:href="@{/faq}">FAQs &amp; Help</a></p>
+                    <h4 class="text-white mb-3">Đường dẫn</h4>
+                    <p><a class="text-light" th:href="@{/about}">Giới thiệu</a></p>
+                    <p><a class="text-light" th:href="@{/contact}">Liên hệ</a></p>
+                    <p><a class="text-light" th:href="@{/privacy}">Chính sách bảo mật</a></p>
+                    <p><a class="text-light" th:href="@{/terms}">Điều khoản & Điều kiện</a></p>
+                    <p><a class="text-light" th:href="@{/faq}">Trợ giúp & Câu hỏi thường gặp</a></p>
                 </div>
                 <div class="col-lg-4 col-md-6">
                     <h4 class="text-white mb-3">Contact</h4>
-                    <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>123 Street, Bangalore, Karnataka</p>
-                    <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+91 8683045908</p>
-                    <p class="mb-2"><i class="fa fa-envelope me-3"></i>info@secretcoder.com</p>
+                    <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>Thanh Xuân, Hà Nội</p>
+                    <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>0123456789</p>
+                    <p class="mb-2"><i class="fa fa-envelope me-3"></i>info@banbatte.com</p>
                     <div class="d-flex pt-2">
                         <a class="btn btn-outline-light btn-social" href="#"><i class="fab fa-twitter"></i></a>
                         <a class="btn btn-outline-light btn-social" href="#"><i class="fab fa-facebook-f"></i></a>
@@ -109,12 +120,12 @@
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-6">
-                    <h4 class="text-white mb-3">Subscribe to our Newsletter</h4>
-                    <p>Subscribe now and join our growing community of learners committed to lifelong education!</p>
+                    <h4 class="text-white mb-3">Đăng ký nhận tài liệu</h4>
+                    <p>Nhận ngay bộ tài liệu lộ trình chinh phục JLPT và thông báo về các khóa học mới nhất từ Ganbatte!</p>
                     <div class="position-relative mx-auto" style="max-width: 400px;">
-                        <input class="form-control border-0 w-100 py-3 ps-4 pe-5" type="email" placeholder="Your email">
+                        <input class="form-control border-0 w-100 py-3 ps-4 pe-5" type="email" placeholder="Email của bạn">
                         <button type="button" class="btn btn-primary py-2 position-absolute top-0 end-0 mt-2 me-2">
-                            Subscribe
+                            Đăng ký
                         </button>
                     </div>
                 </div>
@@ -124,7 +135,7 @@
             <div class="copyright">
                 <div class="row">
                     <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-                        &copy; <a class="border-bottom" th:href="@{/}">Secret Coder</a>, All Right Reserved.
+                        &copy; <a class="border-bottom" th:href="@{/}">Ganbatte</a>, All Right Reserved.
                     </div>
                 </div>
             </div>
