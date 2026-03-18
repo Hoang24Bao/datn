@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: html_head(title='Học từ vựng')}">
+    <title>Gallery</title>
+</head>
+<style>
+    .gallery-container {
+        background-color: #f8f9fa;
+        min-height: 100vh;
+        padding-bottom: 50px;
+    }
+
+    .lesson-header {
+        background: white;
+        padding: 10px 5px;
+        border-radius: 0 0 20px 20px;
+        margin-top: 20px;
+        margin-bottom: 25px;
+    }
+
+    /* Thu nhỏ kích thước card */
+    .photo-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        max-width: 200px;
+        margin: 0 auto;
+    }
+
+    .photo-card:hover {
+        transform: translateY(-5px);
+        border-color: #fb873f;
+    }
+
+    /* Giữ ảnh vuông vắn và nhỏ gọn */
+    .img-wrapper {
+        position: relative;
+        width: 100%;
+        padding-top: 100%;
+        background-color: #fff;
+    }
+
+    .img-wrapper img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 5px;
+    }
+
+    /* Chia Grid 5 cột trên PC */
+    @media (min-width: 992px) {
+        .row-cols-lg-5 > * {
+            flex: 0 0 auto;
+            width: 20%;
+        }
+    }
+
+    #vocabModal .modal-dialog {
+    max-width: 90% !important; /* Chiều ngang chiếm 90% màn hình */
+    margin: 1.75rem auto;      /* Giữ khoảng cách trên dưới */
+}
+
+#vocabModal .modal-content {
+    min-height: 80vh;          /* Chiều cao chiếm ít nhất 80% chiều cao màn hình */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;   /* Căn giữa nội dung theo chiều dọc */
+}
+
+/* Chỉnh ảnh to lên tương ứng */
+#modal-img {
+    max-height: 500px !important; /* Tăng giới hạn chiều cao ảnh */
+    width: 100%;
+    object-fit: contain;
+}
+
+/* Tăng cỡ chữ để tương xứng với khung hình to */
+#modal-expression {
+    font-size: 4rem !important;
+}
+#modal-kana {
+    font-size: 2rem !important;
+}
+</style>
+
+<body class="gallery-container">
+<th:block th:replace="~{layout :: navbar}"></th:block>
+
+<div class="container lesson-header d-flex justify-content-between align-items-center">
+    <div>
+        <h3 class="fw-bold mb-0 text-dark" style="font-size: 1.5rem;">
+            <i class="fas fa-th navbar-toggler-icon me-2"></i>
+            <span th:text="${lesson?.lessonName}">Tên bài học</span>
+        </h3>
+    </div>
+    <a th:href="@{/study/lessons(id=${currentCateId})}" class="btn btn-ganbatte rounded-pill px-4">
+        <i class="fas fa-arrow-left me-2"></i>Quay lại
+    </a>
+</div>
+
+<div class="container">
+    <div class="row g-3 row-cols-2 row-cols-md-3 row-cols-lg-5 justify-content-center">
+
+        <div class="col" th:each="v, iterStat : ${vocabs}">
+            <div class="photo-card shadow-sm" th:onclick="'showVocabDetail(' + ${iterStat.index} + ')'">
+                <div class="img-wrapper">
+                    <img th:src="@{'/' + ${v.imageUrl}}" onerror="this.src='/img/no-image.jpg'">
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 text-center py-5" th:if="${#lists.isEmpty(vocabs)}" style="width: 100%;">
+            <p class="text-muted mt-3">Chưa có dữ liệu hình ảnh.</p>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="vocabModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-5 text-center mb-3 mb-md-0">
+                        <img id="modal-img" src="" class="img-fluid rounded-3 shadow-sm"
+                             style="max-height: 300px; object-fit: contain; width: 100%;">
+                    </div>
+
+                    <div class="col-md-7 ps-md-4">
+                        <div class="mb-3">
+                            <h2 id="modal-expression" class="fw-bold text-dark mb-1" style="font-size: 2.5rem;"></h2>
+                            <div class="d-flex align-items-center gap-3">
+                                <span id="modal-kana" class="fs-4 text-muted"></span>
+                                <span id="modal-romaji" class="fs-5 text-secondary italic"></span>
+                            </div>
+                        </div>
+
+                        <button onclick="playAudio()"
+                                class="btn btn-warning text-white rounded-pill px-4 mb-3 shadow-sm">
+                            <i class="fas fa-volume-up me-2"></i>Phát âm
+                        </button>
+                        <audio id="modal-audio" src=""></audio>
+
+                        <div class="bg-light p-3 rounded-3">
+                            <h6 class="fw-bold mb-2"><i class="fas fa-quote-left me-2 text-warning"></i>Ví dụ:</h6>
+                            <p id="modal-example" class="mb-1 fw-medium text-dark" style="font-size: 1.1rem;"></p>
+                            <p id="modal-example-vi" class="mb-0 text-muted small"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{layout :: footer}"></th:block>
+
+<script th:inline="javascript">
+    // Lấy danh sách từ vựng từ Thymeleaf sang JavaScript
+    const vocabList = /*[[${vocabs}]]*/ [];
+
+    function showVocabDetail(index) {
+        const item = vocabList[index];
+
+        // Đổ dữ liệu vào Modal
+        document.getElementById('modal-img').src = '/' + item.imageUrl;
+        document.getElementById('modal-expression').innerText = item.expression;
+        document.getElementById('modal-kana').innerText = item.kana;
+        document.getElementById('modal-romaji').innerText = item.romaji;
+        document.getElementById('modal-example').innerText = item.example || 'Chưa có ví dụ';
+        document.getElementById('modal-example-vi').innerText = item.exampleVi || '';
+
+        // Cập nhật đường dẫn âm thanh
+        const audio = document.getElementById('modal-audio');
+        audio.src = '/' + item.audioUrl;
+
+        // Hiển thị Modal
+        var myModal = new bootstrap.Modal(document.getElementById('vocabModal'));
+        myModal.show();
+    }
+
+    function playAudio() {
+        const audio = document.getElementById('modal-audio');
+        if(audio.src) {
+            audio.play().catch(e => console.log("Lỗi phát âm thanh: ", e));
+        }
+    }
+</script>
+
+</body>
+</html>

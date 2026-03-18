@@ -19,24 +19,4 @@ public class HomeController {
         model.addAttribute("currentPage", "about");
         return "about";
     }
-//
-//    @GetMapping("/categories")
-//    public String categories(Model model) {
-//        model.addAttribute("currentPage", "categories");
-//        return "categories";
-//    }
-//
-//    @GetMapping("/lesson")
-//    public String lesson(Model model) {
-//        // Đặt currentPage là 'categories' để menu "Học tập -> Từ vựng" vẫn giữ trạng thái active
-//        model.addAttribute("currentPage", "categories");
-//        return "lesson";
-//    }
-//
-//    @GetMapping("/flashcards")
-//    public String flashcards(@RequestParam("id") Long id, Model model) {
-//        model.addAttribute("lessonId", id); // Gửi ID qua trang để biết đang học bài nào
-//        model.addAttribute("currentPage", "categories");
-//        return "flashcards"; // Tên file flashcards.html trong templates
-//    }
 }

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: html_head(title='Lesson')}">
+    <title>Lesson</title>
+</head>
+
+<body>
+<th:block th:replace="~{layout :: spinner}"></th:block>
+<th:block th:replace="~{layout :: navbar}" th:with="currentPage='categories'"></th:block>
+
+<div class="container-fluid bg-primary py-3 mb-4"
+     th:style="'background: linear-gradient(rgba(24, 29, 56, .5), rgba(24, 29, 56, .7)),
+     url(' + @{ '/' + ${lessons[0].thumbnailUrl} } + '); background-position: center center; background-repeat: no-repeat; background-size: cover;'">
+    <div class="container py-5 text-center">
+        <h1 class="display-3 text-white animated slideInDown"
+            th:text="${'Chủ đề: ' + categories.categoryName}">Chủ đề: Tên mặc định</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center">
+                <li class="breadcrumb-item"><a class="text-white" th:href="@{/}">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a class="text-white" th:href="@{/study/categories}">Từ vựng</a></li>
+                <li class="breadcrumb-item text-white active" aria-current="page" th:text="${categories.categoryName}">Đồ ăn</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+<div class="container pt-2">
+    <div id="lesson-list-container" class="lesson-container">
+
+        <div class="lesson-group mb-4" th:each="lesson : ${lessons}">
+            <div class="lesson-item shadow-sm" th:classappend="${lesson?.free ? 'status-current' : 'status-locked'}">
+                <div class="lesson-icon" th:classappend="${lesson?.free ? 'icon-current' : 'icon-locked'}">
+                    <i th:if="${!lesson?.free}" class="fas fa-lock"></i>
+                    <span th:if="${lesson?.free}" th:text="${lesson?.orderIndex}">1</span>
+                </div>
+                <div class="ms-4 flex-grow-1">
+                    <h5 class="fw-bold mb-1" th:text="${lesson?.lessonName}">Tên bài học</h5>
+<!--                    <p class="text-muted small mb-2">Bài học trình độ tiếng Nhật</p>-->
+                    <div class="d-flex justify-content-between align-items-end mb-1" style="max-width: 500px;">
+                        <p class="text-muted small mb-0">Đã thuộc</p>
+                        <span class="fw-bold small" style="color: #fb873f;"
+                              th:text="${categories.progress != null ? categories.progress : 0} + '%'">0%</span>
+                    </div>
+
+                    <div class="progress" style="height: 8px; width: 100%; max-width: 500px; border-radius: 10px; background-color: #e9ecef;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated"
+                             role="progressbar"
+                             th:style="'width: ' + ${categories.progress != null ? categories.progress : 0} + '%; background-color: #fb873f;'"
+                             th:aria-valuenow="${categories.progress != null ? categories.progress : 0}"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <button th:if="${!lesson?.free}" class="btn btn-secondary disabled rounded-pill px-4">Đã khóa</button>
+
+                    <button th:if="${lesson?.free}"
+                            class="btn btn-warning text-white fw-bold px-4 rounded-pill shadow-sm"
+                            type="button" data-bs-toggle="collapse"
+                            th:data-bs-target="'#sub-modes-' + ${lesson?.id}"
+                            style="padding-top: 12px; padding-bottom: 12px;">
+                        Học ngay
+                    </button>
+                </div>
+            </div>
+
+            <div th:if="${lesson?.free}" class="collapse mt-2" th:id="'sub-modes-' + ${lesson?.id}" data-bs-parent="#lesson-list-container">
+                <div class="d-flex flex-column gap-2 ms-5 ps-3 border-start" style="border-width: 3px !important; gap: 5px;">
+
+                    <div class="lesson-item shadow-sm p-2 bg-white border" style="min-height: 50px; border-radius: 15px; margin-bottom: 0;">
+                        <div class="lesson-icon icon-current shadow-none" style="width: 50px; height: 50px; min-width: 50px; background: #28a745;">
+                            <i class="fas fa-th-large fs-5 text-white"></i>
+                        </div>
+                        <div class="ms-3 flex-grow-1">
+                            <h6 class="fw-bold mb-0" style="font-size: 1rem;">Liệt kê hình ảnh</h6>
+                        </div>
+                        <a th:href="@{/study/gallery(id=${lesson?.id})}"
+                           class="fw-bold rounded-pill px-4 py-2 shadow-sm text-decoration-none"
+                           style="background-color: #28a745; color: white;">Vào học</a>
+                    </div>
+
+                    <div class="lesson-item shadow-sm p-2 bg-white border" style="min-height: 50px; border-radius: 15px; margin-bottom: 0;">
+                        <div class="lesson-icon icon-current shadow-none" style="width: 50px; height: 50px; min-width: 50px; background: #007bff;">
+                            <i class="fas fa-clone fs-5 text-white"></i>
+                        </div>
+                        <div class="ms-3 flex-grow-1">
+                            <h6 class="fw-bold mb-0" style="font-size: 1rem;">Flashcard</h6>
+                        </div>
+                        <a th:href="@{/study/flashcards(id=${lesson?.id})}"
+                           class="fw-bold rounded-pill px-4 py-2 shadow-sm text-decoration-none"
+                           style="background-color: #007bff; color: white;">Vào học</a>
+                    </div>
+
+                    <div class="lesson-item shadow-sm p-2 bg-white border" style="min-height: 50px; border-radius: 15px; margin-bottom: 0;">
+                        <div class="lesson-icon icon-current shadow-none" style="width: 50px; height: 50px; min-width: 50px; background: #dc3545;">
+                            <i class="fas fa-mouse-pointer fs-5 text-white"></i>
+                        </div>
+                        <div class="ms-3 flex-grow-1">
+                            <h6 class="fw-bold mb-0" style="font-size: 1rem;">Hình ảnh tương tác</h6>
+                        </div>
+                        <a th:href="@{/study/interactive(id=${lesson?.id})}"
+                           class="btn-danger fw-bold rounded-pill px-4 py-2 shadow-sm text-decoration-none"
+                           style="color: white;">Vào học</a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<th:block th:replace="~{layout :: footer}"></th:block>
+
+</body>
+</html>

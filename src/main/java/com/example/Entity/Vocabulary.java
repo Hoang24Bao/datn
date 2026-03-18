@@ -1,9 +1,11 @@
 package com.example.Entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 
 @Entity
+@Data
 @Table(name = "Vocabulary")
 public class Vocabulary {
     @Id

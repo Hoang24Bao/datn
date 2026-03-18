@@ -14,5 +14,5 @@ public interface VocabularyRepository extends JpaRepository<Vocabulary, Long> {
     @Query(value = "SELECT v.* FROM Vocabulary v " +
             "JOIN Lesson_Vocab lv ON v.id = lv.vocab_id " +
             "WHERE lv.lesson_id = :lessonId", nativeQuery = true)
-    List<Vocabulary> findByLessonId(@Param("lessonId") Long lessonId);
+    List<Vocabulary> findByLessonId(@Param("lessonId") Integer lessonId);
 }

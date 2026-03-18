@@ -71,7 +71,7 @@
                    th:classappend="${currentPage == 'categories' || currentPage == 'instructor' || currentPage == 'team'} ? 'active' : ''"
                    data-bs-toggle="dropdown">Học tập</a>
                 <div class="dropdown-menu fade-down m-0">
-                    <a th:href="@{/categories}"  th:classappend="${currentPage == 'categories'}   ? 'active' : ''"   class="dropdown-item">Từ vựng</a>
+                    <a th:href="@{/study/categories}"  th:classappend="${currentPage == 'categories'}   ? 'active' : ''"   class="dropdown-item">Từ vựng</a>
                     <a th:href="@{/instructor}" class="dropdown-item">Kanji</a>
                     <a th:href="@{/team}" class="dropdown-item">Bảng chữ cái</a>
                 </div>
@@ -152,6 +152,7 @@
     <script th:src="@{/lib/easing/easing.min.js}"></script>
     <script th:src="@{/lib/waypoints/waypoints.min.js}"></script>
     <script th:src="@{/lib/owlcarousel/owl.carousel.min.js}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script th:src="@{/js/main.js}"></script>
 </div>
 

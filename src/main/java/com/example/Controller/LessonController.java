@@ -1,5 +1,6 @@
 package com.example.Controller;
 
+import com.example.Entity.Categories;
 import com.example.Repository.CategoriesRepository;
 import com.example.Repository.LessonsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,19 +17,20 @@ public class LessonController {
     @Autowired
     private LessonsRepository lessonRepository;
     @Autowired
-    private CategoriesRepository categoryRepository;
+    private CategoriesRepository categoriesRepository;
 
-    @GetMapping("/lesson")
+    @GetMapping("/lessons")
     public String getLessons(@RequestParam("id") Integer categoryId, Model model) {
-        // Logic lấy bài học và banner thumbnail-x.jpg đã nói ở trên
+        // 1. Lấy danh sách bài học
+        model.addAttribute("lessons", lessonRepository.findByCategoryId(categoryId));
+
+        // 2. Sửa lỗi: Sử dụng biến 'categoryRepository' (viết thường chữ đầu)
+        // thay vì 'CategoriesRepository' (tên Interface)
+        Categories categories = categoriesRepository.findById(categoryId).orElse(null);
+        model.addAttribute("categories", categories);
+
         model.addAttribute("currentPage", "categories");
-        return "lesson";
+        return "study/lessons";
     }
 
-    @GetMapping("/flashcards")
-    public String getFlashcards(@RequestParam("id") Long id, Model model) {
-        model.addAttribute("lessonId", id);
-        model.addAttribute("currentPage", "categories");
-        return "flashcards";
-    }
 }

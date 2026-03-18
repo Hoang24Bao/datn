@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: html_head(title='FLashcard')}">
+    <title>Flashcard</title>
+</head>
+
+<body>
+<th:block th:replace="~{layout :: spinner}"></th:block>
+<th:block th:replace="~{layout :: navbar}" th:with="currentPage='flashcard'"></th:block>
+
+
+    <!--Header Start-->
+    <div class="container-fluid py-2 mb-1" style="background-color:#fb873f;">
+        <div class="container text-center">
+            <h3 class="text-white m-0" style="font-size: 25px;">Đang học: <span id="lesson-name"th:text="${lesson != null ? lesson.lessonName : 'Tiếng Nhật'}">Tiếng Nhật</span></h3>
+        </div>
+    </div>
+    <!--Header End-->
+
+
+    <!--Learning Start-->
+    <div class="container py-3">
+        <div class="learning-wrapper">
+
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small">Tiến trình học</span>
+                <span id="progress-text" class="fw-bold" style="color: #fb873f;">1/10</span>
+            </div>
+            <div class="progress mb-4" style="height: 10px; border-radius: 10px;">
+                <div id="progress-bar" class="progress-bar" style="width: 10%; background-color: #fb873f;"></div>
+            </div>
+
+            <div class="position-relative d-flex align-items-center">
+                <button class="btn-nav btn-nav-left" onclick="prevWord()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+
+                <div class="flashcard-container" onclick="toggleFlip()">
+                    <div class="flashcard" id="flashcard">
+                        <div class="card-front">
+                            <button onclick="playAudio(event)" class="btn-audio">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                            <img id="vocab-img" src="img/course-1.jpg" alt="Từ vựng" class="vocab-img">
+                            <div id="vocab-expression" class="expression-text">林檎</div>
+                            <div id="vocab-kana" class="jp-text">りんご</div>
+                            <div id="vocab-romaji" class="romaji-text">ringo</div>
+                            <audio id="vocab-audio" src=""></audio>
+                        </div>
+                        <div class="card-back">
+                            <p class="text-muted mb-3" style="font-size: 20px; font-weight: bold;">Ý nghĩa</p>
+                            <div id="vocab-vn" class="vn-text">Quả táo</div>
+                            <hr class="w-100">
+                            <p class="small text-muted" style="font-size: 15px;">Nhấn vào thẻ để xem mặt trước</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-nav btn-nav-right" onclick="nextWord()">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <div class="d-flex justify-content-center gap-3 mt-0">
+                <button class="btn-learn btn-control btn-not-learned" style="font-size: 15px;">
+                    <i class="fas fa-chevron-left me-2"></i>Chưa thuộc
+                </button>
+                <button class="btn-learn btn-control btn-learned">
+                    Đã thuộc<i class="fas fa-chevron-right ms-2"></i>
+                </button>
+            </div>
+
+        </div>
+    </div>
+    <!--Learning End-->
+
+
+<th:block th:replace="~{layout :: footer}"></th:block>
+
+
+<script th:inline="javascript">
+    /* Thymeleaf sẽ "nhúng" dữ liệu từ SQL vào đây */
+    const vocabulary = /*[[${vocabs}]]*/ [];
+    const lessonName = /*[[${lesson != null ? lesson.lessonName : 'Tiếng Nhật'}]]*/ 'Tiếng Nhật';
+    const categoryId = /*[[${currentCateId}]]*/ 1;
+</script>
+
+<script>
+    // Cập nhật tiêu đề bài học từ dữ liệu SQL
+    document.getElementById('lesson-name').innerText = lessonName;
+
+    let currentIndex = 0;
+
+    function toggleFlip() {
+        document.getElementById('flashcard').classList.toggle('flipped');
+    }
+
+    function updateUI() {
+        if (!vocabulary || vocabulary.length === 0) {
+            console.error("Dữ liệu từ vựng trống!");
+            return;
+        }
+
+        const flashcard = document.getElementById('flashcard');
+        const word = vocabulary[currentIndex];
+        const total = vocabulary.length;
+        const timestamp = new Date().getTime(); // Dùng để xóa cache ảnh
+
+        // 1. Reset trạng thái thẻ (Tắt hiệu ứng để quay mặt về trước ngay lập tức)
+        flashcard.style.transition = 'none';
+        flashcard.classList.remove('flipped');
+        void flashcard.offsetWidth; // Force reflow
+
+        // 2. Cập nhật Nội dung chữ
+        document.getElementById('vocab-expression').innerText = word.expression || "";
+        document.getElementById('vocab-kana').innerText = word.kana || "";
+        document.getElementById('vocab-romaji').innerText = word.romaji || "";
+        document.getElementById('vocab-vn').innerText = word.meaning || "";
+
+        // 3. Cập nhật Ảnh (Thêm ?v= để xóa cache trình duyệt)
+        const imgElement = document.getElementById('vocab-img');
+        if (word.imageUrl) {
+            imgElement.src = '/' + word.imageUrl + '?v=' + timestamp;
+        } else {
+            imgElement.src = '/img/default.jpg';
+        }
+
+        // 4. Cập nhật Audio
+        const audioPath = '/' + word.audioUrl || ('audio/' + word.romaji.toLowerCase() + '.mp3');
+        document.getElementById('vocab-audio').src = audioPath;
+
+        // 5. Cập nhật Thanh tiến độ
+        const currentPos = currentIndex + 1;
+        document.getElementById('progress-text').innerText = `${currentPos}/${total}`;
+        document.getElementById('progress-bar').style.width = `${(currentPos / total) * 100}%`;
+
+        // 6. Bật lại hiệu ứng xoay cho lần nhấn tiếp theo
+        setTimeout(() => {
+            flashcard.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+        }, 10);
+    }
+
+    function nextWord() {
+        if (currentIndex < vocabulary.length - 1) {
+            currentIndex++;
+            updateUI();
+        } else {
+            Swal.fire({
+            title: '🎉 Chúc mừng!',
+            text: 'Bạn đã hoàn thành bài học.',
+            icon: 'success',
+            confirmButtonText: 'Về trang Bài học',
+            confirmButtonColor: '#28a745',
+            allowOutsideClick: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "/study/lessons?id=" + categoryId;
+            }
+        });
+        }
+    }
+
+    function prevWord() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            updateUI();
+        }
+    }
+
+    function playAudio(event) {
+        event.stopPropagation();
+        const audio = document.getElementById('vocab-audio');
+        audio.play().catch(e => {
+            console.error("Không tìm thấy file âm thanh:", audio.src);
+            alert("Không tìm thấy file âm thanh cho từ này.");
+        });
+    }
+
+    // Khởi tạo hiển thị lần đầu
+    document.addEventListener('DOMContentLoaded', updateUI);
+</script>
+
+
+</body>
+
+</html>
