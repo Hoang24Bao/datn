@@ -121,13 +121,13 @@
         // 3. Cập nhật Ảnh (Thêm ?v= để xóa cache trình duyệt)
         const imgElement = document.getElementById('vocab-img');
         if (word.imageUrl) {
-            imgElement.src = '/' + word.imageUrl + '?v=' + timestamp;
+            imgElement.src = word.imageUrl + '?v=' + timestamp;
         } else {
             imgElement.src = '/img/default.jpg';
         }
 
         // 4. Cập nhật Audio
-        const audioPath = '/' + word.audioUrl || ('audio/' + word.romaji.toLowerCase() + '.mp3');
+        const audioPath = word.audioUrl;
         document.getElementById('vocab-audio').src = audioPath;
 
         // 5. Cập nhật Thanh tiến độ

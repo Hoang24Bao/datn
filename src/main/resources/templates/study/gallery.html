@@ -62,31 +62,39 @@
     }
 
     #vocabModal .modal-dialog {
-    max-width: 90% !important; /* Chiều ngang chiếm 90% màn hình */
-    margin: 1.75rem auto;      /* Giữ khoảng cách trên dưới */
-}
+        max-width: 80% !important; /* Chiều ngang chiếm 80% màn hình */
+        margin: 1.75rem auto;      /* Giữ khoảng cách trên dưới */
+    }
 
-#vocabModal .modal-content {
-    min-height: 80vh;          /* Chiều cao chiếm ít nhất 80% chiều cao màn hình */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;   /* Căn giữa nội dung theo chiều dọc */
-}
+    #vocabModal .modal-content {
+        min-height: 72vh;          /* Chiều cao chiếm ít nhất 72% chiều cao màn hình */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;   /* Căn giữa nội dung theo chiều dọc */
+    }
 
-/* Chỉnh ảnh to lên tương ứng */
-#modal-img {
-    max-height: 500px !important; /* Tăng giới hạn chiều cao ảnh */
-    width: 100%;
-    object-fit: contain;
-}
+    /* Đưa nút đóng lên góc, không đẩy nội dung xuống */
+    #vocabModal .modal-header {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        z-index: 1055;
+        padding: 0;
+    }
 
-/* Tăng cỡ chữ để tương xứng với khung hình to */
-#modal-expression {
-    font-size: 4rem !important;
-}
-#modal-kana {
-    font-size: 2rem !important;
-}
+    /* Đảm bảo ảnh nằm đúng giữa khung hình */
+    #modal-img {
+        max-height: 400px !important;
+        width: auto !important;
+        object-fit: contain;
+        transform: none !important; /* Xóa translateY cũ để dùng Flexbox căn giữa chuẩn hơn */
+    }
+
+    /* Ép các dòng ví dụ to đều nhau */
+    #modal-example, #modal-example-vi {
+        font-size: 28px !important;
+        display: block;
+    }
 </style>
 
 <body class="gallery-container">
@@ -94,8 +102,8 @@
 
 <div class="container lesson-header d-flex justify-content-between align-items-center">
     <div>
-        <h3 class="fw-bold mb-0 text-dark" style="font-size: 1.5rem;">
-            <i class="fas fa-th navbar-toggler-icon me-2"></i>
+        <h3 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: 1.5rem;">
+            <i class="fas fa-th me-2" style="color: #fb873f;"></i>
             <span th:text="${lesson?.lessonName}">Tên bài học</span>
         </h3>
     </div>
@@ -110,7 +118,7 @@
         <div class="col" th:each="v, iterStat : ${vocabs}">
             <div class="photo-card shadow-sm" th:onclick="'showVocabDetail(' + ${iterStat.index} + ')'">
                 <div class="img-wrapper">
-                    <img th:src="@{'/' + ${v.imageUrl}}" onerror="this.src='/img/no-image.jpg'">
+                    <img th:src="${v.imageUrl}" onerror="this.src='/img/no-image.jpg'">
                 </div>
             </div>
         </div>
@@ -134,25 +142,28 @@
                              style="max-height: 300px; object-fit: contain; width: 100%;">
                     </div>
 
-                    <div class="col-md-7 ps-md-4">
-                        <div class="mb-3">
-                            <h2 id="modal-expression" class="fw-bold text-dark mb-1" style="font-size: 2.5rem;"></h2>
+                    <div class="col-md-7 ps-md-4 d-flex flex-column justify-content-center">
+                        <div class="mb-4">
+                            <h2 id="modal-expression" class="fw-bold text-dark mb-1" style="font-size: 3.3rem !important; letter-spacing: 5px;"></h2>
                             <div class="d-flex align-items-center gap-3">
-                                <span id="modal-kana" class="fs-4 text-muted"></span>
-                                <span id="modal-romaji" class="fs-5 text-secondary italic"></span>
+                                <span id="modal-kana" class="text-muted" style="font-size: 2rem !important;"></span>
+                                <span id="modal-romaji" class="text-secondary italic" style="font-size: 1.5rem !important;"></span>
                             </div>
                         </div>
 
                         <button onclick="playAudio()"
-                                class="btn btn-warning text-white rounded-pill px-4 mb-3 shadow-sm">
+                                class="btn btn-warning text-white rounded-pill shadow-sm"
+                                style="padding: 10px 20px !important; font-size: 20px !important; font-weight: 700 !important; margin-bottom: 20px !important; width: fit-content;">
                             <i class="fas fa-volume-up me-2"></i>Phát âm
                         </button>
                         <audio id="modal-audio" src=""></audio>
 
-                        <div class="bg-light p-3 rounded-3">
-                            <h6 class="fw-bold mb-2"><i class="fas fa-quote-left me-2 text-warning"></i>Ví dụ:</h6>
-                            <p id="modal-example" class="mb-1 fw-medium text-dark" style="font-size: 1.1rem;"></p>
-                            <p id="modal-example-vi" class="mb-0 text-muted small"></p>
+                        <div class="p-4 rounded-4" style="background-color: #f8f9fa; border-left: 5px solid #fb873f;">
+                            <h6 class="fw-bold mb-2" style="font-size: 22px;">
+                                <i class="fas fa-quote-left me-2" style="color: #fb873f"></i>Ví dụ:
+                            </h6>
+                            <p id="modal-example" class="mb-1 fw-bold text-dark"></p>
+                            <p id="modal-example-vi" class="mb-0 text-muted"></p>
                         </div>
                     </div>
                 </div>
@@ -171,7 +182,7 @@
         const item = vocabList[index];
 
         // Đổ dữ liệu vào Modal
-        document.getElementById('modal-img').src = '/' + item.imageUrl;
+        document.getElementById('modal-img').src = item.imageUrl;
         document.getElementById('modal-expression').innerText = item.expression;
         document.getElementById('modal-kana').innerText = item.kana;
         document.getElementById('modal-romaji').innerText = item.romaji;
@@ -180,7 +191,7 @@
 
         // Cập nhật đường dẫn âm thanh
         const audio = document.getElementById('modal-audio');
-        audio.src = '/' + item.audioUrl;
+        audio.src = item.audioUrl;
 
         // Hiển thị Modal
         var myModal = new bootstrap.Modal(document.getElementById('vocabModal'));

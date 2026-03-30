@@ -5,6 +5,33 @@
     <title>Lesson</title>
 </head>
 
+<style>
+    /* Định nghĩa class riêng để tránh xung đột Inline Style */
+    .btn-gallery {
+        background-color: #28a745;
+        color: white;
+        border: 2px solid transparent;
+        transition: 0.3s;
+    }
+    .btn-gallery:hover {
+        background-color: #218838 !important;
+        color: white !important;
+    }
+
+    .btn-flash {
+        background-color: #007bff;
+         color: white;
+         border: 2px solid transparent;
+         transition: 0.3s;
+     }
+
+    .btn-flash:hover {
+        background-color: #0069d9 !important; /* Màu xanh đậm hơn giống btn-primary:hover */
+        color: white !important;
+    }
+</style>
+
+
 <body>
 <th:block th:replace="~{layout :: spinner}"></th:block>
 <th:block th:replace="~{layout :: navbar}" th:with="currentPage='categories'"></th:block>
@@ -73,11 +100,10 @@
                             <i class="fas fa-th-large fs-5 text-white"></i>
                         </div>
                         <div class="ms-3 flex-grow-1">
-                            <h6 class="fw-bold mb-0" style="font-size: 1rem;">Liệt kê hình ảnh</h6>
+                            <h6 class="fw-bold mb-0" style="font-size: 1rem;">Học từ vựng mới</h6>
                         </div>
                         <a th:href="@{/study/gallery(id=${lesson?.id})}"
-                           class="fw-bold rounded-pill px-4 py-2 shadow-sm text-decoration-none"
-                           style="background-color: #28a745; color: white;">Vào học</a>
+                           class="btn-gallery fw-bold rounded-pill px-4 py-2 shadow-sm text-decoration-none">Vào học</a>
                     </div>
 
                     <div class="lesson-item shadow-sm p-2 bg-white border" style="min-height: 50px; border-radius: 15px; margin-bottom: 0;">
@@ -88,8 +114,8 @@
                             <h6 class="fw-bold mb-0" style="font-size: 1rem;">Flashcard</h6>
                         </div>
                         <a th:href="@{/study/flashcards(id=${lesson?.id})}"
-                           class="fw-bold rounded-pill px-4 py-2 shadow-sm text-decoration-none"
-                           style="background-color: #007bff; color: white;">Vào học</a>
+                           class="btn-flash fw-bold rounded-pill px-4 py-2 shadow-sm text-decoration-none"
+                           >Vào học</a>
                     </div>
 
                     <div class="lesson-item shadow-sm p-2 bg-white border" style="min-height: 50px; border-radius: 15px; margin-bottom: 0;">
