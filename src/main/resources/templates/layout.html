@@ -87,9 +87,11 @@
                 </div>
             </div>
             <a th:href="@{/contact}" th:classappend="${currentPage == 'contact'}     ? 'active' : ''" class="nav-item nav-link">Liên hệ</a>
-            <a th:href="@{/login}"   th:classappend="${currentPage == 'login'}       ? 'active' : ''" class="nav-item nav-link">
-                <i class="fa fa-user"></i>
-            </a>
+            <div id="user-menu-section" class="nav-item">
+                <a th:href="@{/login}" id="login-link" class="nav-item nav-link">
+                    <i class="fa fa-user"></i>
+                </a>
+            </div>
         </div>
     </div>
 </nav>
@@ -154,6 +156,68 @@
     <script th:src="@{/lib/owlcarousel/owl.carousel.min.js}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script th:src="@{/js/main.js}"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+    const token = localStorage.getItem('token');
+    const username = localStorage.getItem('username');
+    const fullname = localStorage.getItem('fullname');
+    const userSection = document.getElementById('user-menu-section');
+
+    if (token && username) {
+        // Nếu đã login thành công
+        userSection.innerHTML = `
+            <div class="nav-item dropdown">
+                <a href="#" class="nav-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown">
+                    <div class="user-avatar-sm me-2">
+                        <i class="fa fa-user-circle fs-4"></i>
+                    </div>
+                    <span class="fw-bold">${fullname}</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end fade-down m-0 shadow-sm border-0">
+                    <a href="/profile" class="dropdown-item"><i class="fa fa-id-card me-2"></i>Hồ sơ</a>
+                    <a href="/study/history" class="dropdown-item"><i class="fa fa-history me-2"></i>Lịch sử học</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" id="btnLogout" class="dropdown-item text-danger">
+                        <i class="fa fa-sign-out-alt me-2"></i>Đăng xuất
+                    </a>
+                </div>
+            </div>
+        `;
+
+        // Xử lý sự kiện Đăng xuất trong layout.html
+    document.addEventListener('click', function(e) {
+    if (e.target && (e.target.id === 'btnLogout' || e.target.closest('#btnLogout'))) {
+        e.preventDefault();
+
+        Swal.fire({
+            title: 'Bạn muốn đăng xuất?',
+            text: "Hẹn gặp lại bạn tại Ganbatte nhé!",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#06BBCC',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Đồng ý',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.clear();
+                // Hiển thị thông báo thành công ngắn trước khi chuyển hướng
+                Swal.fire({
+                    title: 'Đăng xuất thành công!',
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: 1000
+                }).then(() => {
+                    location.href = '/';
+                });
+            }
+        });
+    }
+});
+    }
+});
+    </script>
 </div>
 
 </body>

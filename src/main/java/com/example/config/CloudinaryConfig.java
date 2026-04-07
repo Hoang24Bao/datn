@@ -1,4 +1,4 @@
-package com.example.Config;
+package com.example.config;
 
 import com.cloudinary.Cloudinary;
 import org.springframework.context.annotation.Bean;

@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "Users")
@@ -23,8 +25,13 @@ public class Users {
     private String fullname;
     private String email;
 
-    @Column(nullable = false)
-    private String role; // 'admin' hoặc 'user'
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "User_Roles", // Tên bảng trung gian trong DB
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Roles> roles = new HashSet<>();
 
     @Column(name = "level_id")
     private Integer levelId;

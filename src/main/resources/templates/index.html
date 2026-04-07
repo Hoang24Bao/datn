@@ -28,9 +28,9 @@
                             <h1 class="display-3 text-white animated slideInDown" style="font-family: 'Coiny', sans-serif !important;">Học từ vựng tiếng Nhật qua hình ảnh</h1>
                             <p class=" text-white mb-4 pb-2">Thay vì học thuộc khô khan, hãy để não bộ liên tưởng từ vựng trực tiếp qua những hình ảnh sinh động nhất.
                                 Ghi nhớ lâu hơn, hiệu quả gấp đôi.</p>
-                            <a href="about.html"
+                            <a th:href="@{/about}"
                                class="btn btn-primary py-md-3 px-md-5 me-3 animated slideInLeft">Tìm hiểu thêm</a>
-                            <a href="signup.html" class="btn btn-light py-md-3 px-md-5 animated slideInRight">HỌC NGAY! </a>
+                            <a th:href="@{/signup}" class="btn btn-light py-md-3 px-md-5 animated slideInRight">HỌC NGAY! </a>
                         </div>
                     </div>
                 </div>
@@ -154,7 +154,7 @@
                         <p class="mb-0"><i class="fa fa-arrow-right text-primary me-2"></i>Theo dõi tiến độ cá nhân</p>
                     </div>
                 </div>
-                <a class="btn btn-primary text-light py-3 px-5 mt-2" href="about.html">Tìm hiểu thêm</a>
+                <a class="btn btn-primary text-light py-3 px-5 mt-2" th:href="@{/about}">Tìm hiểu thêm</a>
             </div>
         </div>
     </div>
@@ -637,7 +637,7 @@
 
                 <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.1s" style="min-height: 400px;">
                     <div class="position-relative h-100">
-                        <img class="img-fluid position-absolute w-100 h-100 bg-light" th:src="@{img/banner-2.png}" alt=""
+                        <img class="img-fluid position-absolute w-100 h-100 bg-light" th:src="@{img/banner-2.jpg}" alt=""
                              style="object-fit: cover;">
                     </div>
                 </div>
