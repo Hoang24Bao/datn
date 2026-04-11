@@ -7,5 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CategoriesRepository extends JpaRepository<Categories, Integer> {
     // JpaRepository đã có sẵn các hàm findAll(), findById()
+    boolean existsByCategoryName(String categoryName);
 
 }

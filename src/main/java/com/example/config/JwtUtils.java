@@ -23,7 +23,7 @@ public class JwtUtils {
         // Lấy tên role đầu tiên (hoặc nối chuỗi nếu user có nhiều role)
         String roleName = user.getRoles().stream()
                 .findFirst()
-                .map(Roles::getName) // Nhớ là Role (số ít) nhé, khớp với Entity của bạn
+                .map(Roles::getName)
                 .orElse("ROLE_USER");
 
         return Jwts.builder()
@@ -50,9 +50,10 @@ public class JwtUtils {
                 .parseClaimsJws(token).getBody().getSubject();
     }
 
+    // ✅ Sửa lại
     public boolean validateJwtToken(String authToken) {
         try {
-            Jwts.parserBuilder().setSigningKey(key()).build().parse(authToken);
+            Jwts.parserBuilder().setSigningKey(key()).build().parseClaimsJws(authToken); // Đổi parse → parseClaimsJws
             return true;
         } catch (Exception e) {
             System.out.println("Token không hợp lệ: " + e.getMessage());

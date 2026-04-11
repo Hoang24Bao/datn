@@ -1,8 +1,11 @@
 package com.example.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.List;
 
 
 @Entity
@@ -28,5 +31,9 @@ public class Vocabulary {
     @Column(name = "example_vi")
     private String exampleVi;
     private String example;
+
+    @ManyToMany(mappedBy = "vocabularies")
+    @com.fasterxml.jackson.annotation.JsonIgnore // Ngăn vòng lặp JSON
+    private List<Lessons> lessons;
 
 }

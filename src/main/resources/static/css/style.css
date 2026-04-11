@@ -452,6 +452,19 @@ body {
     --light: #F0FBFC;
     --light: #f0e4de;
     --dark: #181d38;
+    --teal: #06BBCC;
+    --teal-dark: #05a5b4;
+    --teal-light: rgba(6, 187, 204, 0.08);
+    --orange: #fb873f;
+    --orange-light: rgba(251, 135, 63, 0.1);
+    --bg: #f0f4f8;
+    --sidebar-w: 268px;
+    --white: #ffffff;
+    --text-dark: #1a2332;
+    --text-muted: #8a94a6;
+    --border: #e8edf3;
+    --success: #22c55e;
+    --danger: #ef4444;
 }
 
 .btn {
@@ -975,6 +988,7 @@ body {
     background: var(--primary);
     border-color: var(--primary);
 }
+
 
 
 /*** Footer ***/

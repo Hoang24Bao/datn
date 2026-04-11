@@ -20,4 +20,6 @@ public class CategoriesController {
         model.addAttribute("currentPage", "categories");
         return "study/categories"; // Tìm file trong templates/study/categories.html
     }
+
+
 }

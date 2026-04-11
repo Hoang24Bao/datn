@@ -1,286 +1,773 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head th:replace="~{layout :: html_head(title='Hệ thống quản trị - Ganbatte')}">
 </head>
-
-<style>
-    :root {
-        --admin-dark: #181d38;
-        --admin-primary: #06BBCC;
-        --admin-orange: #fb873f;
-        --bg-light: #f0f2f5;
-    }
-
-    body { background-color: var(--bg-light); font-family: 'Be Vietnam Pro', sans-serif; overflow-x: hidden; }
-
-    /* SIDEBAR NÂNG CẤP */
-    .sidebar {
-        width: 260px;
-        height: 100vh;
-        position: fixed;
-        top: 0; left: 0;
-        background: var(--admin-dark);
-        color: white;
-        z-index: 1000;
-        box-shadow: 4px 0 10px rgba(0,0,0,0.1);
-    }
-    .sidebar-header {
-        padding: 25px 20px;
-        text-align: center;
-        background: #12162d;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .sidebar-header a {
-        font-family: 'Coiny', cursive;
-        font-size: 26px;
-        color: white;
-        text-decoration: none;
-        letter-spacing: 1px;
-    }
-    .sidebar-menu { padding: 15px 0; }
-    .sidebar-menu a {
-        padding: 14px 25px;
-        display: flex;
-        align-items: center;
-        color: rgba(255,255,255,0.6);
-        text-decoration: none;
-        transition: all 0.3s;
-        border-left: 4px solid transparent;
-    }
-    .sidebar-menu a i { width: 25px; font-size: 18px; }
-    .sidebar-menu a:hover, .sidebar-menu a.active {
-        background: rgba(6, 187, 204, 0.1);
-        color: var(--admin-primary);
-        border-left: 4px solid var(--admin-primary);
-    }
-
-    /* TOPBAR SANG TRỌNG */
-    .main-wrapper { margin-left: 260px; width: calc(100% - 260px); }
-    .topbar {
-        height: 75px;
-        background: white;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 35px;
-        border-bottom: 1px solid #eef0f2;
-    }
-
-    /* CONTENT VỚI CARD HIỆN ĐẠI */
-    .main-content { padding: 35px; }
-    .stat-card {
-        border: none;
-        border-radius: 16px;
-        padding: 25px;
-        background: white;
-        display: flex;
-        align-items: center;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.03);
-        transition: transform 0.3s;
-    }
-    .stat-card:hover { transform: translateY(-7px); }
-    .icon-box {
-        width: 60px;
-        height: 60px;
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        margin-right: 20px;
-    }
-    .bg-light-primary { background: rgba(6, 187, 204, 0.1); color: var(--admin-primary); }
-    .bg-light-success { background: rgba(40, 167, 69, 0.1); color: #28a745; }
-    .bg-light-orange { background: rgba(251, 135, 63, 0.1); color: var(--admin-orange); }
-
-    .table-container {
-        background: white;
-        border-radius: 16px;
-        padding: 25px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.03);
-    }
-    .table thead th {
-        background-color: #f8f9fa;
-        border: none;
-        color: #74788d;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 12px;
-        letter-spacing: 0.5px;
-        padding: 15px;
-    }
-    .table tbody td { padding: 15px; border-bottom: 1px solid #f1f3f5; }
-
-    .status-badge {
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-</style>
+<link th:href="@{/css/admin.css}" rel="stylesheet">
 
 <body>
-<div class="sidebar">
-    <div class="sidebar-header">
-        <a href="/">Gan<span style="color: var(--admin-orange);">batte</span></a>
-    </div>
-    <div class="sidebar-menu">
-        <a href="/admin" class="active"><i class="fas fa-chart-pie me-3"></i> Thống kê</a>
-        <a href="/admin/users"><i class="fas fa-user-friends me-3"></i> Người dùng</a>
-        <a href="/admin/categories"><i class="fas fa-th-large me-3"></i> Danh mục</a>
-        <a href="/admin/lessons"><i class="fas fa-book-reader me-3"></i> Bài học</a>
-        <a href="/admin/vocabulary"><i class="fas fa-spell-check me-3"></i> Từ vựng</a>
-    </div>
-</div>
+<div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-<div class="main-wrapper">
-    <div class="topbar">
-        <div class="page-title">
-            <h4 class="m-0 fw-bold">Dashboard Tổng Quan</h4>
-            <small class="text-muted">Chào mừng trở lại, hệ thống đã sẵn sàng.</small>
+<aside class="sidebar">
+    <a th:href="@{/}" class="sidebar-logo">
+        <img th:src="@{/img/icons.png}" alt="Logo">
+        <div class="logo-text">
+            <span class="gan">Gan</span><span class="batte">batte</span>
         </div>
-        <div class="d-flex align-items-center">
-            <a href="/" class="btn btn-outline-info btn-sm rounded-pill px-3 me-3">
-                <i class="fa fa-eye me-1"></i> Xem trang chủ
+    </a>
+
+    <div class="sidebar-section-label">Tổng quan</div>
+    <nav class="sidebar-nav">
+        <button class="nav-item active" onclick="loadSection('dashboard', this, event)">
+            <div class="nav-icon"><i class="fas fa-chart-pie"></i></div>
+            <span class="nav-label">Thống kê</span>
+        </button>
+        <button class="nav-item" onclick="loadSection('users', this, event)">
+            <div class="nav-icon"><i class="fas fa-user-friends"></i></div>
+            <span class="nav-label">Người dùng</span>
+        </button>
+
+        <div class="sidebar-section-label" style="padding-left:0; padding-top:16px;">Nội dung</div>
+
+        <button class="nav-item" onclick="loadSection('categories', this, event)">
+            <div class="nav-icon"><i class="fas fa-th-large"></i></div>
+            <span class="nav-label">Chủ đề</span>
+        </button>
+        <button class="nav-item" onclick="loadSection('lessons', this, event)">
+            <div class="nav-icon"><i class="fas fa-book-reader"></i></div>
+            <span class="nav-label">Bài học</span>
+        </button>
+        <button class="nav-item" onclick="loadSection('vocabulary', this, event)">
+            <div class="nav-icon"><i class="fas fa-spell-check"></i></div>
+            <span class="nav-label">Từ vựng</span>
+        </button>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="user-mini">
+            <img id="sidebarAvatar" src="" alt="Admin">
+            <div class="user-mini-info">
+                <p id="sidebarAdminName">Admin</p>
+                <span>Trực tuyến</span>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left" style="display: flex; align-items: center;">
+            <button class="mobile-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h4 id="page-main-title">Dashboard Tổng Quan</h4>
+        </div>
+        <div class="topbar-right">
+            <a th:href="@{/}" class="btn-home">
+                <i class="fas fa-home"></i> <span>Trang chủ</span>
             </a>
+            <div class="topbar-divider"></div>
             <div class="dropdown">
-                <div class="d-flex align-items-center cursor-pointer" data-bs-toggle="dropdown" style="cursor:pointer">
-                    <div class="text-end me-2">
-                        <p class="m-0 fw-bold" id="adminName" style="font-size: 14px;">Admin</p>
-                        <small class="text-success" style="font-size: 11px;">Trực tuyến</small>
+                <div class="admin-profile" data-bs-toggle="dropdown" style="cursor:pointer;">
+                    <img id="adminAvatar" src="" width="40" height="40">
+                    <div class="admin-info">
+                        <p id="adminName">Admin</p>
+                        <span>Trực tuyến</span>
                     </div>
-                    <img src="https://ui-avatars.com/api/?name=Admin&background=06BBCC&color=fff" class="rounded-circle" width="40">
+                    <i class="fas fa-chevron-down" style="font-size: 11px; color: var(--text-muted); margin-left: 4px;"></i>
                 </div>
-                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3">
-                    <li><a class="dropdown-item" href="/profile"><i class="fa fa-user-circle me-2"></i>Hồ sơ</a></li>
+                <ul class="dropdown-menu dropdown-menu-end mt-3">
+                    <li><a class="dropdown-item" href="/profile"><i class="fa fa-id-card me-2 text-primary"></i>Hồ sơ</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger" href="#" onclick="logout()">
-                        <i class="fa fa-power-off me-2"></i>Đăng xuất</a>
-                    </li>
+                    <li><a class="dropdown-item text-danger fw-bold" href="#" onclick="logout()"><i class="fa fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
                 </ul>
             </div>
         </div>
-    </div>
+    </header>
 
-    <div class="main-content">
-        <div class="row g-4 mb-5">
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div class="icon-box bg-light-primary"><i class="fa fa-users"></i></div>
-                    <div>
-                        <h6 class="text-muted mb-1">Tổng Học Viên</h6>
-                        <h3 class="m-0 fw-bold" id="totalUsers">0</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div class="icon-box bg-light-success"><i class="fa fa-book"></i></div>
-                    <div>
-                        <h6 class="text-muted mb-1">Tổng Bài Học</h6>
-                        <h3 class="m-0 fw-bold">40</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div class="icon-box bg-light-orange"><i class="fa fa-language"></i></div>
-                    <div>
-                        <h6 class="text-muted mb-1">Kho Từ Vựng</h6>
-                        <h3 class="m-0 fw-bold">1,250</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <main class="content" id="main-content">
+    </main>
+</div>
 
-        <div class="table-container">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="m-0 fw-bold">Học viên mới tham gia</h5>
-                <a href="/admin/users" class="btn btn-sm btn-link text-primary p-0 text-decoration-none">Xem tất cả</a>
+
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 15px 50px rgba(0,0,0,0.2);">
+            <div class="modal-header" style="border-bottom: 1px solid #eee; padding: 20px 25px;">
+                <h5 class="modal-title" style="font-weight: 700; color: var(--text-dark);">
+                    <i class="fas fa-folder-plus me-2" style="color: var(--teal);"></i>Thêm chủ đề mới
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th>Mã số</th>
-                        <th>Học viên</th>
-                        <th>Email</th>
-                        <th>Cấp độ</th>
-                        <th>Trạng thái</th>
-                    </tr>
-                    </thead>
-                    <tbody id="userTableBody">
-                    </tbody>
-                </table>
+            <div class="modal-body" style="padding: 25px;">
+                <form id="categoryForm">
+                    <div class="mb-4">
+                        <label class="form-label" style="font-weight: 600; font-size: 14px;">Tên chủ đề</label>
+                        <input type="text" id="catName" class="form-control" placeholder="Ví dụ: Gia đình, Động vật..."
+                               style="border-radius: 10px; padding: 12px; border: 1px solid #ddd;" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label" style="font-weight: 600; font-size: 14px;">Cấp độ JLPT</label>
+                        <select id="catLevel" class="form-select" style="border-radius: 10px; padding: 12px; border: 1px solid #ddd;">
+                            <option value="N5">N5 (Cơ bản)</option>
+                            <option value="N4">N4 (Sơ cấp)</option>
+                            <option value="N3">N3 (Trung cấp)</option>
+                            <option value="N2">N2 (Thượng cấp)</option>
+                            <option value="N1">N1 (Cao cấp)</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="border-top: none; padding: 0 25px 25px;">
+                <button type="button" class="btn-custom btn-teal" data-bs-dismiss="modal" style="font-weight: 600; color: #fff;">Hủy</button>
+                <button type="button" class="btn-custom btn-orange"  onclick="submitCategory()">
+                    <i class="fas fa-save me-2"></i>Lưu chủ đề
+                </button>
             </div>
         </div>
     </div>
 </div>
+
+
+<div class="modal fade" id="lessonModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 15px 50px rgba(0,0,0,0.2);">
+            <div class="modal-header" style="border-bottom: 1px solid #eee; padding: 20px 25px;">
+                <h5 class="modal-title" style="font-weight: 700; color: var(--text-dark);">
+                    <i class="fas fa-book-open me-2" style="color: #06BBCC;"></i>Thêm bài học mới
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 25px;">
+                <form id="lessonForm">
+                    <div class="mb-4">
+                        <label class="form-label" style="font-weight: 600; font-size: 14px;">Tên bài học</label>
+                        <input type="text" id="lessonName" class="form-control" placeholder="Ví dụ: Bài 1: Chào hỏi"
+                               style="border-radius: 10px; padding: 12px; border: 1px solid #ddd;" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label" style="font-weight: 600; font-size: 14px;">Chủ đề</label>
+                        <select id="lessonCategorySelect" class="form-select" style="border-radius: 10px; padding: 12px; border: 1px solid #ddd;">
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="border-top: none; padding: 0 25px 25px;">
+                <button type="button" class="btn-custom btn-teal" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn-custom btn-orange" onclick="submitLesson()">
+                    <i class="fas fa-save me-2"></i>Lưu bài học
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script>
-    window.onload = function() {
+<script th:inline="javascript">
+    // HÀM TIỆN ÍCH: Xử lý đường dẫn ảnh thông minh & fix cache
+    function getAvatarPath(url, fullname) {
+        const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullname)}&background=06BBCC&color=fff`;
+        if (!url) return defaultAvatar;
+
+        // Tránh lặp lại img/avatar/ nếu url đã có sẵn path
+        let path = (url.startsWith('img/') || url.startsWith('http')) ? url : `img/avatar/${url}`;
+        return `${path}?v=${new Date().getTime()}`; // Fix cache ảnh
+    }
+
+    const dashboardTemplate = `
+        <div class="breadcrumb-bar">
+        <div class="chip active"><i class="fas fa-chart-pie" style="margin-right:5px; font-size:10px;"></i>Thống kê</div>
+        <span class="sep">›</span><div class="chip">Dashboard</div>
+    </div>
+        <div class="stats-grid"> <div class="stat-card teal">
+            <div class="stat-top"><div class="stat-icon teal"><i class="fas fa-users"></i></div></div>
+            <div class="stat-value" id="totalUsers">0</div><div class="stat-label">Tổng Học Viên</div>
+        </div>
+        <div class="stat-card red">
+            <div class="stat-top"><div class="stat-icon red"><i class="fas fa-th-large"></i></div></div>
+            <div class="stat-value" id="totalCategories">0</div><div class="stat-label">Tổng Chủ Đề</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-top"><div class="stat-icon green"><i class="fas fa-book"></i></div></div>
+            <div class="stat-value" id="totalLessons">0</div><div class="stat-label">Tổng Bài Học</div>
+        </div>
+        <div class="stat-card orange">
+            <div class="stat-top"><div class="stat-icon orange"><i class="fas fa-language"></i></div></div>
+            <div class="stat-value" id="totalVocab">0</div><div class="stat-label">Kho Từ Vựng</div>
+        </div>
+    </div>
+        <div class="table-section">
+            <div class="table-header">
+                <div class="table-header-left"><h4>Học viên mới tham gia</h4><p>Đăng ký trong 7 ngày qua</p></div>
+                <button class="btn-home" onclick="navigateToUsers()">Xem tất cả <i class="fas fa-arrow-right"></i></button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 40px; text-align: center;">STT</th>
+                            <th style="width: 70px; text-align: center;">ID</th>
+                            <th style="padding-left: 30px">Học viên</th>
+                            <th>Email</th>
+                            <th>Cấp độ</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    `;
+
+    window.onload = function () {
         const role = localStorage.getItem('role');
         const token = localStorage.getItem('token');
-        const fullname = localStorage.getItem('fullname') || 'Quản trị viên';
+        const fullname = localStorage.getItem('fullname') || 'Admin';
+        const avatarUrl = localStorage.getItem('avatarUrl');
 
-        if (role !== 'ROLE_ADMIN' || !token) {
-            location.href = '/login';
-            return;
-        }
+        if (role !== 'ROLE_ADMIN' || !token) { location.href = '/login'; return; }
 
         document.getElementById('adminName').innerText = fullname;
-        loadDashboardStats(token);
-        loadLatestUsers(token);
+        document.getElementById('sidebarAdminName').innerText = fullname;
+
+        const sidebarImg = document.getElementById('sidebarAvatar');
+        const topbarImg = document.getElementById('adminAvatar');
+        const finalPath = getAvatarPath(avatarUrl, fullname);
+
+        // --- LOGIC KHÔI PHỤC TAB ---
+        const savedTab = localStorage.getItem('activeAdminTab') || 'dashboard';
+
+        // Tìm nút tương ứng với tab đã lưu
+        const targetBtn = document.querySelector(`button[onclick*="'${savedTab}'"]`);
+
+        sidebarImg.src = finalPath;
+        topbarImg.src = finalPath;
+
+        // KIỂM TRA: Nếu tìm thấy nút đã lưu thì load nút đó, không thì mới load dashboard
+        if (targetBtn) {
+            loadSection(savedTab, targetBtn);
+        } else {
+            const firstBtn = document.querySelector('.nav-item');
+            loadSection('dashboard', firstBtn);
+        }
     };
+
+    function loadSection(section, element, event) {
+        if (event) event.preventDefault();
+
+        localStorage.setItem('activeAdminTab', section);
+
+        // Đóng sidebar nếu đang ở chế độ mobile
+    if (window.innerWidth <= 992) {
+        toggleSidebar();
+    }
+        const mainContent = document.getElementById('main-content');
+        const mainTitle = document.getElementById('page-main-title');
+        const token = localStorage.getItem('token');
+
+        document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+        element.classList.add('active');
+
+        switch (section) {
+            //Tổng Quan
+            case 'dashboard':
+                mainTitle.innerText = "Dashboard Tổng Quan";
+                mainContent.innerHTML = dashboardTemplate;
+                loadDashboardStats(token);
+                loadLatestUsers(token);
+                break;
+
+            //Người Dùng
+            case 'users':
+    mainTitle.innerText = "Quản Lý Người Dùng";
+    mainContent.innerHTML = `
+        <div class="breadcrumb-bar"><div class="chip active">Người dùng</div></div>
+        <div class="table-section">
+            <div class="table-header"><h5>Danh sách tất cả học viên</h5></div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 40px; text-align: center;">STT</th>
+                            <th style="width: 70px; text-align: center;">ID</th>
+                            <th style="padding-left: 30px">Học viên</th>
+                            <th>Email</th>
+                            <th>Cấp độ</th>
+                            <th>Trạng thái</th>
+                            <th style="width: 120px; text-align: center;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fullUserTable"></tbody>
+                </table>
+            </div>
+        </div>`;
+    loadAllUsers(token);
+    break;
+
+            //Chủ đề
+            case 'categories':
+    mainTitle.innerText = "Quản Lý Chủ đề";
+    mainContent.innerHTML = `
+        <div class="breadcrumb-bar">
+            <div class="chip active">Chủ đề</div>
+            <span class="sep">›</span><div class="chip">Chủ đề từ vựng</div>
+        </div>
+        <div class="table-section">
+            <div class="table-header">
+                <div class="table-header-left">
+                    <h4>Danh sách chủ đề</h5>
+                </div>
+                <button class="btn-home" style="font-size:15px;" onclick="openAddCategoryModal()">
+                    <i class="fas fa-plus" style="margin-right:5px"></i> Thêm chủ đề
+                </button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 40px; text-align: center;">STT</th>
+                            <th style="width: 70px; text-align: center;">ID</th>
+                            <th style="padding-left: 50px">Tên chủ đề</th>
+                            <th style="text-align: center;">Tổng bài học</th>
+                            <th style="text-align: center;">Cấp độ</th>
+                            <th style="width: 150px; text-align: center;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoryTableBody">
+                        <tr><td colspan="5" class="text-center py-5">Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>`;
+    loadAllCategories(token);
+    break;
+
+
+            case 'lessons':
+    mainTitle.innerText = "Quản Lý Bài Học";
+    mainContent.innerHTML = `
+        <div class="breadcrumb-bar">
+            <div class="chip active">Nội dung</div>
+            <span class="sep">›</span><div class="chip">Bài học</div>
+        </div>
+        <div class="table-section">
+            <div class="table-header">
+                <div class="table-header-left">
+                    <h4>Danh sách bài học</h5>
+                    <p>Quản lý các bài học thuộc từng chủ đề</p>
+                </div>
+                <button class="btn-home" style="font-size:15px;" onclick="openAddLessonModal()">
+                    <i class="fas fa-plus" style="margin-right:5px"></i> Thêm bài học
+                </button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 40px; text-align: center;">STT</th>
+                            <th style="width: 70px; text-align: center;">ID</th>
+                            <th style="width: 25%;">Bài học</th>
+                            <th style="width: 45%;">Chủ đề</th>
+                            <th style="width: 1%; white-space: nowrap; text-align: center;">Số từ</th>
+                            <th style="width: 120px; text-align: center;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lessonTableBody">
+                        <tr><td colspan="6" class="text-center py-5">Đang tải bài học...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>`;
+    loadAllLessons(token);
+    break;
+
+            case 'vocabulary':
+    mainTitle.innerText = "Quản Lý Từ Vựng";
+    mainContent.innerHTML = `
+        <div class="breadcrumb-bar">
+            <div class="chip active">Nội dung</div>
+            <span class="sep">›</span><div class="chip">Kho từ vựng</div>
+        </div>
+        <div class="table-section">
+            <div class="table-header">
+                <div class="table-header-left">
+                    <div class="search-box" style="display:flex; gap:10px;">
+                        <input type="text" id="vocabSearch" class="form-control" placeholder="Tìm kiếm từ vựng..." style="width:250px; border-radius:10px;">
+                        <select id="filterLesson" class="form-select" style="width:200px; border-radius:10px;">
+                            <option value="">Tất cả bài học</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-home" onclick="openAddVocabModal()">
+                    <i class="fas fa-plus"></i> Thêm từ vựng
+                </button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 50px; text-align: center;">STT</th>
+                            <th>Từ vựng (Kanji)</th>
+                            <th>Cách đọc (Kana)</th>
+                            <th>Ý nghĩa</th>
+                            <th>Loại từ</th>
+                            <th style="width: 150px; text-align: center;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vocabTableBody">
+                        <tr><td colspan="6" class="text-center py-5">Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination-container" style="display:flex; justify-content:center; padding: 20px;" id="vocabPagination">
+            </div>
+        </div>`;
+    loadVocabWithPagination(0); // Tải trang đầu tiên (index 0)
+    break;
+
+            default:
+                mainTitle.innerText = "Quản lý nội dung";
+                mainContent.innerHTML = `<div class="card p-5 text-center"><h5>Tính năng đang phát triển</h5></div>`;
+        }
+    }
+
+    async function loadDashboardStats(token) {
+        try {
+            const res = await fetch('/api/admin/stats', { headers: { 'Authorization': 'Bearer ' + token } });
+            const data = await res.json();
+            document.getElementById('totalUsers').innerText = (data.totalUsers || 0).toLocaleString();
+            document.getElementById('totalLessons').innerText = (data.totalLessons || 0).toLocaleString();
+            document.getElementById('totalVocab').innerText = (data.totalVocab || 0).toLocaleString();
+            document.getElementById('totalCategories').innerText = (data.totalCategories || 0).toLocaleString();
+        } catch (e) { console.error(e); }
+    }
 
     async function loadLatestUsers(token) {
         try {
-            const response = await fetch('/api/admin/users/latest', {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            const users = await response.json();
+            const res = await fetch('/api/admin/users/latest', { headers: { 'Authorization': 'Bearer ' + token } });
+            let users = await res.json();
+            users.sort((a, b) => a.id - b.id);
             const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = users.map((user, index) => { // Thêm index ở đây
+                const createdDate = new Date(user.created);
+                const today = new Date();
+                const d1 = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate());
+                const d2 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+                let time = diff === 0 ? "Hôm nay" : (diff === 1 ? "Hôm qua" : `${diff} ngày trước`);
 
-            tbody.innerHTML = users.map(user => `
+                return `<tr>
+                    <td style="text-align: center;">${index + 1}</td>
+                    <td style="text-align: center;"><span class="id-badge">#${user.id}</span></td>
+                    <td><div class="user-cell"><img src="${getAvatarPath(user.avatarUrl, user.fullname)}">
+                        <div><div class="name">${user.fullname}</div><div class="joined" style="font-size: 11px;">${time}</div></div></div></td>
+                    <td>${user.email}</td>
+                    <td><span class="level-badge">${user.levelId || 'N5'}</span></td>
+                    <td><span class="status-pill ${user.active ? 'active-pill' : 'locked-pill'}">${user.active ? 'Hoạt động' : 'Bị khóa'}</span></td>
+                </tr>`;
+            }).join('');
+        } catch (e) { console.error(e); }
+    }
+
+    async function loadAllUsers(token) {
+    try {
+        const res = await fetch('/api/admin/users/all-students', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const users = await res.json();
+
+        // Sắp xếp theo ID tăng dần
+        users.sort((a, b) => a.id - b.id);
+
+        const tbody = document.getElementById('fullUserTable');
+        tbody.innerHTML = users.map((user, index) => {
+            // Render giao diện tương tự bảng ở Dashboard
+            return `
                 <tr>
-                    <td class="text-muted">#${user.id}</td>
+                    <td style="text-align: center;">${index + 1}</td>
+                    <td style="text-align: center;"><span class="id-badge">#${user.id}</span></td>
                     <td>
-                        <div class="d-flex align-items-center">
-                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullname)}&background=random" class="rounded-circle me-2" width="30">
-                            <span class="fw-bold text-dark">${user.fullname}</span>
+                        <div class="user-cell">
+                            <img src="${getAvatarPath(user.avatarUrl, user.fullname)}">
+                            <div class="name">${user.fullname}</div>
                         </div>
                     </td>
                     <td>${user.email}</td>
-                    <td><span class="badge rounded-pill bg-soft-info text-info border border-info px-3">${user.level_id || 'N5'}</span></td>
+                    <td><span class="level-badge">${user.levelId || 'N5'}</span></td>
                     <td>
-                        <span class="status-badge ${user.active ? 'bg-success text-white' : 'bg-danger text-white'}">
+                        <span class="status-pill ${user.active ? 'active-pill' : 'locked-pill'}">
                             ${user.active ? 'Hoạt động' : 'Bị khóa'}
                         </span>
                     </td>
-                </tr>
-            `).join('');
-        } catch (error) { console.error(error); }
+                    <td style="text-align: center;">
+                        <button class="btn-action btn-edit me-1" title="Chỉnh sửa"><i class="fas fa-edit"></i></button>
+                        <button class="btn-action btn-trash" title="Xóa"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+        }).join('');
+    } catch (e) {
+        console.error(e);
+        document.getElementById('fullUserTable').innerHTML =
+            `<tr><td colspan="7" class="text-center text-danger">Lỗi tải dữ liệu người dùng</td></tr>`;
     }
+}
+
+    function navigateToUsers() {
+        const btn = document.querySelectorAll('.nav-item')[1];
+        loadSection('users', btn);
+    }
+
+    async function loadAllCategories(token) {
+    try {
+        const res = await fetch('/api/admin/categories', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (!res.ok) return;
+        const categories = await res.json();
+        const tbody = document.getElementById('categoryTableBody');
+
+        if (categories.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-muted">Chưa có chủ đề nào</td></tr>`;
+            return;
+        }
+
+        // Sắp xếp theo ID tăng dần
+        categories.sort((a, b) => a.id - b.id);
+
+        tbody.innerHTML = categories.map((cat, index) => `
+            <tr>
+                <td style="text-align: center;">${index + 1}</td>
+                <td style="text-align: center;"><span class="id-badge">#${cat.id}</span></td>
+                <td style="padding-left: 50px"><strong style="color:var(--teal-dark)">${cat.categoryName}</strong></td>
+                <td style="text-align: center;">
+                    ${cat.totalLessons || 0} bài
+                </td>
+                <td style="text-align: center;">
+                    <span class="level-badge">${cat.jlptLevel || 'N5'}</span>
+                </td>
+                <td style="text-align: center;">
+                    <button class="btn-action btn-edit me-1" title="Sửa chủ đề" onclick="editCategory(${cat.id})"><i class="fas fa-edit"></i></button>
+                    <button class="btn-action btn-trash" title="Xóa" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`).join('');
+    } catch (e) {
+        console.error('Category error:', e);
+        document.getElementById('categoryTableBody').innerHTML = `<tr><td colspan="5" class="text-center text-danger">Lỗi nạp dữ liệu</td></tr>`;
+    }
+}
+
+    function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('overlay');
+    sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+}
+
+
+    // 1. Mở Modal
+function openAddCategoryModal() {
+    // Reset form trước khi mở
+    document.getElementById('categoryForm').reset();
+    // Sử dụng instance của Bootstrap 5 để hiện modal
+    const myModal = new bootstrap.Modal(document.getElementById('categoryModal'));
+    myModal.show();
+}
+
+// 2. Gửi dữ liệu về Backend
+async function submitCategory() {
+    const name = document.getElementById('catName').value.trim();
+    const level = document.getElementById('catLevel').value;
+    const token = localStorage.getItem('token');
+
+    if (!name) {
+        Swal.fire('Lỗi', 'Vui lòng nhập tên chủ đề!', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/admin/categories', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                categoryName: name,
+                jlptLevel: level
+            })
+        });
+
+        if (response.ok) {
+            // Đóng modal
+            bootstrap.Modal.getInstance(document.getElementById('categoryModal')).hide();
+
+            // Thông báo thành công
+            Swal.fire({
+                icon: 'success',
+                title: 'Đã thêm chủ đề!',
+                showConfirmButton: false,
+                timer: 1500
+            });
+
+            // Tải lại danh sách Chủ đề để cập nhật bảng
+            loadAllCategories(token);
+        } else {
+            const err = await response.json();
+            Swal.fire('Lỗi', err.message || 'Không thể thêm chủ đề', 'error');
+        }
+    } catch (error) {
+        console.error('Submit category error:', error);
+        Swal.fire('Lỗi', 'Kết nối server thất bại', 'error');
+    }
+}
+
+
+    // 1. Load danh sách bài học
+async function loadAllLessons(token) {
+    try {
+        const res = await fetch('/api/admin/lessons', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (!res.ok) {
+            console.error('Lỗi HTTP:', res.status);
+            document.getElementById('lessonTableBody').innerHTML =
+                `<tr><td colspan="6" class="text-center text-danger">Lỗi ${res.status}: Không có quyền truy cập</td></tr>`;
+            return;
+        }
+        const lessons = await res.json();
+        const tbody = document.getElementById('lessonTableBody');
+
+        if (lessons.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">Chưa có bài học nào</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = lessons.map((les, index) => `
+            <tr>
+                <td style="text-align: center;">${index + 1}</td>
+                <td style="text-align: center;"><span class="id-badge">#${les.id}</span></td>
+                <td><strong>${les.lessonName}</strong></td>
+                <td><span class="level-badge">${les.categoryName || 'Chưa phân loại'}</span></td>
+                <td style="text-align: center;">${les.totalVocab || 0} từ</td>
+                <td style="text-align: center;">
+                    <button class="btn-action btn-edit me-1" onclick="editLesson(${les.id})"><i class="fas fa-edit"></i></button>
+                    <button class="btn-action btn-trash" onclick="deleteLesson(${les.id})"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`).join('');
+    } catch (e) {
+        console.error(e);
+        document.getElementById('lessonTableBody').innerHTML = `<tr><td colspan="6" class="text-center text-danger">Lỗi tải dữ liệu</td></tr>`;
+    }
+}
+
+// 2. Mở Modal và load Chủ đề vào select
+async function openAddLessonModal() {
+    const token = localStorage.getItem('token');
+    document.getElementById('lessonForm').reset();
+
+    // Load Chủ đề để chọn
+    try {
+        const res = await fetch('/api/admin/categories', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const categories = await res.json();
+        const select = document.getElementById('lessonCategorySelect');
+        select.innerHTML = categories.map(c => `<option value="${c.id}">${c.categoryName} (${c.jlptLevel})</option>`).join('');
+
+        const myModal = new bootstrap.Modal(document.getElementById('lessonModal'));
+        myModal.show();
+    } catch (e) {
+        Swal.fire('Lỗi', 'Không thể tải danh sách chủ đề', 'error');
+    }
+}
+
+// 3. Submit bài học mới
+async function submitLesson() {
+    const name = document.getElementById('lessonName').value.trim();
+    const catId = document.getElementById('lessonCategorySelect').value;
+    const token = localStorage.getItem('token');
+
+    if (!name) return Swal.fire('Lỗi', 'Tên bài học không được để trống', 'error');
+
+    try {
+        const res = await fetch('/api/admin/lessons', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ lessonName: name, categoryId: catId })
+        });
+
+        if (res.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('lessonModal')).hide();
+            Swal.fire('Thành công', 'Đã thêm bài học mới', 'success');
+            loadAllLessons(token);
+        }
+    } catch (e) {
+        Swal.fire('Lỗi', 'Kết nối server thất bại', 'error');
+    }
+}
+
+
+    async function loadVocabWithPagination(page) {
+    const token = localStorage.getItem('token');
+    const search = document.getElementById('vocabSearch')?.value || "";
+
+    try {
+        const res = await fetch(`/api/admin/vocab/all?page=${page}&size=10&search=${search}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json(); // data lúc này là một Page object từ Spring
+
+        const tbody = document.getElementById('vocabTableBody');
+        tbody.innerHTML = data.content.map((v, index) => `
+            <tr>
+                <td style="text-align:center;">${(page * 10) + index + 1}</td>
+                <td><strong>${v.expression}</strong></td>
+                <td>${v.kana}</td>
+                <td>${v.meaning}</td>
+                <td><span class="level-badge">${v.wordType || 'N/A'}</span></td>
+                <td style="text-align:center;">
+                    <button class="btn-action btn-edit me-1"><i class="fas fa-edit"></i></button>
+                    <button class="btn-action btn-trash"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`).join('');
+
+        // Vẽ nút phân trang
+        renderPagination(data.totalPages, data.number);
+    } catch (e) { console.error(e); }
+}
+
+function renderPagination(totalPages, currentPage) {
+    const container = document.getElementById('vocabPagination');
+    let html = '';
+    for (let i = 0; i < totalPages; i++) {
+        html += `<button class="btn-action ${i === currentPage ? 'btn-teal' : ''}"
+                 onclick="loadVocabWithPagination(${i})" style="margin:0 2px; width:30px;">${i + 1}</button>`;
+    }
+    container.innerHTML = html;
+}
+
 
     function logout() {
         Swal.fire({
-            title: 'Xác nhận đăng xuất',
-            text: "Bạn có chắc chắn muốn thoát khỏi phiên làm việc?",
+            title: 'Đăng xuất?',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#181d38',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Đăng xuất ngay',
-            cancelButtonText: 'Hủy'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                localStorage.clear();
-                location.href = '/';
-            }
+            cancelButtonColor: '#06BBCC',
+            cancelButtonText: 'Hủy',
+            confirmButtonColor: '#fb873f',
+            confirmButtonText: 'Đồng ý'
+        }).then(res => {
+            if (res.isConfirmed) { localStorage.clear(); location.href = '/login'; }
         });
     }
 </script>

@@ -10,13 +10,15 @@ public class JwtResponse {
     private String userName;
     private String fullname;
     private String role;
+    private String avatar;
 
     // Constructor để tạo nhanh đối tượng trả về
-    public JwtResponse(String accessToken, Integer id, String userName, String fullname, String role) {
+    public JwtResponse(String accessToken, Integer id, String userName, String fullname, String role, String avatar) {
         this.token = accessToken;
         this.id = id;
         this.userName = userName;
         this.fullname = fullname;
         this.role = role;
+        this.avatar = avatar;
     }
 }

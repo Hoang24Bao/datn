@@ -39,7 +39,8 @@ public class AuthController {
                     user.getId(),
                     user.getUserName(),
                     user.getFullname(),
-                    roleName // Trả về String cho Frontend nhận diện
+                    roleName,
+                    user.getAvatarUrl()
             ));
         } catch (Exception e) {
             return ResponseEntity.status(401).body(e.getMessage());

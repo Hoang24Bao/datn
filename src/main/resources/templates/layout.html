@@ -165,25 +165,39 @@
     const userSection = document.getElementById('user-menu-section');
 
     if (token && username) {
+        const avatarUrl = localStorage.getItem('avatarUrl');
+        const avatarPath = avatarUrl ? `img/avatar/${avatarUrl}` : `img/avatar/men.jpg`;
         // Nếu đã login thành công
         userSection.innerHTML = `
-            <div class="nav-item dropdown">
-                <a href="#" class="nav-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown">
-                    <div class="user-avatar-sm me-2">
-                        <i class="fa fa-user-circle fs-4"></i>
-                    </div>
-                    <span class="fw-bold">${fullname}</span>
-                </a>
-                <div class="dropdown-menu dropdown-menu-end fade-down m-0 shadow-sm border-0">
-                    <a href="/profile" class="dropdown-item"><i class="fa fa-id-card me-2"></i>Hồ sơ</a>
-                    <a href="/study/history" class="dropdown-item"><i class="fa fa-history me-2"></i>Lịch sử học</a>
-                    <div class="dropdown-divider"></div>
-                    <a href="#" id="btnLogout" class="dropdown-item text-danger">
-                        <i class="fa fa-sign-out-alt me-2"></i>Đăng xuất
-                    </a>
-                </div>
+    <div class="nav-item dropdown h-100 d-flex align-items-center">
+        <a href="javascript:void(0);" class="nav-link dropdown-toggle d-flex align-items-center py-0" style="height: 100%;">
+            <div class="d-flex align-items-center">
+                <img src="${avatarPath}"
+                     class="rounded-circle"
+                     width="36" height="36"
+                     style="object-fit: cover;
+                            border: 2px solid #fff;
+                            box-shadow: 0 0 0 1px #ddd;
+                            background-color: #fff;
+                            padding: 1px;"
+                     onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(fullname)}&background=06BBCC&color=fff'">
             </div>
-        `;
+            <span class="fw-bold text-dark ms-2" style="font-size: 18px; white-space: nowrap;">${fullname}</span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-end fade-down m-0 shadow-sm border-0">
+            <a href="/profile" class="dropdown-item"><i class="fa fa-id-card me-2"></i>Hồ sơ</a>
+            <a href="/study/history" class="dropdown-item"><i class="fa fa-history me-2"></i>Lịch sử học</a>
+            <li><a class="dropdown-item py-2" href="/settings"><i class="fa fa-cog me-2 text-secondary"></i>Cài đặt</a></li>
+            <div class="dropdown-divider"></div>
+            <a href="#" id="btnLogout" class="dropdown-item text-danger">
+                <i class="fa fa-sign-out-alt me-2"></i>Đăng xuất
+            </a>
+        </div>
+    </div>
+`;
+
+
+
 
         // Xử lý sự kiện Đăng xuất trong layout.html
     document.addEventListener('click', function(e) {
