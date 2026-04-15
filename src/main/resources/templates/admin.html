@@ -26,9 +26,10 @@
             <div class="nav-icon"><i class="fas fa-user-friends"></i></div>
             <span class="nav-label">Người dùng</span>
         </button>
+    </nav>
 
-        <div class="sidebar-section-label" style="padding-left:0; padding-top:16px;">Nội dung</div>
-
+    <div class="sidebar-section-label">Nội dung</div>
+    <nav class="sidebar-nav">
         <button class="nav-item" onclick="loadSection('categories', this, event)">
             <div class="nav-icon"><i class="fas fa-th-large"></i></div>
             <span class="nav-label">Chủ đề</span>
@@ -74,12 +75,17 @@
                         <p id="adminName">Admin</p>
                         <span>Trực tuyến</span>
                     </div>
-                    <i class="fas fa-chevron-down" style="font-size: 11px; color: var(--text-muted); margin-left: 4px;"></i>
+                    <i class="fas fa-chevron-down"
+                       style="font-size: 11px; color: var(--text-muted); margin-left: 4px;"></i>
                 </div>
                 <ul class="dropdown-menu dropdown-menu-end mt-3">
-                    <li><a class="dropdown-item" href="/profile"><i class="fa fa-id-card me-2 text-primary"></i>Hồ sơ</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger fw-bold" href="#" onclick="logout()"><i class="fa fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                    <li><a class="dropdown-item" href="/profile"><i class="fa fa-id-card me-2 text-primary"></i>Hồ
+                        sơ</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item text-danger fw-bold" href="#" onclick="logout()"><i
+                            class="fa fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
                 </ul>
             </div>
         </div>
@@ -88,11 +94,11 @@
     <main class="content" id="main-content">
     </main>
 </div>
-
-
-<div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
+<!--aria-hidden="true"-->
+<div class="modal fade" id="categoryModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 15px 50px rgba(0,0,0,0.2);">
+        <div class="modal-content"
+             style="border-radius: 20px; border: none; box-shadow: 0 15px 50px rgba(0,0,0,0.2);">
             <div class="modal-header" style="border-bottom: 1px solid #eee; padding: 20px 25px;">
                 <h5 class="modal-title" style="font-weight: 700; color: var(--text-dark);">
                     <i class="fas fa-folder-plus me-2" style="color: var(--teal);"></i>Thêm chủ đề mới
@@ -101,14 +107,46 @@
             </div>
             <div class="modal-body" style="padding: 25px;">
                 <form id="categoryForm">
-                    <div class="mb-4">
+                    <div class="mb-3">
                         <label class="form-label" style="font-weight: 600; font-size: 14px;">Tên chủ đề</label>
-                        <input type="text" id="catName" class="form-control" placeholder="Ví dụ: Gia đình, Động vật..."
+                        <input type="text" id="catName" class="form-control"
+                               placeholder="Ví dụ: Gia đình, Động vật..."
                                style="border-radius: 10px; padding: 12px; border: 1px solid #ddd;" required>
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 14px;">Avatar</label>
+
+                        <div class="input-group">
+                                <span class="input-group-text"
+                                      style="border-radius: 10px 0 0 10px; background: #f8f9fa;">
+                                    <i class="fas fa-image"></i>
+                                </span>
+                            <input type="text" id="catIconUrl" class="form-control" placeholder="Chưa chọn ảnh..."
+                                   readonly style="cusor: default; padding: 12px; border: 1px solid #ddd;">
+
+                            <button class="btn btn-orange" type="button"
+                                    onclick="document.getElementById('fileInput').click()"
+                                    style="border-radius: 0 10px 10px 0; color: white; font-weight: 600;">
+                                <i class="fas fa-upload me-1"></i> Chọn ảnh
+                            </button>
+                            <input type="file" id="fileInput" style="display: none;" accept="image/*"
+                                   onchange="handleFileSelect(this)">
+                        </div>
+
+                        <div id="iconPreview" class="mb-3 text-center" style="display:none;">
+                            <div style="position: relative; display: inline-block;">
+                                <img src="" id="previewImg"
+                                     style="width: 200px; height: 200px; object-fit: cover; border-radius: 15px; padding: 5px; background: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="mb-2">
                         <label class="form-label" style="font-weight: 600; font-size: 14px;">Cấp độ JLPT</label>
-                        <select id="catLevel" class="form-select" style="border-radius: 10px; padding: 12px; border: 1px solid #ddd;">
+                        <select id="catLevel" class="form-select"
+                                style="border-radius: 10px; padding: 12px; border: 1px solid #ddd;">
                             <option value="N5">N5 (Cơ bản)</option>
                             <option value="N4">N4 (Sơ cấp)</option>
                             <option value="N3">N3 (Trung cấp)</option>
@@ -119,8 +157,10 @@
                 </form>
             </div>
             <div class="modal-footer" style="border-top: none; padding: 0 25px 25px;">
-                <button type="button" class="btn-custom btn-teal" data-bs-dismiss="modal" style="font-weight: 600; color: #fff;">Hủy</button>
-                <button type="button" class="btn-custom btn-orange"  onclick="submitCategory()">
+                <button type="button" class="btn-custom btn-red" data-bs-dismiss="modal"
+                        style="font-weight: 600; color: #fff;">Hủy
+                </button>
+                <button type="button" class="btn-custom btn-teal" onclick="submitCategory()">
                     <i class="fas fa-save me-2"></i>Lưu chủ đề
                 </button>
             </div>
@@ -128,10 +168,10 @@
     </div>
 </div>
 
-
 <div class="modal fade" id="lessonModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 15px 50px rgba(0,0,0,0.2);">
+        <div class="modal-content"
+             style="border-radius: 20px; border: none; box-shadow: 0 15px 50px rgba(0,0,0,0.2);">
             <div class="modal-header" style="border-bottom: 1px solid #eee; padding: 20px 25px;">
                 <h5 class="modal-title" style="font-weight: 700; color: var(--text-dark);">
                     <i class="fas fa-book-open me-2" style="color: #06BBCC;"></i>Thêm bài học mới
@@ -147,14 +187,15 @@
                     </div>
                     <div class="mb-2">
                         <label class="form-label" style="font-weight: 600; font-size: 14px;">Chủ đề</label>
-                        <select id="lessonCategorySelect" class="form-select" style="border-radius: 10px; padding: 12px; border: 1px solid #ddd;">
+                        <select id="lessonCategorySelect" class="form-select"
+                                style="border-radius: 10px; padding: 12px; border: 1px solid #ddd;">
                         </select>
                     </div>
                 </form>
             </div>
             <div class="modal-footer" style="border-top: none; padding: 0 25px 25px;">
-                <button type="button" class="btn-custom btn-teal" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn-custom btn-orange" onclick="submitLesson()">
+                <button type="button" class="btn-custom btn-red" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn-custom btn-teal" onclick="submitLesson()">
                     <i class="fas fa-save me-2"></i>Lưu bài học
                 </button>
             </div>
@@ -163,28 +204,190 @@
 </div>
 
 
+<div class="modal fade" id="vocabModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px;">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="fas fa-spell-check me-2"
+                                                   style="color: var(--teal);"></i>Thêm
+                    từ vựng mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <form id="vocabForm">
+                    <div class="row">
+                        <div class="col-md-6 border-end">
+                            <div class="mb-3">
+                                <label class="form-label fw-600">Từ vựng (Kanji/Gốc)</label>
+                                <input type="text" id="vExpression" class="form-control" placeholder="VD: 食べる"
+                                       required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-600">Cách đọc (Kana)</label>
+                                <input type="text" id="vKana" class="form-control" placeholder="VD: たべる" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-600">Romaji</label>
+                                <input type="text" id="vRomaji" class="form-control" placeholder="VD: taberu">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-600">Ý nghĩa (Tiếng Việt)</label>
+                                <input type="text" id="vMeaning" class="form-control" placeholder="VD: Ăn" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-600">Loại từ</label>
+                                <select id="vWordType" class="form-select">
+                                    <option value="Danh từ">Danh từ</option>
+                                    <option value="Động từ">Động từ</option>
+                                    <option value="Tính từ">Tính từ</option>
+                                    <option value="Trạng từ">Trạng từ</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-600">Chọn Chủ đề</label>
+                                <select id="vCategoryId" class="form-select" onchange="onVocabCategoryChange()">
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-600">Chọn Bài học</label>
+                                <div id="lessonSelectContainer">
+                                    <select id="vLessonId" class="form-select" required
+                                            style="border: 2px solid var(--teal);">
+                                        <option value="">-- Chọn bài học --</option>
+                                    </select>
+                                </div>
+                                <div id="quickAddLessonContainer" class="mt-2" style="display: none;">
+                                    <p class="text-danger small mb-1"><i class="fas fa-exclamation-circle"></i> Chủ
+                                        đề
+                                        này chưa có bài học!</p>
+                                    <button type="button" class="btn btn-sm btn-outline-primary w-100"
+                                            onclick="openQuickAddLesson()">
+                                        <i class="fas fa-plus"></i> Tạo bài học mới cho chủ đề này
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-600">Câu ví dụ (Nhật)</label>
+                                <textarea id="vExample" class="form-control" rows="2"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-600">Dịch ví dụ (Việt)</label>
+                                <textarea id="vExampleVi" class="form-control" rows="2"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-600">URL Ảnh / Audio (Tùy chọn)</label>
+                                <input type="text" id="vImageUrl" class="form-control mb-2" placeholder="Link ảnh">
+                                <input type="text" id="vAudioUrl" class="form-control" placeholder="Link audio">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-custom btn-red" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn-custom btn-teal" onclick="submitVocab()">Lưu từ vựng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="userViewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <div class="modal-header"
+                 style="background-color: #f8f9fa; border-radius: 20px 20px 0 0; border-bottom: 1px solid #eee;">
+                <h5 class="modal-title fw-bold"><i class="fas fa-user-circle me-2" style="color: var(--teal);"></i>Chi
+                    tiết học viên</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <img id="viewUserAvatar" src="" class="rounded-circle shadow-sm"
+                         style="width: 100px; height: 100px; object-fit: cover; border: 4px solid #fff; background: #eee;">
+                    <h5 id="viewFullnameTitle" class="mt-3 fw-bold mb-1"></h5>
+                    <div id="viewUserStatusBadge"></div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="form-label small text-muted fw-bold">Mã học viên (ID)</label>
+                        <input type="text" id="viewId" class="form-control bg-light border-0"
+                               style="border-radius: 8px;" readonly>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small text-muted fw-bold">Tên đăng nhập</label>
+                        <input type="text" id="viewUsername" class="form-control bg-light border-0"
+                               style="border-radius: 8px;" readonly>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label small text-muted fw-bold">Địa chỉ Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i class="fas fa-envelope text-muted"></i></span>
+                            <input type="text" id="viewEmail" class="form-control bg-light border-0" readonly>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <label class="form-label small text-muted fw-bold">Trình độ JLPT</label>
+                        <input type="text" id="viewLevel" class="form-control bg-light border-0"
+                               style="border-radius: 8px;" readonly>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small text-muted fw-bold">Tổng điểm tích lũy</label>
+                        <input type="text" id="viewPoints" class="form-control bg-light border-0"
+                               style="border-radius: 8px; font-weight: bold; color: var(--teal);" readonly>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label small text-muted fw-bold">Ngày tham gia hệ thống</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i
+                                    class="fas fa-calendar-alt text-muted"></i></span>
+                            <input type="text" id="viewCreated" class="form-control bg-light border-0" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: none; padding-top: 0;">
+                <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal"
+                        style="border-radius: 10px; font-weight: 600;">Đóng thông tin
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script th:inline="javascript">
-    // HÀM TIỆN ÍCH: Xử lý đường dẫn ảnh thông minh & fix cache
+    // HÀM TIỆN ÍCH
     function getAvatarPath(url, fullname) {
         const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullname)}&background=06BBCC&color=fff`;
         if (!url) return defaultAvatar;
-
-        // Tránh lặp lại img/avatar/ nếu url đã có sẵn path
         let path = (url.startsWith('img/') || url.startsWith('http')) ? url : `img/avatar/${url}`;
-        return `${path}?v=${new Date().getTime()}`; // Fix cache ảnh
+        return `${path}?v=${new Date().getTime()}`;
+    }
+
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('overlay');
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
     }
 
     const dashboardTemplate = `
-        <div class="breadcrumb-bar">
+    <div class="breadcrumb-bar">
         <div class="chip active"><i class="fas fa-chart-pie" style="margin-right:5px; font-size:10px;"></i>Thống kê</div>
         <span class="sep">›</span><div class="chip">Dashboard</div>
     </div>
-        <div class="stats-grid"> <div class="stat-card teal">
+    <div class="stats-grid">
+        <div class="stat-card teal">
             <div class="stat-top"><div class="stat-icon teal"><i class="fas fa-users"></i></div></div>
             <div class="stat-value" id="totalUsers">0</div><div class="stat-label">Tổng Học Viên</div>
         </div>
@@ -201,28 +404,28 @@
             <div class="stat-value" id="totalVocab">0</div><div class="stat-label">Kho Từ Vựng</div>
         </div>
     </div>
-        <div class="table-section">
-            <div class="table-header">
-                <div class="table-header-left"><h4>Học viên mới tham gia</h4><p>Đăng ký trong 7 ngày qua</p></div>
-                <button class="btn-home" onclick="navigateToUsers()">Xem tất cả <i class="fas fa-arrow-right"></i></button>
-            </div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 40px; text-align: center;">STT</th>
-                            <th style="width: 70px; text-align: center;">ID</th>
-                            <th style="padding-left: 30px">Học viên</th>
-                            <th>Email</th>
-                            <th>Cấp độ</th>
-                            <th>Trạng thái</th>
-                        </tr>
-                    </thead>
-                    <tbody id="userTableBody"></tbody>
-                </table>
-            </div>
+    <div class="table-section">
+        <div class="table-header">
+            <div class="table-header-left"><h4>Học viên mới tham gia</h4><p>Đăng ký trong 7 ngày qua</p></div>
+            <button class="btn-home" onclick="navigateToUsers()">Xem tất cả <i class="fas fa-arrow-right"></i></button>
         </div>
-    `;
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 40px; text-align: center;">STT</th>
+                        <th style="width: 70px; text-align: center;">ID</th>
+                        <th style="padding-left: 30px">Học viên</th>
+                        <th>Email</th>
+                        <th>Cấp độ</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+`;
 
     window.onload = function () {
         const role = localStorage.getItem('role');
@@ -230,7 +433,10 @@
         const fullname = localStorage.getItem('fullname') || 'Admin';
         const avatarUrl = localStorage.getItem('avatarUrl');
 
-        if (role !== 'ROLE_ADMIN' || !token) { location.href = '/login'; return; }
+        if (role !== 'ROLE_ADMIN' || !token) {
+            location.href = '/login';
+            return;
+        }
 
         document.getElementById('adminName').innerText = fullname;
         document.getElementById('sidebarAdminName').innerText = fullname;
@@ -239,16 +445,12 @@
         const topbarImg = document.getElementById('adminAvatar');
         const finalPath = getAvatarPath(avatarUrl, fullname);
 
-        // --- LOGIC KHÔI PHỤC TAB ---
-        const savedTab = localStorage.getItem('activeAdminTab') || 'dashboard';
-
-        // Tìm nút tương ứng với tab đã lưu
-        const targetBtn = document.querySelector(`button[onclick*="'${savedTab}'"]`);
-
         sidebarImg.src = finalPath;
         topbarImg.src = finalPath;
 
-        // KIỂM TRA: Nếu tìm thấy nút đã lưu thì load nút đó, không thì mới load dashboard
+        const savedTab = localStorage.getItem('activeAdminTab') || 'dashboard';
+        const targetBtn = document.querySelector(`button[onclick*="'${savedTab}'"]`);
+
         if (targetBtn) {
             loadSection(savedTab, targetBtn);
         } else {
@@ -259,13 +461,11 @@
 
     function loadSection(section, element, event) {
         if (event) event.preventDefault();
-
         localStorage.setItem('activeAdminTab', section);
 
-        // Đóng sidebar nếu đang ở chế độ mobile
-    if (window.innerWidth <= 992) {
-        toggleSidebar();
-    }
+        if (window.innerWidth <= 992) {
+            toggleSidebar();
+        }
         const mainContent = document.getElementById('main-content');
         const mainTitle = document.getElementById('page-main-title');
         const token = localStorage.getItem('token');
@@ -274,7 +474,6 @@
         element.classList.add('active');
 
         switch (section) {
-            //Tổng Quan
             case 'dashboard':
                 mainTitle.innerText = "Dashboard Tổng Quan";
                 mainContent.innerHTML = dashboardTemplate;
@@ -282,153 +481,210 @@
                 loadLatestUsers(token);
                 break;
 
-            //Người Dùng
             case 'users':
-    mainTitle.innerText = "Quản Lý Người Dùng";
-    mainContent.innerHTML = `
-        <div class="breadcrumb-bar"><div class="chip active">Người dùng</div></div>
-        <div class="table-section">
-            <div class="table-header"><h5>Danh sách tất cả học viên</h5></div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 40px; text-align: center;">STT</th>
-                            <th style="width: 70px; text-align: center;">ID</th>
-                            <th style="padding-left: 30px">Học viên</th>
-                            <th>Email</th>
-                            <th>Cấp độ</th>
-                            <th>Trạng thái</th>
-                            <th style="width: 120px; text-align: center;">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="fullUserTable"></tbody>
-                </table>
-            </div>
-        </div>`;
-    loadAllUsers(token);
-    break;
-
-            //Chủ đề
-            case 'categories':
-    mainTitle.innerText = "Quản Lý Chủ đề";
-    mainContent.innerHTML = `
-        <div class="breadcrumb-bar">
-            <div class="chip active">Chủ đề</div>
-            <span class="sep">›</span><div class="chip">Chủ đề từ vựng</div>
-        </div>
-        <div class="table-section">
-            <div class="table-header">
-                <div class="table-header-left">
-                    <h4>Danh sách chủ đề</h5>
+                mainTitle.innerText = "Quản Lý Người Dùng";
+                mainContent.innerHTML = `
+                <div class="table-section table-users">
+                    <div class="table-header">
+                    <div class="table-header-left">
+                <div class="search-box" style="display:flex; gap:10px; flex-wrap: wrap;">
+                    <select id="userFilterLevel" class="form-select" style="width:130px; border-radius:10px;" onchange="loadAllUsersWithFilter(0)">
+                        <option value="">Cấp độ	</option>
+                        <option value="1">N5</option>
+                        <option value="2">N4</option>
+                        <option value="3">N3</option>
+                        <option value="4">N2</option>
+                        <option value="5">N1</option>
+                    </select>
+                    <select id="userFilterStatus" class="form-select" style="width:160px; border-radius:10px;" onchange="loadAllUsersWithFilter(0)">
+                        <option value="">Trạng thái</option>
+                        <option value="true">Hoạt động</option>
+                        <option value="false">Bị khóa</option>
+                    </select>
+                    <select id="userFilterTime" class="form-select" style="width:150px; border-radius:10px;" onchange="loadAllUsersWithFilter(0)">
+                        <option value="all">Mọi lúc</option>
+                        <option value="24h">24 giờ qua</option>
+                        <option value="week">Tuần này</option>
+                        <option value="month">Tháng này</option>
+                        <option value="3months">3 tháng qua</option>
+                        <option value="6months">6 tháng qua</option>
+                    </select>
+                    <input type="text" id="userSearch" class="form-control"
+                           placeholder="Tìm tên, username, email..."
+                           style="width:280px; border-radius:10px;"
+                           oninput="loadAllUsersWithFilter(0)">
                 </div>
-                <button class="btn-home" style="font-size:15px;" onclick="openAddCategoryModal()">
-                    <i class="fas fa-plus" style="margin-right:5px"></i> Thêm chủ đề
-                </button>
             </div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 40px; text-align: center;">STT</th>
-                            <th style="width: 70px; text-align: center;">ID</th>
-                            <th style="padding-left: 50px">Tên chủ đề</th>
-                            <th style="text-align: center;">Tổng bài học</th>
-                            <th style="text-align: center;">Cấp độ</th>
-                            <th style="width: 150px; text-align: center;">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="categoryTableBody">
-                        <tr><td colspan="5" class="text-center py-5">Đang tải dữ liệu...</td></tr>
-                    </tbody>
-                </table>
+            <div class="table-header-right">
+                 <span class="status-pill count-pill" style="font-size: 16px; gap:0px;" id="userCountBadge">Đang tải...</span>
             </div>
-        </div>`;
-    loadAllCategories(token);
-    break;
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>ID</th>
+                                    <th style="padding-left: 30px">Học viên</th>
+                                    <th>Email</th>
+                                    <th style="width: 10%; text-align: center;">Cấp độ</th>
+                                    <th style="width: 16%;">Trạng thái</th>
+                                    <th style="width: 140px; text-align: center;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fullUserTable"></tbody>
+                        </table>
+                    </div>
+                                        <div class="pagination-wrapper mt-4">
+            <div class="pagination-left" id="paginationInfo">
+                Đang tải...
+            </div>
+            <div class="pagination-center" id="userPagination">
+                </div>
+            <div class="pagination-right">
+                <span class="pagination-jump-label">Đi đến trang:</span>
+                <input type="number" id="jumpPageInput" min="1" class="form-control pagination-input" placeholder="...">
+                <button class="btn-go" onclick="jumpToUserPage()">Đi</button>
+            </div>
+        </div>
+                </div>`;
+                loadAllUsersWithFilter(0);
+                break;
 
+            case 'categories':
+                mainTitle.innerText = "Quản Lý Chủ đề";
+                mainContent.innerHTML = `
+                <div class="breadcrumb-bar">
+                    <div class="chip active">Chủ đề</div>
+                    <span class="sep">›</span><div class="chip">Chủ đề từ vựng</div>
+                </div>
+                <div class="table-section">
+                    <div class="table-header">
+                        <div class="table-header-left">
+                            <h4>Danh sách chủ đề</h4>
+                        </div>
+                        <button class="btn-home" style="font-size:15px;" onclick="openAddCategoryModal()">
+                            <i class="fas fa-plus" style="margin-right:5px"></i> Thêm chủ đề
+                        </button>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>ID</th>
+                                    <th style="width:40%; padding-left: 40px;">Tên chủ đề</th>
+                                    <th style="width: 15%;">Tổng bài học</th>
+                                    <th style="width: 15%; text-align: center;">Cấp độ</th>
+                                    <th style="width: 150px; text-align: center;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="categoryTableBody">
+                                <tr><td colspan="5" class="text-center py-5">Đang tải dữ liệu...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
+                loadAllCategories(token);
+                break;
 
             case 'lessons':
-    mainTitle.innerText = "Quản Lý Bài Học";
-    mainContent.innerHTML = `
-        <div class="breadcrumb-bar">
-            <div class="chip active">Nội dung</div>
-            <span class="sep">›</span><div class="chip">Bài học</div>
-        </div>
-        <div class="table-section">
-            <div class="table-header">
-                <div class="table-header-left">
-                    <h4>Danh sách bài học</h5>
-                    <p>Quản lý các bài học thuộc từng chủ đề</p>
+                mainTitle.innerText = "Quản Lý Bài Học";
+                mainContent.innerHTML = `
+                <div class="breadcrumb-bar">
+                    <div class="chip active">Nội dung</div>
+                    <span class="sep">›</span><div class="chip">Bài học</div>
                 </div>
-                <button class="btn-home" style="font-size:15px;" onclick="openAddLessonModal()">
-                    <i class="fas fa-plus" style="margin-right:5px"></i> Thêm bài học
-                </button>
-            </div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 40px; text-align: center;">STT</th>
-                            <th style="width: 70px; text-align: center;">ID</th>
-                            <th style="width: 25%;">Bài học</th>
-                            <th style="width: 45%;">Chủ đề</th>
-                            <th style="width: 1%; white-space: nowrap; text-align: center;">Số từ</th>
-                            <th style="width: 120px; text-align: center;">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lessonTableBody">
-                        <tr><td colspan="6" class="text-center py-5">Đang tải bài học...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>`;
-    loadAllLessons(token);
-    break;
+                <div class="table-section">
+                    <div class="table-header">
+                        <div class="table-header-left">
+                            <h4>Danh sách bài học</h4>
+                            <p>Quản lý các bài học thuộc từng chủ đề</p>
+                        </div>
+                        <button class="btn-home" style="font-size:15px;" onclick="openAddLessonModal()">
+                            <i class="fas fa-plus" style="margin-right:5px"></i> Thêm bài học
+                        </button>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px; text-align: center;">STT</th>
+                                    <th style="width: 70px; text-align: center;">ID</th>
+                                    <th style="width: 15%;">Bài học</th>
+                                    <th style="width: 35%;">Chủ đề</th>
+                                    <th style="width: 20%; text-align: center; white-space: nowrap;">Số từ</th>
+                                    <th style="width: 120px; text-align: center;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lessonTableBody">
+                                <tr><td colspan="6" class="text-center py-5">Đang tải bài học...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
+                loadAllLessons(token);
+                break;
 
             case 'vocabulary':
-    mainTitle.innerText = "Quản Lý Từ Vựng";
-    mainContent.innerHTML = `
-        <div class="breadcrumb-bar">
-            <div class="chip active">Nội dung</div>
-            <span class="sep">›</span><div class="chip">Kho từ vựng</div>
-        </div>
-        <div class="table-section">
-            <div class="table-header">
-                <div class="table-header-left">
-                    <div class="search-box" style="display:flex; gap:10px;">
-                        <input type="text" id="vocabSearch" class="form-control" placeholder="Tìm kiếm từ vựng..." style="width:250px; border-radius:10px;">
-                        <select id="filterLesson" class="form-select" style="width:200px; border-radius:10px;">
-                            <option value="">Tất cả bài học</option>
-                        </select>
+                mainTitle.innerText = "Quản Lý Từ Vựng";
+                mainContent.innerHTML = `
+                <div class="table-section table-vocab">
+                    <div class="table-header">
+                        <div class="table-header-left">
+                            <div class="search-box" style="display:flex; gap:10px; flex-wrap: wrap;">
+                                <select id="filterLevel" class="form-select" style="width:130px; border-radius:10px;" onchange="updateCategoryFilter()">
+                                    <option value="">Cấp độ</option>
+                                    <option value="N5">N5</option>
+                                    <option value="N4">N4</option>
+                                    <option value="N3">N3</option>
+                                    <option value="N2">N2</option>
+                                    <option value="N1">N1</option>
+                                </select>
+                                <select id="filterCate" class="form-select" style="width:200px; border-radius:10px;" onchange="loadVocabWithPagination(0)">
+                                    <option value="">Tất cả chủ đề</option>
+                                </select>
+                                <input type="text" id="vocabSearch" class="form-control" placeholder="Tìm kiếm từ vựng..." style="width:250px; border-radius:10px;" oninput="loadVocabWithPagination(0)">
+                            </div>
+                        </div>
+                        <button class="btn-home" style="font-size:15px;" onclick="openAddVocabModal()">
+                            <i class="fas fa-plus" style="margin-right:5px"></i> Thêm từ vựng
+                        </button>
                     </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>ID</th>
+                                    <th style="width: 16%;">Từ vựng</th>
+                                    <th style="width: 18%;">Kana</th>
+                                    <th style="width: 12%;">Romaji</th>
+                                    <th>Ý nghĩa</th>
+                                    <th style="width: 120px; text-align: center;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vocabTableBody">
+                                <tr><td colspan="8" class="text-center py-5">Đang tải dữ liệu...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-wrapper mt-4">
+            <div class="pagination-left" id="paginationInfo">
+                Đang tải...
+            </div>
+            <div class="pagination-center" id="vocabPagination">
                 </div>
-                <button class="btn-home" onclick="openAddVocabModal()">
-                    <i class="fas fa-plus"></i> Thêm từ vựng
-                </button>
+            <div class="pagination-right">
+                <span class="pagination-jump-label">Đi đến trang:</span>
+                <input type="number" id="jumpPageInput" min="1" class="form-control pagination-input" placeholder="...">
+                <button class="btn-go" onclick="jumpToPage()">Đi</button>
             </div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 50px; text-align: center;">STT</th>
-                            <th>Từ vựng (Kanji)</th>
-                            <th>Cách đọc (Kana)</th>
-                            <th>Ý nghĩa</th>
-                            <th>Loại từ</th>
-                            <th style="width: 150px; text-align: center;">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="vocabTableBody">
-                        <tr><td colspan="6" class="text-center py-5">Đang tải dữ liệu...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="pagination-container" style="display:flex; justify-content:center; padding: 20px;" id="vocabPagination">
-            </div>
-        </div>`;
-    loadVocabWithPagination(0); // Tải trang đầu tiên (index 0)
-    break;
+        </div>
+                </div>`;
+                loadVocabWithPagination(0);
+                updateCategoryFilter();
+                break;
 
             default:
                 mainTitle.innerText = "Quản lý nội dung";
@@ -447,13 +703,21 @@
         } catch (e) { console.error(e); }
     }
 
+    function getLevelName(levelId) {
+    if (levelId === 1) return 'N5';
+    if (levelId === 2) return 'N4';
+    if (levelId === 3) return 'N3';
+    if (levelId === 4) return 'N2';
+    if (levelId === 5) return 'N1';
+    return 'N5'; // Mặc định nếu chưa có
+}
+
     async function loadLatestUsers(token) {
         try {
             const res = await fetch('/api/admin/users/latest', { headers: { 'Authorization': 'Bearer ' + token } });
             let users = await res.json();
-            users.sort((a, b) => a.id - b.id);
             const tbody = document.getElementById('userTableBody');
-            tbody.innerHTML = users.map((user, index) => { // Thêm index ở đây
+            tbody.innerHTML = users.map((user, index) => {
                 const createdDate = new Date(user.created);
                 const today = new Date();
                 const d1 = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate());
@@ -462,60 +726,220 @@
                 let time = diff === 0 ? "Hôm nay" : (diff === 1 ? "Hôm qua" : `${diff} ngày trước`);
 
                 return `<tr>
-                    <td style="text-align: center;">${index + 1}</td>
-                    <td style="text-align: center;"><span class="id-badge">#${user.id}</span></td>
-                    <td><div class="user-cell"><img src="${getAvatarPath(user.avatarUrl, user.fullname)}">
-                        <div><div class="name">${user.fullname}</div><div class="joined" style="font-size: 11px;">${time}</div></div></div></td>
-                    <td>${user.email}</td>
-                    <td><span class="level-badge">${user.levelId || 'N5'}</span></td>
-                    <td><span class="status-pill ${user.active ? 'active-pill' : 'locked-pill'}">${user.active ? 'Hoạt động' : 'Bị khóa'}</span></td>
-                </tr>`;
+                <td>${index + 1}</td>
+                <td><span class="id-badge">#${user.id}</span></td>
+                <td><div class="user-cell"><img src="${getAvatarPath(user.avatarUrl, user.fullname)}">
+                    <div><div class="name">${user.fullname}</div><div class="joined" style="font-size: 11px;">${time}</div></div></div></td>
+                <td>${user.email}</td>
+                <td><span class="level-badge">${getLevelName(user.levelId)}</span></td>
+                <td><span class="status-pill ${user.active ? 'active-pill' : 'locked-pill'}">${user.active ? 'Hoạt động' : 'Bị khóa'}</span></td>
+            </tr>`;
             }).join('');
         } catch (e) { console.error(e); }
     }
 
-    async function loadAllUsers(token) {
-    try {
-        const res = await fetch('/api/admin/users/all-students', {
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
-        const users = await res.json();
+    let userTotalPagesGlobal = 0;
 
-        // Sắp xếp theo ID tăng dần
-        users.sort((a, b) => a.id - b.id);
+async function loadAllUsersWithFilter(page = 0) {
+    const token = localStorage.getItem('token');
+    const search = document.getElementById('userSearch')?.value || "";
+    const levelId = document.getElementById('userFilterLevel')?.value || "";
+    const active = document.getElementById('userFilterStatus')?.value || "";
+    const timeFilter = document.getElementById('userFilterTime')?.value || "";
+    const pageSize = 5;
+
+    try {
+        let url = `/api/admin/users/all-paging?page=${page}&size=${pageSize}&search=${encodeURIComponent(search)}&levelId=${levelId}&active=${active}&timeFilter=${timeFilter}`;
+
+        const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+        const data = await res.json();
 
         const tbody = document.getElementById('fullUserTable');
-        tbody.innerHTML = users.map((user, index) => {
-            // Render giao diện tương tự bảng ở Dashboard
+        const userSection = document.querySelector('.table-users');
+        const paginationContainer = document.getElementById('userPagination');
+        const paginationRight = userSection ? userSection.querySelector('.pagination-right') : null;
+        const infoContainer = document.getElementById('paginationInfo');
+
+        document.getElementById('userCountBadge').innerText = `Hiển thị: ${data.totalElements} người dùng`;
+
+        if (!data.content || data.content.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">Không tìm thấy học viên phù hợp</td></tr>`;
+
+            // Ẩn cả pagination-center và pagination-right khi không có dữ liệu
+            if (paginationContainer) paginationContainer.innerHTML = '';
+            if (paginationRight) paginationRight.style.display = 'none';
+            if (infoContainer) infoContainer.innerHTML = 'Trang 0 / 0';
+            return;
+        }
+
+        // Hiện lại pagination-right nếu có dữ liệu
+        if (paginationRight) paginationRight.style.display = 'flex';
+
+        tbody.innerHTML = data.content.map((user, index) => {
+            const isLocked = user.active === false;
             return `
-                <tr>
-                    <td style="text-align: center;">${index + 1}</td>
-                    <td style="text-align: center;"><span class="id-badge">#${user.id}</span></td>
-                    <td>
-                        <div class="user-cell">
-                            <img src="${getAvatarPath(user.avatarUrl, user.fullname)}">
+            <tr class="${isLocked ? 'row-hidden' : ''}">
+                <td style="text-align: center;">${(page * pageSize) + index + 1}</td>
+                <td style="text-align: center;"><span class="id-badge">#${user.id}</span></td>
+                <td>
+                    <div class="user-cell">
+                        <img src="${getAvatarPath(user.avatarUrl, user.fullname)}">
+                        <div>
                             <div class="name">${user.fullname}</div>
+                            <div class="small text-muted">@${user.userName}</div>
                         </div>
-                    </td>
-                    <td>${user.email}</td>
-                    <td><span class="level-badge">${user.levelId || 'N5'}</span></td>
-                    <td>
-                        <span class="status-pill ${user.active ? 'active-pill' : 'locked-pill'}">
-                            ${user.active ? 'Hoạt động' : 'Bị khóa'}
-                        </span>
-                    </td>
-                    <td style="text-align: center;">
-                        <button class="btn-action btn-edit me-1" title="Chỉnh sửa"><i class="fas fa-edit"></i></button>
-                        <button class="btn-action btn-trash" title="Xóa"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>`;
+                    </div>
+                </td>
+                <td>${user.email}</td>
+                <td style="text-align: center;"><span class="level-badge">${getLevelName(user.levelId)}</span></td>
+                <td style="white-space: nowrap; text-align: center;">
+                    <span class="status-pill ${user.active ? 'active-pill' : 'locked-pill'}">
+                        ${user.active ? 'Hoạt động' : 'Bị khóa'}
+                    </span>
+                </td>
+                <td style="text-align: center; white-space: nowrap;">
+                    <button class="btn-action btn-view me-1" title="Xem chi tiết" onclick="viewUser(${user.id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    ${isLocked
+                        ? `<button class="btn-action btn-restore" onclick="deleteUser(${user.id}, false)"><i class="fas fa-user-check"></i></button>`
+                        : `<button class="btn-action btn-trash" onclick="deleteUser(${user.id}, true)"><i class="fas fa-user-slash"></i></button>`
+                    }
+                </td>
+            </tr>`;
         }).join('');
+
+        renderUserPagination(data.totalPages, data.number);
     } catch (e) {
-        console.error(e);
-        document.getElementById('fullUserTable').innerHTML =
-            `<tr><td colspan="7" class="text-center text-danger">Lỗi tải dữ liệu người dùng</td></tr>`;
+        console.error("Lỗi tải người dùng:", e);
     }
 }
+
+// Hàm render phân trang riêng cho User (copy logic từ Vocab nhưng đổi tên hàm gọi)
+function renderUserPagination(totalPages, currentPage) {
+    userTotalPagesGlobal = totalPages;
+    const container = document.getElementById('userPagination');
+    const infoContainer = document.getElementById('paginationInfo');
+    const userSection = document.querySelector('.table-users');
+    const paginationRight = userSection ? userSection.querySelector('.pagination-right') : null;
+
+    if (totalPages <= 0) {
+        infoContainer.innerHTML = `<span class="pagination-label">Trang</span> <b class="pagination-number">0</b> / <b class="pagination-number">0</b>`;
+        if (container) container.innerHTML = '';
+        if (paginationRight) paginationRight.style.display = 'none';
+        return;
+    }
+
+    infoContainer.innerHTML = `<span class="pagination-label">Trang</span> <b class="pagination-number">${currentPage + 1}</b> / <b class="pagination-number">${totalPages}</b>`;
+
+    if (totalPages <= 1) {
+        if (container) container.innerHTML = '';
+        if (paginationRight) paginationRight.style.display = 'none';
+        return;
+    }
+
+    // Hiện pagination-right khi có nhiều hơn 1 trang
+    if (paginationRight) paginationRight.style.display = 'flex';
+
+    let html = '';
+    html += `<button class="pagination-btn" ${currentPage === 0 ? 'disabled' : ''} onclick="loadAllUsersWithFilter(0)"><i class="fas fa-angle-double-left"></i></button>`;
+    html += `<button class="pagination-btn" ${currentPage === 0 ? 'disabled' : ''} onclick="loadAllUsersWithFilter(${currentPage - 1})"><i class="fas fa-chevron-left"></i></button>`;
+
+    let start = Math.max(0, currentPage - 2);
+    let end = Math.min(totalPages - 1, start + 4);
+    if (end - start < 4) start = Math.max(0, end - 4);
+
+    for (let i = start; i <= end; i++) {
+        html += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="loadAllUsersWithFilter(${i})">${i + 1}</button>`;
+    }
+
+    html += `<button class="pagination-btn" ${currentPage === totalPages - 1 ? 'disabled' : ''} onclick="loadAllUsersWithFilter(${currentPage + 1})"><i class="fas fa-chevron-right"></i></button>`;
+    html += `<button class="pagination-btn" ${currentPage === totalPages - 1 ? 'disabled' : ''} onclick="loadAllUsersWithFilter(${totalPages - 1})"><i class="fas fa-angle-double-right"></i></button>`;
+
+    container.innerHTML = html;
+
+    document.getElementById('jumpPageInput').onkeydown = function(e) {
+        if (e.key === 'Enter') jumpToUserPage();
+    };
+}
+
+function jumpToUserPage() {
+    const input = document.getElementById('jumpPageInput');
+    const pageNum = parseInt(input.value);
+
+    // Lấy tổng số trang từ DOM thay vì dùng biến global
+    const infoContainer = document.getElementById('paginationInfo');
+    let totalPages = 0;
+
+    if (infoContainer) {
+        const text = infoContainer.innerText;
+        const match = text.match(/\/(\d+)$/);  // Lấy số sau dấu /
+        if (match) {
+            totalPages = parseInt(match[1]);
+        }
+    }
+
+    // Nếu không lấy được từ DOM, fallback sang biến global
+    if (totalPages === 0) {
+        totalPages = userTotalPagesGlobal;
+    }
+
+    if (isNaN(pageNum) || pageNum < 1 || pageNum > totalPages || totalPages === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Số trang không hợp lệ',
+            text: `Vui lòng nhập số từ 1 đến ${totalPages}`,
+            timer: 1500,
+            showConfirmButton: false
+        });
+        input.value = '';
+        return;
+    }
+    loadAllUsersWithFilter(pageNum - 1);
+    input.value = '';
+}
+
+    async function viewUser(id) {
+    const token = localStorage.getItem('token');
+    try {
+        const res = await fetch(`/api/admin/users/${id}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const user = await res.json();
+
+        // 1. Ảnh và tiêu đề
+        document.getElementById('viewUserAvatar').src = getAvatarPath(user.avatarUrl, user.fullname);
+        document.getElementById('viewFullnameTitle').innerText = user.fullname;
+
+        // 2. Tách ID và Username
+        document.getElementById('viewId').value = `#${user.id}`;
+        document.getElementById('viewUsername').value = user.userName;
+
+        // 3. Các thông tin khác
+        document.getElementById('viewEmail').value = user.email || 'Chưa cập nhật';
+        document.getElementById('viewLevel').value = getLevelName(user.levelId);
+        document.getElementById('viewPoints').value = `${user.totalPoints || 0} điểm`;
+
+        // 4. Định dạng ngày tháng (Ví dụ: 08/04/2026)
+        const date = new Date(user.created);
+        document.getElementById('viewCreated').value = date.toLocaleDateString('vi-VN');
+
+        // 5. Trạng thái Badge
+        const badgeContainer = document.getElementById('viewUserStatusBadge');
+        if (user.active) {
+            badgeContainer.innerHTML = '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Đang hoạt động</span>';
+        } else {
+            badgeContainer.innerHTML = '<span class="badge bg-danger"><i class="fas fa-lock me-1"></i>Đã bị khóa</span>';
+        }
+
+        // Mở Modal
+        new bootstrap.Modal(document.getElementById('userViewModal')).show();
+    } catch (e) {
+        console.error(e);
+        Swal.fire('Lỗi', 'Không thể lấy thông tin chi tiết học viên', 'error');
+    }
+}
+
 
     function navigateToUsers() {
         const btn = document.querySelectorAll('.nav-item')[1];
@@ -523,74 +947,85 @@
     }
 
     async function loadAllCategories(token) {
-    try {
-        const res = await fetch('/api/admin/categories', {
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
+        try {
+            const res = await fetch('/api/admin/categories', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!res.ok) return;
+            const categories = await res.json();
+            const tbody = document.getElementById('categoryTableBody');
+            if (categories.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-muted">Chưa có chủ đề nào</td></tr>`;
+                return;
+            }
+            categories.sort((a, b) => a.id - b.id);
+            tbody.innerHTML = categories.map((cat, index) => {
+                // Kiểm tra trạng thái ẩn/hiện
+                const isHidden = cat.isActive === false;
+                const rowClass = isHidden ? 'row-hidden' : '';
+                const statusBadge = isHidden
+                    ? '<span class="status-badge badge-hidden">Đã ẩn</span>'
+                    : '';
 
-        if (!res.ok) return;
-        const categories = await res.json();
-        const tbody = document.getElementById('categoryTableBody');
+                // Thay đổi nút Thùng rác thành Khôi phục nếu đã ẩn
+                const actionBtn = isHidden
+                    ? `<button class="btn-action btn-restore me-1" title="Khôi phục" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash-restore"></i></button>`
+                    : `<button class="btn-action btn-trash me-1" title="Ẩn" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash"></i></button>`;
+                return `
 
-        if (categories.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-muted">Chưa có chủ đề nào</td></tr>`;
-            return;
-        }
-
-        // Sắp xếp theo ID tăng dần
-        categories.sort((a, b) => a.id - b.id);
-
-        tbody.innerHTML = categories.map((cat, index) => `
-            <tr>
+            <tr class="${rowClass}">
                 <td style="text-align: center;">${index + 1}</td>
                 <td style="text-align: center;"><span class="id-badge">#${cat.id}</span></td>
-                <td style="padding-left: 50px"><strong style="color:var(--teal-dark)">${cat.categoryName}</strong></td>
-                <td style="text-align: center;">
-                    ${cat.totalLessons || 0} bài
+                <td style="padding-left: 40px;">
+                    <strong style="color:var(--teal-dark)">${cat.categoryName}</strong>
+                    <div class="mt-1">${statusBadge}</div>
                 </td>
+                <td style="text-align: center;">${cat.totalLessons || 0} bài</td>
+                <td style="text-align: center;"><span class="level-badge">${cat.jlptLevel || 'N5'}</span></td>
                 <td style="text-align: center;">
-                    <span class="level-badge">${cat.jlptLevel || 'N5'}</span>
+                    <button class="btn-action btn-edit me-1" title="Sửa" onclick="editCategory(${cat.id})"><i class="fas fa-edit"></i></button>
+                    ${actionBtn}
                 </td>
-                <td style="text-align: center;">
-                    <button class="btn-action btn-edit me-1" title="Sửa chủ đề" onclick="editCategory(${cat.id})"><i class="fas fa-edit"></i></button>
-                    <button class="btn-action btn-trash" title="Xóa" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>`).join('');
-    } catch (e) {
-        console.error('Category error:', e);
-        document.getElementById('categoryTableBody').innerHTML = `<tr><td colspan="5" class="text-center text-danger">Lỗi nạp dữ liệu</td></tr>`;
-    }
-}
-
-    function toggleSidebar() {
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.getElementById('overlay');
-    sidebar.classList.toggle('active');
-    overlay.classList.toggle('active');
-}
-
-
-    // 1. Mở Modal
-function openAddCategoryModal() {
-    // Reset form trước khi mở
-    document.getElementById('categoryForm').reset();
-    // Sử dụng instance của Bootstrap 5 để hiện modal
-    const myModal = new bootstrap.Modal(document.getElementById('categoryModal'));
-    myModal.show();
-}
-
-// 2. Gửi dữ liệu về Backend
-async function submitCategory() {
-    const name = document.getElementById('catName').value.trim();
-    const level = document.getElementById('catLevel').value;
-    const token = localStorage.getItem('token');
-
-    if (!name) {
-        Swal.fire('Lỗi', 'Vui lòng nhập tên chủ đề!', 'error');
-        return;
+            </tr>`;
+            }).join('');
+        } catch (e) {
+            console.error(e);
+            document.getElementById('categoryTableBody').innerHTML = `<tr><td colspan="5" class="text-center text-danger">Lỗi nạp dữ liệu</td></tr>`;
+        }
     }
 
-    try {
+    function openAddCategoryModal() {
+        document.getElementById('categoryForm').reset();
+        new bootstrap.Modal(document.getElementById('categoryModal')).show();
+    }
+
+    // Hiển thị ảnh xem trước khi nhập URL vào ô icon
+    document.getElementById('catIconUrl')?.addEventListener('input', function (e) {
+        const url = e.target.value;
+        const previewDiv = document.getElementById('iconPreview');
+        const previewImg = document.getElementById('previewImg');
+
+        if (url && url.trim() !== "") {
+            previewImg.src = url.startsWith('http') ? url : '/' + url;
+            previewDiv.style.display = 'block';
+        } else {
+            previewDiv.style.display = 'none';
+        }
+    });
+
+    async function submitCategory() {
+        const name = document.getElementById('catName').value.trim();
+        const level = document.getElementById('catLevel').value;
+        const iconUrl = document.getElementById('catIconUrl').value.trim();
+        const token = localStorage.getItem('token');
+
+
+
+        if (!name) {
+            return Swal.fire('Lỗi', 'Vui lòng nhập tên chủ đề!', 'error');
+        }
+
+try {
         const response = await fetch('/api/admin/categories', {
             method: 'POST',
             headers: {
@@ -599,161 +1034,545 @@ async function submitCategory() {
             },
             body: JSON.stringify({
                 categoryName: name,
-                jlptLevel: level
+                jlptLevel: level,
+                iconUrl: iconUrl,
+                is_active: 1, // Mặc định cho chủ đề mới
+                totalLessons: 0,
+                progress: 0
             })
         });
 
         if (response.ok) {
-            // Đóng modal
-            bootstrap.Modal.getInstance(document.getElementById('categoryModal')).hide();
+            // Đóng Modal bằng Bootstrap API
+            const modalElement = document.getElementById('categoryModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalElement);
+            if (modalInstance) modalInstance.hide();
 
             // Thông báo thành công
-            Swal.fire({
+            await Swal.fire({
                 icon: 'success',
-                title: 'Đã thêm chủ đề!',
+                title: 'Thành công!',
+                text: 'Chủ đề mới đã được lưu vào hệ thống.',
                 showConfirmButton: false,
                 timer: 1500
             });
 
-            // Tải lại danh sách Chủ đề để cập nhật bảng
+            // LÀM MỚI DỮ LIỆU: Gọi lại hàm load danh sách
             loadAllCategories(token);
         } else {
-            const err = await response.json();
-            Swal.fire('Lỗi', err.message || 'Không thể thêm chủ đề', 'error');
+            const errorText = await response.text();
+            Swal.fire('Thất bại', 'Lỗi: ' + errorText, 'error');
         }
     } catch (error) {
-        console.error('Submit category error:', error);
-        Swal.fire('Lỗi', 'Kết nối server thất bại', 'error');
+        console.error("Error submitting category:", error);
+        Swal.fire('Lỗi kết nối', 'Không thể kết nối tới máy chủ!', 'error');
     }
 }
 
-
-    // 1. Load danh sách bài học
-async function loadAllLessons(token) {
-    try {
-        const res = await fetch('/api/admin/lessons', {
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
-
-        if (!res.ok) {
-            console.error('Lỗi HTTP:', res.status);
-            document.getElementById('lessonTableBody').innerHTML =
-                `<tr><td colspan="6" class="text-center text-danger">Lỗi ${res.status}: Không có quyền truy cập</td></tr>`;
-            return;
-        }
-        const lessons = await res.json();
-        const tbody = document.getElementById('lessonTableBody');
-
-        if (lessons.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">Chưa có bài học nào</td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = lessons.map((les, index) => `
+    async function loadAllLessons(token) {
+        try {
+            const res = await fetch('/api/admin/lessons', { headers: { 'Authorization': 'Bearer ' + token } });
+            const lessons = await res.json();
+            const tbody = document.getElementById('lessonTableBody');
+            if (lessons.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">Chưa có bài học nào</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = lessons.map((les, index) => `
             <tr>
                 <td style="text-align: center;">${index + 1}</td>
                 <td style="text-align: center;"><span class="id-badge">#${les.id}</span></td>
                 <td><strong>${les.lessonName}</strong></td>
-                <td><span class="level-badge">${les.categoryName || 'Chưa phân loại'}</span></td>
-                <td style="text-align: center;">${les.totalVocab || 0} từ</td>
+                <td><strong style="color:var(--teal-dark)">${les.categoryName || 'Chưa phân loại'}</strong></td>
+                <td style="text-align: center;"><span class="level-badge">${les.totalVocab || 0} từ</span></td>
                 <td style="text-align: center;">
                     <button class="btn-action btn-edit me-1" onclick="editLesson(${les.id})"><i class="fas fa-edit"></i></button>
                     <button class="btn-action btn-trash" onclick="deleteLesson(${les.id})"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>`).join('');
-    } catch (e) {
-        console.error(e);
-        document.getElementById('lessonTableBody').innerHTML = `<tr><td colspan="6" class="text-center text-danger">Lỗi tải dữ liệu</td></tr>`;
+        } catch (e) { console.error(e); }
     }
-}
 
-// 2. Mở Modal và load Chủ đề vào select
-async function openAddLessonModal() {
-    const token = localStorage.getItem('token');
-    document.getElementById('lessonForm').reset();
-
-    // Load Chủ đề để chọn
-    try {
-        const res = await fetch('/api/admin/categories', {
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
-        const categories = await res.json();
-        const select = document.getElementById('lessonCategorySelect');
-        select.innerHTML = categories.map(c => `<option value="${c.id}">${c.categoryName} (${c.jlptLevel})</option>`).join('');
-
-        const myModal = new bootstrap.Modal(document.getElementById('lessonModal'));
-        myModal.show();
-    } catch (e) {
-        Swal.fire('Lỗi', 'Không thể tải danh sách chủ đề', 'error');
+    async function openAddLessonModal() {
+        const token = localStorage.getItem('token');
+        document.getElementById('lessonForm').reset();
+        try {
+            const res = await fetch('/api/admin/categories', { headers: { 'Authorization': 'Bearer ' + token } });
+            const categories = await res.json();
+            const select = document.getElementById('lessonCategorySelect');
+            select.innerHTML = categories.map(c => `<option value="${c.id}">${c.categoryName} (${c.jlptLevel})</option>`).join('');
+            new bootstrap.Modal(document.getElementById('lessonModal')).show();
+        } catch (e) { Swal.fire('Lỗi', 'Không thể tải chủ đề', 'error'); }
     }
-}
 
-// 3. Submit bài học mới
-async function submitLesson() {
-    const name = document.getElementById('lessonName').value.trim();
-    const catId = document.getElementById('lessonCategorySelect').value;
-    const token = localStorage.getItem('token');
-
-    if (!name) return Swal.fire('Lỗi', 'Tên bài học không được để trống', 'error');
-
-    try {
-        const res = await fetch('/api/admin/lessons', {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ lessonName: name, categoryId: catId })
-        });
-
-        if (res.ok) {
-            bootstrap.Modal.getInstance(document.getElementById('lessonModal')).hide();
-            Swal.fire('Thành công', 'Đã thêm bài học mới', 'success');
-            loadAllLessons(token);
-        }
-    } catch (e) {
-        Swal.fire('Lỗi', 'Kết nối server thất bại', 'error');
+    async function submitLesson() {
+        const name = document.getElementById('lessonName').value.trim();
+        const catId = document.getElementById('lessonCategorySelect').value;
+        const token = localStorage.getItem('token');
+        if (!name) return Swal.fire('Lỗi', 'Tên không được trống', 'error');
+        try {
+            const res = await fetch('/api/admin/lessons', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lessonName: name, categoryId: catId })
+            });
+            if (res.ok) {
+                bootstrap.Modal.getInstance(document.getElementById('lessonModal')).hide();
+                Swal.fire('Thành công', 'Đã thêm bài học!', 'success');
+                loadAllLessons(token);
+            }
+        } catch (e) { console.error(e); }
     }
-}
-
 
     async function loadVocabWithPagination(page) {
     const token = localStorage.getItem('token');
     const search = document.getElementById('vocabSearch')?.value || "";
-
+    const lessonId = document.getElementById('filterLesson')?.value || "";
+    const cateId = document.getElementById('filterCate')?.value || "";
+    const level = document.getElementById('filterLevel')?.value || "";
+    const pageSize = 20;
     try {
-        const res = await fetch(`/api/admin/vocab/all?page=${page}&size=10&search=${search}`, {
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
-        const data = await res.json(); // data lúc này là một Page object từ Spring
+        let url = `/api/admin/vocab/all?page=${page}&size=${pageSize}&search=${encodeURIComponent(search)}&cateId=${cateId}&level=${level}`;
+        const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+        const data = await res.json();
 
         const tbody = document.getElementById('vocabTableBody');
+        const vocabSection = document.querySelector('.table-vocab');
+        const paginationContainer = document.getElementById('vocabPagination');
+        const paginationRight = vocabSection ? vocabSection.querySelector('.pagination-right') : null;
+        const infoContainer = document.getElementById('paginationInfo');
+
+        if (!data.content || data.content.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted">Không tìm thấy từ vựng nào</td></tr>`;
+
+            // Ẩn cả pagination-center và pagination-right khi không có dữ liệu
+            if (paginationContainer) paginationContainer.innerHTML = '';
+            if (paginationRight) paginationRight.style.display = 'none';
+            if (infoContainer) infoContainer.innerHTML = 'Trang 0 / 0';
+            return;
+        }
+
+        // Hiện lại pagination-right nếu có dữ liệu
+        if (paginationRight) paginationRight.style.display = 'flex';
+
         tbody.innerHTML = data.content.map((v, index) => `
             <tr>
-                <td style="text-align:center;">${(page * 10) + index + 1}</td>
-                <td><strong>${v.expression}</strong></td>
-                <td>${v.kana}</td>
+                <td style="text-align:center; font-size: 13px;">${(page * pageSize) + index + 1}</td>
+                <td style="text-align:center; font-size: 13px;"><span class="id-badge">#${v.id}</span></td>
+                <td><strong style="font-size: 18px; color: var(--text-dark);">${v.expression}</strong></td>
+                <td><span style="color: var(--teal); font-weight: 600;">${v.kana}</span></td>
+                <td><small style="font-size: 15px;">${v.romaji}</small></td>
                 <td>${v.meaning}</td>
-                <td><span class="level-badge">${v.wordType || 'N/A'}</span></td>
                 <td style="text-align:center;">
-                    <button class="btn-action btn-edit me-1"><i class="fas fa-edit"></i></button>
-                    <button class="btn-action btn-trash"><i class="fas fa-trash"></i></button>
+                    <button class="btn-action btn-edit me-1" title="Sửa" onclick="editVocab(${v.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-action btn-trash" title="Xóa" onclick="deleteVocab(${v.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </td>
             </tr>`).join('');
-
-        // Vẽ nút phân trang
         renderPagination(data.totalPages, data.number);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+        console.error(e);
+        document.getElementById('vocabTableBody').innerHTML = `<tr><td colspan="8" class="text-center text-danger">Lỗi nạp dữ liệu</td></tr>`;
+    }
 }
 
-function renderPagination(totalPages, currentPage) {
-    const container = document.getElementById('vocabPagination');
-    let html = '';
-    for (let i = 0; i < totalPages; i++) {
-        html += `<button class="btn-action ${i === currentPage ? 'btn-teal' : ''}"
-                 onclick="loadVocabWithPagination(${i})" style="margin:0 2px; width:30px;">${i + 1}</button>`;
+    // 1. Hàm load danh sách Chủ đề khi chọn Level
+    async function updateCategoryFilter() {
+        const token = localStorage.getItem('token');
+        const level = document.getElementById('filterLevel').value;
+        const cateSelect = document.getElementById('filterCate');
+
+        if (!level) {
+            cateSelect.innerHTML = '<option value="">Tất cả chủ đề</option>';
+            loadVocabWithPagination(0);
+            return;
+        }
+        try {
+            // Gọi API lấy Cate theo Level (Bạn cần có endpoint này ở Backend)
+            const res = await fetch(`/api/admin/categories/filter?level=${level}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (res.ok) {
+                const categories = await res.json();
+                let options = '<option value="">Tất cả chủ đề</option>';
+                options += categories.map(c => `<option value="${c.id}">${c.categoryName}</option>`).join('');
+                cateSelect.innerHTML = options;
+            }
+        } catch (e) { console.error(e); }
+        loadVocabWithPagination(0);
     }
-    container.innerHTML = html;
+
+let totalPagesGlobal = 0;
+
+function renderPagination(totalPages, currentPage) {
+    totalPagesGlobal = totalPages;
+    const container = document.getElementById('vocabPagination');
+    const infoContainer = document.getElementById('paginationInfo');
+    const vocabSection = document.querySelector('.table-vocab');
+    const paginationRight = vocabSection ? vocabSection.querySelector('.pagination-right') : null;
+
+    if (totalPages <= 0) {
+        infoContainer.innerHTML = `<span class="pagination-label">Trang</span> <b class="pagination-number">0</b> / <b class="pagination-number">0</b>`;
+        if (container) container.innerHTML = '';
+        if (paginationRight) paginationRight.style.display = 'none';
+        return;
+    }
+
+    infoContainer.innerHTML = `<span class="pagination-label">Trang</span> <b class="pagination-number">${currentPage + 1}</b> / <b class="pagination-number">${totalPages}</b>`;
+
+    if (totalPages <= 1) {
+        if (container) container.innerHTML = '';
+        if (paginationRight) paginationRight.style.display = 'none';
+        return;
+    }
+
+    // Hiện pagination-right khi có nhiều hơn 1 trang
+    if (paginationRight) paginationRight.style.display = 'flex';
+
+    let html = '';
+    html += `<button class="pagination-btn" ${currentPage === 0 ? 'disabled' : ''} onclick="loadVocabWithPagination(0)" title="Trang đầu"><i class="fas fa-angle-double-left"></i></button>`;
+    html += `<button class="pagination-btn" ${currentPage === 0 ? 'disabled' : ''} onclick="loadVocabWithPagination(${currentPage - 1})"><i class="fas fa-chevron-left"></i></button>`;
+
+    let startPage = Math.max(0, currentPage - 2);
+    let endPage = Math.min(totalPages - 1, startPage + 4);
+
+    if (endPage - startPage < 4) {
+        startPage = Math.max(0, endPage - 4);
+    }
+
+    if (startPage > 0) {
+        html += `<span class="pagination-dots">...</span>`;
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        html += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="loadVocabWithPagination(${i})">${i + 1}</button>`;
+    }
+
+    if (endPage < totalPages - 1) {
+        html += `<span class="pagination-dots">...</span>`;
+    }
+
+    html += `<button class="pagination-btn" ${currentPage === totalPages - 1 ? 'disabled' : ''} onclick="loadVocabWithPagination(${currentPage + 1})"><i class="fas fa-chevron-right"></i></button>`;
+    html += `<button class="pagination-btn" ${currentPage === totalPages - 1 ? 'disabled' : ''} onclick="loadVocabWithPagination(${totalPages - 1})" title="Trang cuối"><i class="fas fa-angle-double-right"></i></button>`;
+
+    container.innerHTML = `<div class="pagination-container">${html}</div>`;
+
+    // Lắng nghe sự kiện Enter cho ô nhập số trang
+    const jumpInput = document.getElementById('jumpPageInput');
+    if (jumpInput) {
+        // Remove old event listener by cloning and replacing
+        const newJumpInput = jumpInput.cloneNode(true);
+        jumpInput.parentNode.replaceChild(newJumpInput, jumpInput);
+
+        newJumpInput.onkeydown = function(e) {
+            if (e.key === 'Enter') jumpToPage();
+        };
+    }
+}
+
+    function jumpToPage() {
+    const input = document.getElementById('jumpPageInput');
+    const pageNum = parseInt(input.value);
+
+    // Lấy tổng số trang từ DOM thay vì dùng biến global
+    const infoContainer = document.getElementById('paginationInfo');
+    let totalPages = 0;
+
+    if (infoContainer) {
+        const text = infoContainer.innerText;
+        const match = text.match(/\/(\d+)$/);  // Lấy số sau dấu /
+        if (match) {
+            totalPages = parseInt(match[1]);
+        }
+    }
+
+    // Nếu không lấy được từ DOM, fallback sang biến global
+    if (totalPages === 0) {
+        totalPages = totalPagesGlobal;
+    }
+
+    if (isNaN(pageNum) || pageNum < 1 || pageNum > totalPages || totalPages === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Số trang không hợp lệ',
+            text: `Vui lòng nhập số từ 1 đến ${totalPages}`,
+            timer: 1500,
+            showConfirmButton: false
+        });
+        input.value = '';
+        return;
+    }
+    loadVocabWithPagination(pageNum - 1);
+    input.value = '';
+}
+
+    // 1. Mở modal và load danh sách bài học
+    async function openAddVocabModal() {
+        const token = localStorage.getItem('token');
+        document.getElementById('vocabForm').reset();
+        document.getElementById('quickAddLessonContainer').style.display = 'none';
+
+        try {
+            // 1. Load danh sách Chủ đề
+            const res = await fetch('/api/admin/categories', { headers: { 'Authorization': 'Bearer ' + token } });
+            const categories = await res.json();
+
+            const catSelect = document.getElementById('vCategoryId');
+            catSelect.innerHTML = '<option value="">-- Chọn chủ đề --</option>' +
+                categories.map(c => `<option value="${c.id}">${c.categoryName}</option>`).join('');
+
+            // 2. Reset ô bài học
+            document.getElementById('vLessonId').innerHTML = '<option value="">-- Vui lòng chọn chủ đề trước --</option>';
+
+            new bootstrap.Modal(document.getElementById('vocabModal')).show();
+        } catch (e) {
+            Swal.fire('Lỗi', 'Không thể khởi tạo modal', 'error');
+        }
+    }
+
+    // 2. Gửi dữ liệu về Server
+    async function submitVocab() {
+        const token = localStorage.getItem('token');
+        const data = {
+            expression: document.getElementById('vExpression').value,
+            kana: document.getElementById('vKana').value,
+            romaji: document.getElementById('vRomaji').value,
+            meaning: document.getElementById('vMeaning').value,
+            wordType: document.getElementById('vWordType').value,
+            example: document.getElementById('vExample').value,
+            exampleVi: document.getElementById('vExampleVi').value,
+            imageUrl: document.getElementById('vImageUrl').value,
+            audioUrl: document.getElementById('vAudioUrl').value,
+            lessonId: document.getElementById('vLessonId').value // Quan trọng để map bài học
+        };
+
+        if (!data.expression || !data.meaning || !data.lessonId) {
+            return Swal.fire('Chú ý', 'Vui lòng điền các trường bắt buộc!', 'warning');
+        }
+
+        try {
+            const res = await fetch('/api/admin/vocab/add', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                bootstrap.Modal.getInstance(document.getElementById('vocabModal')).hide();
+                Swal.fire('Thành công', 'Đã thêm từ vựng mới!', 'success');
+                loadVocabWithPagination(0); // Reload lại bảng
+            } else {
+                Swal.fire('Lỗi', 'Không thể lưu từ vựng', 'error');
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function onVocabCategoryChange() {
+        const catId = document.getElementById('vCategoryId').value;
+        const lessonSelect = document.getElementById('vLessonId');
+        const quickAddContainer = document.getElementById('quickAddLessonContainer');
+        const token = localStorage.getItem('token');
+
+        if (!catId) {
+            lessonSelect.innerHTML = '<option value="">-- Vui lòng chọn chủ đề trước --</option>';
+            quickAddContainer.style.display = 'none';
+            return;
+        }
+
+        try {
+            // Gọi API lấy bài học theo chủ đề
+            // Lưu ý: Tận dụng endpoint bạn đã làm cho phần filter
+            const res = await fetch(`/api/admin/lessons/by-category/${catId}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const lessons = await res.json();
+
+            if (lessons && lessons.length > 0) {
+                lessonSelect.innerHTML = lessons.map(l => `<option value="${l.id}">${l.lessonName}</option>`).join('');
+                quickAddContainer.style.display = 'none';
+                lessonSelect.disabled = false;
+            } else {
+                lessonSelect.innerHTML = '<option value="">(Trống)</option>';
+                lessonSelect.disabled = true;
+                quickAddContainer.style.display = 'block'; // Hiện nút tạo nhanh
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    function openQuickAddLesson() {
+        const catId = document.getElementById('vCategoryId').value;
+        const catName = document.getElementById('vCategoryId').options[document.getElementById('vCategoryId').selectedIndex].text;
+
+        // 1. Tự động chọn chủ đề bên modal Bài học
+        const lessonCatSelect = document.getElementById('lessonCategorySelect');
+        if (lessonCatSelect) {
+            lessonCatSelect.value = catId;
+        }
+
+        // 2. Mở modal Bài học (ẩn modal từ vựng tạm thời hoặc để chồng lên)
+        const lessonModal = new bootstrap.Modal(document.getElementById('lessonModal'));
+        lessonModal.show();
+
+        // Thông báo nhỏ để Admin biết
+        console.log(`Đang tạo bài học cho chủ đề: ${catName}`);
+    }
+
+    let selectedFile = null; // Biến tạm để giữ file ảnh
+
+    // 1. Hàm xử lý khi chọn file từ máy tính
+    function handleFileSelect(input) {
+        if (input.files && input.files[0]) {
+            selectedFile = input.files[0];
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const previewImg = document.getElementById('previewImg');
+                const previewDiv = document.getElementById('iconPreview');
+
+                previewImg.src = e.target.result;
+                previewDiv.style.display = 'block'; // Hiện khung ảnh to
+
+                // Hiển thị tên file vào ô input
+                document.getElementById('catIconUrl').value = selectedFile.name;
+            };
+            reader.readAsDataURL(selectedFile);
+        }
+    }
+
+
+    // 2. Hàm cập nhật preview khi nhập link thủ công (vẫn giữ nếu bạn muốn nhập link ngoài)
+    function updatePreview(url) {
+        selectedFile = null; // Nếu nhập link tay thì xóa file đã chọn (nếu có)
+        const previewDiv = document.getElementById('iconPreview');
+        const previewImg = document.getElementById('previewImg');
+        if (url) {
+            previewImg.src = url.startsWith('http') ? url : '/' + url;
+            previewDiv.style.display = 'block';
+        }
+    }
+
+    // 3. Hàm Submit gộp (Gửi cả Text và File)
+    async function submitCategory() {
+        const name = document.getElementById('catName').value.trim();
+        const level = document.getElementById('catLevel').value;
+        const token = localStorage.getItem('token');
+
+        if (!name) return Swal.fire('Lỗi', 'Vui lòng nhập tên chủ đề!', 'error');
+
+        // Dùng FormData để gửi cả file và text
+        const formData = new FormData();
+        formData.append("categoryName", name);
+        formData.append("jlptLevel", level);
+
+        // Nếu có chọn file thì gửi file, nếu không thì gửi link nhập tay (nếu có)
+        if (selectedFile) {
+            formData.append("file", selectedFile);
+        } else {
+            formData.append("iconUrl", document.getElementById('catIconUrl').value);
+        }
+
+        try {
+            Swal.fire({ title: 'Đang xử lý...', didOpen: () => Swal.showLoading() });
+
+            const response = await fetch('/api/admin/categories/add-with-file', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token },
+                body: formData // Không set Content-Type, trình duyệt tự xử lý Multipart
+            });
+
+            if (response.ok) {
+                bootstrap.Modal.getInstance(document.getElementById('categoryModal')).hide();
+                await Swal.fire('Thành công', 'Chủ đề và ảnh đã được lưu!', 'success');
+                selectedFile = null; // Reset biến tạm
+                loadAllCategories(token);
+            } else {
+                Swal.fire('Lỗi', 'Không thể lưu chủ đề', 'error');
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function deleteCategory(id) {
+        // Tìm trong danh sách hiện tại để biết nó đang ẩn hay hiện (nâng cao)
+        // Hoặc đơn giản là dùng thông báo chung:
+        const result = await Swal.fire({
+            title: 'Xác nhận thay đổi?',
+            text: "Hành động này sẽ thay đổi trạng thái hiển thị của chủ đề đối với người dùng.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#06BBCC',
+            cancelButtonColor: '#ef4444',
+            confirmButtonText: 'Đồng ý',
+            cancelButtonText: 'Hủy'
+        });
+
+        if (result.isConfirmed) {
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`/api/admin/categories/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (res.ok) {
+                    const message = await res.text();
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công',
+                        text: message,
+                        timer: 1000,
+                        showConfirmButton: false
+                    });
+                    loadAllCategories(token);
+                }
+            } catch (e) { console.error(e); }
+        }
+    }
+
+    async function deleteUser(id, isLocking) {
+    const actionText = isLocking ? "khóa" : "mở khóa";
+
+    const result = await Swal.fire({
+        title: `Xác nhận ${actionText}?`,
+        text: isLocking ? "Học viên này sẽ không thể đăng nhập!" : "Học viên sẽ có thể truy cập lại hệ thống.",
+        icon: 'warning',
+        showCancelButton: true,
+            confirmButtonColor: '#06BBCC',
+            cancelButtonColor: '#ef4444',
+            confirmButtonText: 'Đồng ý',
+            cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`/api/admin/users/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (res.ok) {
+                const message = await res.text();
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: message,
+                    timer: 1000,
+                    showConfirmButton: false
+                });
+                loadAllUsersWithFilter(token); // Tải lại bảng người dùng
+            }
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Lỗi', 'Không thể thay đổi trạng thái người dùng', 'error');
+        }
+    }
 }
 
 
@@ -762,9 +1581,9 @@ function renderPagination(totalPages, currentPage) {
             title: 'Đăng xuất?',
             icon: 'warning',
             showCancelButton: true,
-            cancelButtonColor: '#06BBCC',
+            cancelButtonColor: '#ef4444',
             cancelButtonText: 'Hủy',
-            confirmButtonColor: '#fb873f',
+            confirmButtonColor: '#06BBCC',
             confirmButtonText: 'Đồng ý'
         }).then(res => {
             if (res.isConfirmed) { localStorage.clear(); location.href = '/login'; }
@@ -772,4 +1591,5 @@ function renderPagination(totalPages, currentPage) {
     }
 </script>
 </body>
+
 </html>

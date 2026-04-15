@@ -18,4 +18,6 @@ public class Categories {
     private Integer totalLessons;
     private Integer progress;
     private String jlptLevel;
+    @Column(name = "is_active")
+    private Boolean isActive = true;
 }

@@ -9,7 +9,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "Users")
-@Data // Tự động tạo Getter/Setter nếu dùng Lombok
+@Data
 public class Users {
 
     @Id
@@ -27,7 +27,7 @@ public class Users {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "User_Roles", // Tên bảng trung gian trong DB
+            name = "User_Roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
@@ -46,4 +46,5 @@ public class Users {
 
     @Column(updatable = false)
     private LocalDateTime created = LocalDateTime.now();
+
 }

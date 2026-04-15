@@ -25,15 +25,14 @@ public class AdminLessonController {
 
     // 1. Lấy tất cả bài học (Kèm tên danh mục)
     @GetMapping
-    @Transactional(readOnly = true)
     public ResponseEntity<?> getAllLessons() {
-        List<Lessons> lessons = lessonRepository.findAll();
-        List<Map<String, Object>> response = lessons.stream().map(lesson -> {
+        List<Object[]> rows = lessonRepository.findAllLessonsWithStats();
+        List<Map<String, Object>> response = rows.stream().map(row -> {
             Map<String, Object> item = new HashMap<>();
-            item.put("id", lesson.getId());
-            item.put("lessonName", lesson.getLessonName());
-            item.put("categoryName", lesson.getCategory() != null ? lesson.getCategory().getCategoryName() : "N/A");
-            item.put("totalVocab", lesson.getVocabularies() != null ? lesson.getVocabularies().size() : 0);
+            item.put("id", row[0]);
+            item.put("lessonName", row[1]);
+            item.put("categoryName", row[2] != null ? row[2] : "N/A");
+            item.put("totalVocab", row[3] != null ? row[3] : 0);
             return item;
         }).collect(Collectors.toList());
         return ResponseEntity.ok(response);
@@ -72,5 +71,33 @@ public class AdminLessonController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Không thể xóa bài học vì có dữ liệu liên quan!");
         }
+    }
+
+    // Thêm method này vào AdminLessonController.java
+    @GetMapping("/filter")
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> getLessonsByLevel(@RequestParam(required = false) String level) {
+        List<Lessons> lessons;
+        if (level == null || level.isEmpty()) {
+            lessons = lessonRepository.findAll();
+        } else {
+            // Giả sử bạn đã viết method này trong LessonRepository
+            lessons = lessonRepository.findByCategory_JlptLevel(level);
+        }
+
+        List<Map<String, Object>> response = lessons.stream().map(lesson -> {
+            Map<String, Object> item = new HashMap<>();
+            item.put("id", lesson.getId());
+            item.put("lessonName", lesson.getLessonName());
+            return item;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/by-category/{catId}")
+    public ResponseEntity<List<Lessons>> getByCate(@PathVariable Integer catId) {
+        // Giả sử bạn có method này trong repository
+        return ResponseEntity.ok(lessonRepository.findByCategoryId(catId));
     }
 }

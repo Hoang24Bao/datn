@@ -1,5 +1,7 @@
 package com.example.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -9,6 +11,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "Lessons")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "vocabularies"})
 @Data
 public class Lessons {
     @Id
@@ -20,6 +23,7 @@ public class Lessons {
     // Thay đổi ở đây: Mapping thực tế với bảng Categories
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", insertable = false, updatable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "lessons"})
     private Categories category;
 
     // Giữ lại cái này nếu bạn vẫn muốn dùng ID thuần túy trong một số trường hợp
@@ -27,11 +31,7 @@ public class Lessons {
     private Integer categoryId;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "Lesson_Vocab",
-            joinColumns = @JoinColumn(name = "lesson_id"),
-            inverseJoinColumns = @JoinColumn(name = "vocab_id")
-    )
+    @JsonIgnore
     private List<Vocabulary> vocabularies;
 
     private String thumbnailUrl;
@@ -39,4 +39,6 @@ public class Lessons {
 
     @Column(name = "is_free")
     private Boolean free;
+    @Column(name = "is_active")
+    private Boolean isActive = true;
 }

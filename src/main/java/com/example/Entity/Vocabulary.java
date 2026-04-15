@@ -32,8 +32,16 @@ public class Vocabulary {
     private String exampleVi;
     private String example;
 
-    @ManyToMany(mappedBy = "vocabularies")
-    @com.fasterxml.jackson.annotation.JsonIgnore // Ngăn vòng lặp JSON
+    @ManyToMany
+    @JoinTable(
+            name = "Lesson_Vocab", // Tên bảng trong SQL
+            joinColumns = @JoinColumn(name = "vocab_id"),
+            inverseJoinColumns = @JoinColumn(name = "lesson_id")
+    )
+    @JsonIgnoreProperties({"vocabularies", "hibernateLazyInitializer", "handler"})
     private List<Lessons> lessons;
+
+    @Column(name = "is_active")
+    private Boolean isActive = true;
 
 }

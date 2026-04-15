@@ -41,6 +41,18 @@ public class AuthService {
 
         user.getRoles().add(userRole);
 
+        // 4. Thiết lập Level mặc định dựa trên Role
+        boolean isAdmin = user.getRoles().stream()
+                .anyMatch(r -> r.getName().equals("ROLE_ADMIN"));
+
+        if (isAdmin) {
+            user.setLevelId(null); // Admin thì để null
+        } else {
+            user.setLevelId(1);    // User bình thường mặc định là 1 (N5)
+        }
+
+        user.setActive(true);
+
         return userRepository.save(user);
     }
 
@@ -50,13 +62,17 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("Tên đăng nhập hoặc Email không tồn tại!"));
 
         // 2. Kiểm tra mật khẩu (Sử dụng passwordEncoder.matches)
-        // rawPassword: mật khẩu người dùng nhập (123456)
-        // user.getPassword(): mật khẩu đã hash trong DB ($2a$10$...)
         if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
             throw new RuntimeException("Mật khẩu không chính xác!");
         }
 
-        // 3. Nếu đúng, trả về thông tin user (sau này sẽ trả về JWT Token)
+        // 3. KIỂM TRA TRẠNG THÁI TÀI KHOẢN
+        // Giả sử user.getActive() trả về Integer (0 hoặc 1) hoặc Boolean
+        if (user.getActive() != null && !user.getActive()) {
+            throw new RuntimeException("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Admin!");
+        }
+
+        // 4. Nếu đúng, trả về thông tin user (sau này sẽ trả về JWT Token)
         return user;
     }
 }
