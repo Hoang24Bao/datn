@@ -4,6 +4,7 @@ import com.example.Entity.Lessons;
 import com.example.Repository.LessonsRepository;
 import com.example.Repository.CategoriesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class AdminLessonController {
     @Autowired
     private CategoriesRepository categoryRepository;
 
-    // 1. Lấy tất cả bài học (Kèm tên danh mục)
+    // 1. Lấy tất cả bài học (Kèm tên danh mục) - GIỮ LẠI cho các chức năng cũ
     @GetMapping
     public ResponseEntity<?> getAllLessons() {
         List<Object[]> rows = lessonRepository.findAllLessonsWithStats();
@@ -36,6 +37,34 @@ public class AdminLessonController {
             return item;
         }).collect(Collectors.toList());
         return ResponseEntity.ok(response);
+    }
+
+    // 1.1 API MỚI: Lấy danh sách lessons có phân trang và filter
+    @GetMapping("/paging")
+    public ResponseEntity<Page<Map<String, Object>>> getLessonsPaging(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) String level,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        String cleanSearch = (search != null && search.isEmpty()) ? null : search;
+        String cleanLevel = (level != null && level.isEmpty()) ? null : level;
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Object[]> resultPage = lessonRepository.findLessonsWithStatsByFilters(cleanSearch, categoryId, cleanLevel, pageable);
+
+        List<Map<String, Object>> lessons = resultPage.getContent().stream().map(row -> {
+            Map<String, Object> item = new HashMap<>();
+            item.put("id", row[0]);
+            item.put("lessonName", row[1]);
+            item.put("categoryId", row[2]);
+            item.put("categoryName", row[3] != null ? row[3] : "Chưa phân loại");
+            item.put("totalVocab", row[4] != null ? row[4] : 0L);
+            return item;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(new PageImpl<>(lessons, pageable, resultPage.getTotalElements()));
     }
 
     // 2. Thêm bài học mới
@@ -73,7 +102,7 @@ public class AdminLessonController {
         }
     }
 
-    // Thêm method này vào AdminLessonController.java
+    // 4. Lọc bài học theo level (giữ nguyên)
     @GetMapping("/filter")
     @Transactional(readOnly = true)
     public ResponseEntity<?> getLessonsByLevel(@RequestParam(required = false) String level) {
@@ -81,7 +110,6 @@ public class AdminLessonController {
         if (level == null || level.isEmpty()) {
             lessons = lessonRepository.findAll();
         } else {
-            // Giả sử bạn đã viết method này trong LessonRepository
             lessons = lessonRepository.findByCategory_JlptLevel(level);
         }
 
@@ -95,9 +123,9 @@ public class AdminLessonController {
         return ResponseEntity.ok(response);
     }
 
+    // 5. Lấy bài học theo category (giữ nguyên)
     @GetMapping("/by-category/{catId}")
     public ResponseEntity<List<Lessons>> getByCate(@PathVariable Integer catId) {
-        // Giả sử bạn có method này trong repository
         return ResponseEntity.ok(lessonRepository.findByCategoryId(catId));
     }
 }

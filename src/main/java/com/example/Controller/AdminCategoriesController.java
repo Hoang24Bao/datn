@@ -3,6 +3,7 @@ package com.example.Controller;
 import com.example.Entity.Categories;
 import com.example.Repository.CategoriesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -30,6 +35,28 @@ public class AdminCategoriesController {
     @GetMapping
     public ResponseEntity<List<Categories>> getAll() {
         return ResponseEntity.ok(categoriesRepository.findAll());
+    }
+
+    /**
+     * 1.1 Lấy danh sách categories có phân trang và filter
+     */
+    @GetMapping("/paging")
+    public ResponseEntity<Page<Categories>> getCategoriesPaging(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String level,
+            @RequestParam(required = false) Boolean isActive,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        // Xử lý search rỗng
+        String cleanSearch = (search != null && search.isEmpty()) ? null : search;
+        String cleanLevel = (level != null && level.isEmpty()) ? null : level;
+
+        // Sắp xếp theo id tăng dần
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        Page<Categories> categoriesPage = categoriesRepository.findByFilters(cleanSearch, cleanLevel, isActive, pageable);
+
+        return ResponseEntity.ok(categoriesPage);
     }
 
     /**

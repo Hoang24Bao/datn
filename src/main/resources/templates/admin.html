@@ -417,8 +417,8 @@
                         <th style="width: 70px; text-align: center;">ID</th>
                         <th style="padding-left: 30px">Học viên</th>
                         <th>Email</th>
-                        <th>Cấp độ</th>
-                        <th>Trạng thái</th>
+                        <th style="text-align: center;">Cấp độ</th>
+                        <th style="text-align: center;">Trạng thái</th>
                     </tr>
                 </thead>
                 <tbody id="userTableBody"></tbody>
@@ -432,6 +432,8 @@
         const token = localStorage.getItem('token');
         const fullname = localStorage.getItem('fullname') || 'Admin';
         const avatarUrl = localStorage.getItem('avatarUrl');
+
+        initPaginationManagers();
 
         if (role !== 'ROLE_ADMIN' || !token) {
             location.href = '/login';
@@ -511,7 +513,7 @@
                     </select>
                     <input type="text" id="userSearch" class="form-control"
                            placeholder="Tìm tên, username, email..."
-                           style="width:280px; border-radius:10px;"
+                           style="width:260px; border-radius:10px;"
                            oninput="loadAllUsersWithFilter(0)">
                 </div>
             </div>
@@ -525,10 +527,10 @@
                                 <tr>
                                     <th>STT</th>
                                     <th>ID</th>
-                                    <th style="padding-left: 30px">Học viên</th>
+                                    <th style="padding-left: 20px">Học viên</th>
                                     <th>Email</th>
                                     <th style="width: 10%; text-align: center;">Cấp độ</th>
-                                    <th style="width: 16%;">Trạng thái</th>
+                                    <th style="width: 16%; text-align: center;">Trạng thái</th>
                                     <th style="width: 140px; text-align: center;">Thao tác</th>
                                 </tr>
                             </thead>
@@ -544,7 +546,7 @@
             <div class="pagination-right">
                 <span class="pagination-jump-label">Đi đến trang:</span>
                 <input type="number" id="jumpPageInput" min="1" class="form-control pagination-input" placeholder="...">
-                <button class="btn-go" onclick="jumpToUserPage()">Đi</button>
+                <button class="btn-go" onclick="paginationManager['userPagination'].jumpToPage()">Đi</button>
             </div>
         </div>
                 </div>`;
@@ -552,139 +554,213 @@
                 break;
 
             case 'categories':
-                mainTitle.innerText = "Quản Lý Chủ đề";
-                mainContent.innerHTML = `
-                <div class="breadcrumb-bar">
-                    <div class="chip active">Chủ đề</div>
-                    <span class="sep">›</span><div class="chip">Chủ đề từ vựng</div>
+    mainTitle.innerText = "Quản Lý Chủ đề";
+    mainContent.innerHTML = `
+    <div class="breadcrumb-bar">
+        <div class="chip active">Chủ đề</div>
+        <span class="sep">›</span><div class="chip">Chủ đề từ vựng</div>
+    </div>
+    <div class="table-section table-categories">
+        <div class="table-header">
+            <div class="table-header-left">
+                <div class="search-box" style="display:flex; gap:10px; flex-wrap: wrap;">
+                    <select id="categoryFilterLevel" class="form-select" style="width:130px; border-radius:10px;" onchange="loadAllCategoriesWithPagination(0)">
+                        <option value="">Cấp độ</option>
+                        <option value="N5">N5</option>
+                        <option value="N4">N4</option>
+                        <option value="N3">N3</option>
+                        <option value="N2">N2</option>
+                        <option value="N1">N1</option>
+                    </select>
+                    <select id="categoryFilterStatus" class="form-select" style="width:160px; border-radius:10px;" onchange="loadAllCategoriesWithPagination(0)">
+                        <option value="">Trạng thái</option>
+                        <option value="true">Đang hiển thị</option>
+                        <option value="false">Đã ẩn</option>
+                    </select>
+                    <input type="text" id="categorySearch" class="form-control"
+                           placeholder="Tìm kiếm chủ đề"
+                           style="width:200px; border-radius:10px;"
+                           oninput="loadAllCategoriesWithPagination(0)">
                 </div>
-                <div class="table-section">
-                    <div class="table-header">
-                        <div class="table-header-left">
-                            <h4>Danh sách chủ đề</h4>
-                        </div>
-                        <button class="btn-home" style="font-size:15px;" onclick="openAddCategoryModal()">
-                            <i class="fas fa-plus" style="margin-right:5px"></i> Thêm chủ đề
-                        </button>
-                    </div>
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>STT</th>
-                                    <th>ID</th>
-                                    <th style="width:40%; padding-left: 40px;">Tên chủ đề</th>
-                                    <th style="width: 15%;">Tổng bài học</th>
-                                    <th style="width: 15%; text-align: center;">Cấp độ</th>
-                                    <th style="width: 150px; text-align: center;">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody id="categoryTableBody">
-                                <tr><td colspan="5" class="text-center py-5">Đang tải dữ liệu...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>`;
-                loadAllCategories(token);
-                break;
-
-            case 'lessons':
-                mainTitle.innerText = "Quản Lý Bài Học";
-                mainContent.innerHTML = `
-                <div class="breadcrumb-bar">
-                    <div class="chip active">Nội dung</div>
-                    <span class="sep">›</span><div class="chip">Bài học</div>
-                </div>
-                <div class="table-section">
-                    <div class="table-header">
-                        <div class="table-header-left">
-                            <h4>Danh sách bài học</h4>
-                            <p>Quản lý các bài học thuộc từng chủ đề</p>
-                        </div>
-                        <button class="btn-home" style="font-size:15px;" onclick="openAddLessonModal()">
-                            <i class="fas fa-plus" style="margin-right:5px"></i> Thêm bài học
-                        </button>
-                    </div>
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th style="width: 40px; text-align: center;">STT</th>
-                                    <th style="width: 70px; text-align: center;">ID</th>
-                                    <th style="width: 15%;">Bài học</th>
-                                    <th style="width: 35%;">Chủ đề</th>
-                                    <th style="width: 20%; text-align: center; white-space: nowrap;">Số từ</th>
-                                    <th style="width: 120px; text-align: center;">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody id="lessonTableBody">
-                                <tr><td colspan="6" class="text-center py-5">Đang tải bài học...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>`;
-                loadAllLessons(token);
-                break;
-
-            case 'vocabulary':
-                mainTitle.innerText = "Quản Lý Từ Vựng";
-                mainContent.innerHTML = `
-                <div class="table-section table-vocab">
-                    <div class="table-header">
-                        <div class="table-header-left">
-                            <div class="search-box" style="display:flex; gap:10px; flex-wrap: wrap;">
-                                <select id="filterLevel" class="form-select" style="width:130px; border-radius:10px;" onchange="updateCategoryFilter()">
-                                    <option value="">Cấp độ</option>
-                                    <option value="N5">N5</option>
-                                    <option value="N4">N4</option>
-                                    <option value="N3">N3</option>
-                                    <option value="N2">N2</option>
-                                    <option value="N1">N1</option>
-                                </select>
-                                <select id="filterCate" class="form-select" style="width:200px; border-radius:10px;" onchange="loadVocabWithPagination(0)">
-                                    <option value="">Tất cả chủ đề</option>
-                                </select>
-                                <input type="text" id="vocabSearch" class="form-control" placeholder="Tìm kiếm từ vựng..." style="width:250px; border-radius:10px;" oninput="loadVocabWithPagination(0)">
-                            </div>
-                        </div>
-                        <button class="btn-home" style="font-size:15px;" onclick="openAddVocabModal()">
-                            <i class="fas fa-plus" style="margin-right:5px"></i> Thêm từ vựng
-                        </button>
-                    </div>
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>STT</th>
-                                    <th>ID</th>
-                                    <th style="width: 16%;">Từ vựng</th>
-                                    <th style="width: 18%;">Kana</th>
-                                    <th style="width: 12%;">Romaji</th>
-                                    <th>Ý nghĩa</th>
-                                    <th style="width: 120px; text-align: center;">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody id="vocabTableBody">
-                                <tr><td colspan="8" class="text-center py-5">Đang tải dữ liệu...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="pagination-wrapper mt-4">
-            <div class="pagination-left" id="paginationInfo">
-                Đang tải...
             </div>
-            <div class="pagination-center" id="vocabPagination">
-                </div>
+            <div class="table-header-right">
+                <span class="status-pill count-pill" style="font-size: 16px; gap:0px;" id="categoryCountBadge">Đang tải...</span>
+            </div>
+            <button class="btn-home" style="font-size:15px;" onclick="openAddCategoryModal()">
+                <i class="fas fa-plus" style="margin-right:5px"></i> Thêm chủ đề
+            </button>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>ID</th>
+                        <th style="width:40%; padding-left: 40px;">Tên chủ đề</th>
+                        <th style="width: 15%;">Tổng bài học</th>
+                        <th style="width: 15%; text-align: center;">Cấp độ</th>
+                        <th style="width: 150px; text-align: center;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="categoryTableBody">
+                    <tr><td colspan="6" class="text-center py-5">Đang tải dữ liệu...</td</tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination-wrapper mt-4">
+            <div class="pagination-left" id="categoryPaginationInfo">Đang tải...</div>
+            <div class="pagination-center" id="categoryPagination"></div>
             <div class="pagination-right">
                 <span class="pagination-jump-label">Đi đến trang:</span>
                 <input type="number" id="jumpPageInput" min="1" class="form-control pagination-input" placeholder="...">
-                <button class="btn-go" onclick="jumpToPage()">Đi</button>
+                <button class="btn-go" onclick="paginationManager['categoryPagination'].jumpToPage()">Đi</button>
             </div>
         </div>
-                </div>`;
-                loadVocabWithPagination(0);
-                updateCategoryFilter();
-                break;
+    </div>`;
+
+
+    loadAllCategoriesWithPagination(0);
+    break;
+
+case 'lessons':
+    mainTitle.innerText = "Quản Lý Bài Học";
+    mainContent.innerHTML = `
+    <div class="breadcrumb-bar">
+        <div class="chip active">Nội dung</div>
+        <span class="sep">›</span><div class="chip">Bài học</div>
+    </div>
+    <div class="table-section table-lessons">
+        <div class="table-header">
+            <div class="table-header-left">
+                <div class="search-box" style="display:flex; gap:10px; flex-wrap: wrap;">
+                    <select id="lessonFilterLevel" class="form-select" style="width:120px; border-radius:10px;" onchange="onLessonLevelChange()">
+                        <option value="">Cấp độ</option>
+                        <option value="N5">N5</option>
+                        <option value="N4">N4</option>
+                        <option value="N3">N3</option>
+                        <option value="N2">N2</option>
+                        <option value="N1">N1</option>
+                    </select>
+                    <select id="lessonFilterCategory" class="form-select" style="width:200px; border-radius:10px;" onchange="loadAllLessonsWithPagination(0)">
+                        <option value="">Tất cả chủ đề</option>
+                    </select>
+                    <input type="text" id="lessonSearch" class="form-control"
+                           placeholder="Tìm kiếm bài học"
+                           style="width:200px; border-radius:10px;"
+                           oninput="loadAllLessonsWithPagination(0)">
+                </div>
+            </div>
+            <div class="table-header-right">
+                <span class="status-pill count-pill" style="font-size: 16px; gap:0px;" id="lessonCountBadge">Đang tải...</span>
+            </div>
+            <button class="btn-home" style="font-size:15px;" onclick="openAddLessonModal()">
+                <i class="fas fa-plus" style="margin-right:5px"></i> Thêm bài học
+            </button>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 40px; text-align: center;">STT</th>
+                        <th style="width: 70px; text-align: center;">ID</th>
+                        <th style="width: 20%;">Bài học</th>
+                        <th style="width: 35%;">Chủ đề</th>
+                        <th style="width: 15%; text-align: center;">Số từ</th>
+                        <th style="width: 120px; text-align: center;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="lessonTableBody">
+                    <tr><td colspan="6" class="text-center py-5">Đang tải bài học...</td</tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination-wrapper mt-4">
+            <div class="pagination-left" id="lessonPaginationInfo">Đang tải...</div>
+            <div class="pagination-center" id="lessonPagination"></div>
+            <div class="pagination-right">
+                <span class="pagination-jump-label">Đi đến trang:</span>
+                <input type="number" id="jumpPageInput" min="1" class="form-control pagination-input" placeholder="...">
+                <button class="btn-go" onclick="paginationManager['lessonPagination'].jumpToPage()">Đi</button>
+            </div>
+        </div>
+    </div>`;
+
+    // Load danh sách cho filter
+    loadAllLessonsWithPagination(0);
+    break;
+
+            case 'vocabulary':
+    mainTitle.innerText = "Quản Lý Từ Vựng";
+    mainContent.innerHTML = `
+    <div class="table-section table-vocab">
+        <div class="table-header">
+            <div class="table-header-left">
+                <div class="search-box" style="display:flex; gap:10px; flex-wrap: wrap;">
+                    <select id="filterLevel" class="form-select" style="width:130px; border-radius:10px;" onchange="updateCategoryFilter()">
+                        <option value="">Cấp độ</option>
+                        <option value="N5">N5</option>
+                        <option value="N4">N4</option>
+                        <option value="N3">N3</option>
+                        <option value="N2">N2</option>
+                        <option value="N1">N1</option>
+                    </select>
+                    <select id="filterCate" class="form-select" style="width:200px; border-radius:10px;" onchange="loadVocabWithPagination(0)">
+                        <option value="">Tất cả chủ đề</option>
+                    </select>
+                    <input type="text" id="vocabSearch" class="form-control" placeholder="Tìm kiếm từ vựng" style="width:200px; border-radius:10px;" oninput="loadVocabWithPagination(0)">
+                </div>
+            </div>
+            <div class="table-header-right" style="display: flex; align-items: center; gap: 10px;">
+                <button class="btn-bulk-mode" id="toggleBulkModeBtn" onclick="toggleBulkMode()">
+                    <i class="fas fa-check-square"></i> Chọn nhiều
+                </button>
+                <span class="status-pill count-pill" style="font-size: 16px; gap:0px;" id="vocabCountBadge">Đang tải...</span>
+                <button class="btn-home" style="font-size:15px;" onclick="openAddVocabModal()">
+                    <i class="fas fa-plus" style="margin-right:5px"></i> Thêm từ vựng
+                </button>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="vocab-stt-header" style="width: 50px; text-align: center;">STT</th>
+                        <th class="vocab-checkbox-header" style="width: 50px; text-align: center;">
+                            <input type="checkbox" id="selectAllVocab" class="select-checkbox" style="display: none;" onchange="toggleSelectAllVocab()">
+                        </th>
+                        <th style="width: 60px; text-align: center;">ID</th>
+                        <th style="width: 16%;">Từ vựng</th>
+                        <th style="width: 18%;">Kana</th>
+                        <th style="width: 12%;">Romaji</th>
+                        <th>Ý nghĩa</th>
+                        <th style="width: 120px; text-align: center;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="vocabTableBody">
+                    <tr><td colspan="8" class="text-center py-5">Đang tải dữ liệu...</td</tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination-wrapper mt-4">
+            <div class="pagination-left" id="paginationInfo">Đang tải...</div>
+            <div class="pagination-center" id="vocabPagination"></div>
+            <div class="pagination-right">
+                <span class="pagination-jump-label">Đi đến trang:</span>
+                <input type="number" id="jumpPageInput" min="1" class="form-control pagination-input" placeholder="...">
+                <button class="btn-go" onclick="paginationManager['vocabPagination'].jumpToPage()">Đi</button>
+            </div>
+        </div>
+    </div>`;
+
+    // Reset bulk mode state
+    bulkModeActive = false;
+    selectedVocabIds.clear();
+    const toggleBtn = document.getElementById('toggleBulkModeBtn');
+    if (toggleBtn) toggleBtn.classList.remove('active');
+
+    loadVocabWithPagination(0);
+    updateCategoryFilter();
+    break;
 
             default:
                 mainTitle.innerText = "Quản lý nội dung";
@@ -731,8 +807,8 @@
                 <td><div class="user-cell"><img src="${getAvatarPath(user.avatarUrl, user.fullname)}">
                     <div><div class="name">${user.fullname}</div><div class="joined" style="font-size: 11px;">${time}</div></div></div></td>
                 <td>${user.email}</td>
-                <td><span class="level-badge">${getLevelName(user.levelId)}</span></td>
-                <td><span class="status-pill ${user.active ? 'active-pill' : 'locked-pill'}">${user.active ? 'Hoạt động' : 'Bị khóa'}</span></td>
+                <td style="text-align: center;"><span class="level-badge">${getLevelName(user.levelId)}</span></td>
+                <td style="text-align: center;"><span class="status-pill ${user.active ? 'active-pill' : 'locked-pill'}">${user.active ? 'Hoạt động' : 'Bị khóa'}</span></td>
             </tr>`;
             }).join('');
         } catch (e) { console.error(e); }
@@ -755,25 +831,16 @@ async function loadAllUsersWithFilter(page = 0) {
         const data = await res.json();
 
         const tbody = document.getElementById('fullUserTable');
-        const userSection = document.querySelector('.table-users');
-        const paginationContainer = document.getElementById('userPagination');
-        const paginationRight = userSection ? userSection.querySelector('.pagination-right') : null;
-        const infoContainer = document.getElementById('paginationInfo');
-
-        document.getElementById('userCountBadge').innerText = `Hiển thị: ${data.totalElements} người dùng`;
+        document.getElementById('userCountBadge').innerText = `${data.totalElements} người dùng`;
 
         if (!data.content || data.content.length === 0) {
             tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">Không tìm thấy học viên phù hợp</td></tr>`;
-
-            // Ẩn cả pagination-center và pagination-right khi không có dữ liệu
-            if (paginationContainer) paginationContainer.innerHTML = '';
-            if (paginationRight) paginationRight.style.display = 'none';
-            if (infoContainer) infoContainer.innerHTML = 'Trang 0 / 0';
+            // Reset pagination
+            if (paginationManager['userPagination']) {
+                paginationManager['userPagination'].reset();
+            }
             return;
         }
-
-        // Hiện lại pagination-right nếu có dữ liệu
-        if (paginationRight) paginationRight.style.display = 'flex';
 
         tbody.innerHTML = data.content.map((user, index) => {
             const isLocked = user.active === false;
@@ -809,95 +876,18 @@ async function loadAllUsersWithFilter(page = 0) {
             </tr>`;
         }).join('');
 
-        renderUserPagination(data.totalPages, data.number);
+        // Render pagination
+        if (paginationManager['userPagination']) {
+            paginationManager['userPagination'].render(data.totalPages, data.number);
+        }
     } catch (e) {
         console.error("Lỗi tải người dùng:", e);
     }
 }
 
-// Hàm render phân trang riêng cho User (copy logic từ Vocab nhưng đổi tên hàm gọi)
-function renderUserPagination(totalPages, currentPage) {
-    userTotalPagesGlobal = totalPages;
-    const container = document.getElementById('userPagination');
-    const infoContainer = document.getElementById('paginationInfo');
-    const userSection = document.querySelector('.table-users');
-    const paginationRight = userSection ? userSection.querySelector('.pagination-right') : null;
 
-    if (totalPages <= 0) {
-        infoContainer.innerHTML = `<span class="pagination-label">Trang</span> <b class="pagination-number">0</b> / <b class="pagination-number">0</b>`;
-        if (container) container.innerHTML = '';
-        if (paginationRight) paginationRight.style.display = 'none';
-        return;
-    }
 
-    infoContainer.innerHTML = `<span class="pagination-label">Trang</span> <b class="pagination-number">${currentPage + 1}</b> / <b class="pagination-number">${totalPages}</b>`;
 
-    if (totalPages <= 1) {
-        if (container) container.innerHTML = '';
-        if (paginationRight) paginationRight.style.display = 'none';
-        return;
-    }
-
-    // Hiện pagination-right khi có nhiều hơn 1 trang
-    if (paginationRight) paginationRight.style.display = 'flex';
-
-    let html = '';
-    html += `<button class="pagination-btn" ${currentPage === 0 ? 'disabled' : ''} onclick="loadAllUsersWithFilter(0)"><i class="fas fa-angle-double-left"></i></button>`;
-    html += `<button class="pagination-btn" ${currentPage === 0 ? 'disabled' : ''} onclick="loadAllUsersWithFilter(${currentPage - 1})"><i class="fas fa-chevron-left"></i></button>`;
-
-    let start = Math.max(0, currentPage - 2);
-    let end = Math.min(totalPages - 1, start + 4);
-    if (end - start < 4) start = Math.max(0, end - 4);
-
-    for (let i = start; i <= end; i++) {
-        html += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="loadAllUsersWithFilter(${i})">${i + 1}</button>`;
-    }
-
-    html += `<button class="pagination-btn" ${currentPage === totalPages - 1 ? 'disabled' : ''} onclick="loadAllUsersWithFilter(${currentPage + 1})"><i class="fas fa-chevron-right"></i></button>`;
-    html += `<button class="pagination-btn" ${currentPage === totalPages - 1 ? 'disabled' : ''} onclick="loadAllUsersWithFilter(${totalPages - 1})"><i class="fas fa-angle-double-right"></i></button>`;
-
-    container.innerHTML = html;
-
-    document.getElementById('jumpPageInput').onkeydown = function(e) {
-        if (e.key === 'Enter') jumpToUserPage();
-    };
-}
-
-function jumpToUserPage() {
-    const input = document.getElementById('jumpPageInput');
-    const pageNum = parseInt(input.value);
-
-    // Lấy tổng số trang từ DOM thay vì dùng biến global
-    const infoContainer = document.getElementById('paginationInfo');
-    let totalPages = 0;
-
-    if (infoContainer) {
-        const text = infoContainer.innerText;
-        const match = text.match(/\/(\d+)$/);  // Lấy số sau dấu /
-        if (match) {
-            totalPages = parseInt(match[1]);
-        }
-    }
-
-    // Nếu không lấy được từ DOM, fallback sang biến global
-    if (totalPages === 0) {
-        totalPages = userTotalPagesGlobal;
-    }
-
-    if (isNaN(pageNum) || pageNum < 1 || pageNum > totalPages || totalPages === 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Số trang không hợp lệ',
-            text: `Vui lòng nhập số từ 1 đến ${totalPages}`,
-            timer: 1500,
-            showConfirmButton: false
-        });
-        input.value = '';
-        return;
-    }
-    loadAllUsersWithFilter(pageNum - 1);
-    input.value = '';
-}
 
     async function viewUser(id) {
     const token = localStorage.getItem('token');
@@ -946,35 +936,114 @@ function jumpToUserPage() {
         loadSection('users', btn);
     }
 
-    async function loadAllCategories(token) {
-        try {
-            const res = await fetch('/api/admin/categories', {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            if (!res.ok) return;
-            const categories = await res.json();
-            const tbody = document.getElementById('categoryTableBody');
-            if (categories.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-muted">Chưa có chủ đề nào</td></tr>`;
-                return;
+    async function loadAllCategoriesWithPagination(page = 0) {
+    const token = localStorage.getItem('token');
+    const search = document.getElementById('categorySearch')?.value || "";
+    const level = document.getElementById('categoryFilterLevel')?.value || "";
+    const isActive = document.getElementById('categoryFilterStatus')?.value || "";
+    const pageSize = 5;
+
+    try {
+        let url = `/api/admin/categories/paging?page=${page}&size=${pageSize}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        if (level) url += `&level=${level}`;
+        if (isActive !== "") url += `&isActive=${isActive}`;
+
+        const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+
+        if (!res.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const data = await res.json();
+        const tbody = document.getElementById('categoryTableBody');
+
+        const countBadge = document.getElementById('categoryCountBadge');
+        if (countBadge) {
+            countBadge.innerText = `${data.totalElements || 0} chủ đề`;
+        }
+
+        if (!data.content || data.content.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">Không tìm thấy chủ đề nào</td</tr>`;
+            if (paginationManager['categoryPagination']) {
+                paginationManager['categoryPagination'].reset();
             }
-            categories.sort((a, b) => a.id - b.id);
-            tbody.innerHTML = categories.map((cat, index) => {
-                // Kiểm tra trạng thái ẩn/hiện
-                const isHidden = cat.isActive === false;
-                const rowClass = isHidden ? 'row-hidden' : '';
-                const statusBadge = isHidden
-                    ? '<span class="status-badge badge-hidden">Đã ẩn</span>'
-                    : '';
+            return;
+        }
 
-                // Thay đổi nút Thùng rác thành Khôi phục nếu đã ẩn
-                const actionBtn = isHidden
-                    ? `<button class="btn-action btn-restore me-1" title="Khôi phục" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash-restore"></i></button>`
-                    : `<button class="btn-action btn-trash me-1" title="Ẩn" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash"></i></button>`;
-                return `
+        tbody.innerHTML = data.content.map((cat, index) => {
+            const isHidden = cat.isActive === false;
+            const rowClass = isHidden ? 'row-hidden' : '';
+            const statusBadge = isHidden ? '<span class="status-badge badge-hidden">Đã ẩn</span>' : '';
+            const actionBtn = isHidden
+                ? `<button class="btn-action btn-restore me-1" title="Khôi phục" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash-restore"></i></button>`
+                : `<button class="btn-action btn-trash me-1" title="Ẩn" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash"></i></button>`;
 
+            return `
             <tr class="${rowClass}">
-                <td style="text-align: center;">${index + 1}</td>
+                <td style="text-align: center;">${(page * pageSize) + index + 1}</td>
+                <td style="text-align: center;"><span class="id-badge">#${cat.id}</span></td>
+                <td style="padding-left: 40px;">
+                    <div class="d-flex align-items-center gap-2">
+                        ${cat.iconUrl ? `<img src="${cat.iconUrl}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 8px;">` : ''}
+                        <strong style="color:var(--teal-dark)">${cat.categoryName}</strong>
+                    </div>
+                    <div class="mt-1">${statusBadge}</div>
+                </td>
+                <td style="text-align: center;">${cat.totalLessons || 0} bài</td>
+                <td style="text-align: center;"><span class="level-badge">${cat.jlptLevel || 'N5'}</span></td>
+                <td style="text-align: center;">
+                    <button class="btn-action btn-edit me-1" title="Sửa" onclick="editCategory(${cat.id})"><i class="fas fa-edit"></i></button>
+                    ${actionBtn}
+                </td>
+            </tr>`;
+        }).join('');
+
+        // Render pagination
+        if (paginationManager['categoryPagination']) {
+            paginationManager['categoryPagination'].render(data.totalPages, data.number);
+        }
+    } catch (e) {
+        console.error("Lỗi tải chủ đề:", e);
+        document.getElementById('categoryTableBody').innerHTML = `<tr><td colspan="6" class="text-center text-danger">Lỗi nạp dữ liệu</td</tr>`;
+    }
+}
+
+// Fallback function cho categories nếu backend chưa hỗ trợ phân trang
+async function loadAllCategoriesClientSide(page, pageSize) {
+    const token = localStorage.getItem('token');
+    try {
+        const res = await fetch('/api/admin/categories', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (!res.ok) return;
+        let categories = await res.json();
+        categories.sort((a, b) => a.id - b.id);
+
+        const totalPages = Math.ceil(categories.length / pageSize);
+        const start = page * pageSize;
+        const end = start + pageSize;
+        const pageData = categories.slice(start, end);
+
+        const tbody = document.getElementById('categoryTableBody');
+
+        if (pageData.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-muted">Chưa có chủ đề nào</td></tr>`;
+            if (paginationManager['categoryPagination']) {
+                paginationManager['categoryPagination'].reset();
+            }
+            return;
+        }
+
+        tbody.innerHTML = pageData.map((cat, index) => {
+            const isHidden = cat.isActive === false;
+            const rowClass = isHidden ? 'row-hidden' : '';
+            const statusBadge = isHidden ? '<span class="status-badge badge-hidden">Đã ẩn</span>' : '';
+            const actionBtn = isHidden
+                ? `<button class="btn-action btn-restore me-1" title="Khôi phục" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash-restore"></i></button>`
+                : `<button class="btn-action btn-trash me-1" title="Ẩn" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash"></i></button>`;
+
+            return `
+            <tr class="${rowClass}">
+                <td style="text-align: center;">${start + index + 1}</td>
                 <td style="text-align: center;"><span class="id-badge">#${cat.id}</span></td>
                 <td style="padding-left: 40px;">
                     <strong style="color:var(--teal-dark)">${cat.categoryName}</strong>
@@ -987,12 +1056,15 @@ function jumpToUserPage() {
                     ${actionBtn}
                 </td>
             </tr>`;
-            }).join('');
-        } catch (e) {
-            console.error(e);
-            document.getElementById('categoryTableBody').innerHTML = `<tr><td colspan="5" class="text-center text-danger">Lỗi nạp dữ liệu</td></tr>`;
+        }).join('');
+
+        if (paginationManager['categoryPagination']) {
+            paginationManager['categoryPagination'].render(totalPages, page);
         }
+    } catch (e) {
+        console.error(e);
     }
+}
 
     function openAddCategoryModal() {
         document.getElementById('categoryForm').reset();
@@ -1058,7 +1130,7 @@ try {
             });
 
             // LÀM MỚI DỮ LIỆU: Gọi lại hàm load danh sách
-            loadAllCategories(token);
+            loadAllCategoriesWithPagination(0);
         } else {
             const errorText = await response.text();
             Swal.fire('Thất bại', 'Lỗi: ' + errorText, 'error');
@@ -1069,18 +1141,150 @@ try {
     }
 }
 
-    async function loadAllLessons(token) {
-        try {
-            const res = await fetch('/api/admin/lessons', { headers: { 'Authorization': 'Bearer ' + token } });
-            const lessons = await res.json();
-            const tbody = document.getElementById('lessonTableBody');
-            if (lessons.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">Chưa có bài học nào</td></tr>`;
-                return;
+    async function loadAllLessonsWithPagination(page = 0) {
+    const token = localStorage.getItem('token');
+    const search = document.getElementById('lessonSearch')?.value || "";
+    const categoryId = document.getElementById('lessonFilterCategory')?.value || "";
+    const level = document.getElementById('lessonFilterLevel')?.value || "";
+    const pageSize = 10;
+
+    try {
+        let url = `/api/admin/lessons/paging?page=${page}&size=${pageSize}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        if (categoryId) url += `&categoryId=${categoryId}`;
+        if (level) url += `&level=${level}`;
+
+        const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+
+        if (!res.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const data = await res.json();
+        const tbody = document.getElementById('lessonTableBody');
+
+        const countBadge = document.getElementById('lessonCountBadge');
+        if (countBadge) {
+            countBadge.innerText = `${data.totalElements || 0} bài học`;
+        }
+
+        if (!data.content || data.content.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">Không tìm thấy bài học nào</td</tr>`;
+            if (paginationManager['lessonPagination']) {
+                paginationManager['lessonPagination'].reset();
             }
-            tbody.innerHTML = lessons.map((les, index) => `
+            return;
+        }
+
+        tbody.innerHTML = data.content.map((les, index) => {
+            // Tính tổng số từ vựng (nếu có trong response)
+            const totalVocab = les.totalVocab || 0;
+            const lessonName = les.lessonName || '';
+            const categoryName = les.categoryName || 'Chưa phân loại';
+            return `
             <tr>
-                <td style="text-align: center;">${index + 1}</td>
+        <td style="text-align: center;">${(page * pageSize) + index + 1}</td>
+        <td style="text-align: center;"><span class="id-badge">#${les.id}</span></td>
+        <td><strong>${lessonName}</strong></td>
+        <td><strong style="color:var(--teal-dark)">${categoryName}</strong></td>
+        <td style="text-align: center;"><span class="level-badge">${totalVocab} từ</span></td>
+        <td style="text-align: center;">
+            <button class="btn-action btn-edit me-1" title="Sửa" onclick="editLesson(${les.id})">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn-action btn-trash" title="Xóa" onclick="deleteLesson(${les.id})">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    </tr>
+            `;
+        }).join('');
+
+        // Render pagination
+        if (paginationManager['lessonPagination']) {
+            paginationManager['lessonPagination'].render(data.totalPages, data.number);
+        }
+    } catch (e) {
+        console.error("Lỗi tải bài học:", e);
+        document.getElementById('lessonTableBody').innerHTML = `<tr><td colspan="6" class="text-center text-danger">Lỗi nạp dữ liệu</td</tr>`;
+    }
+}
+
+        // Load danh sách category cho filter của lessons
+        async function loadLessonCategoryFilter() {
+    const token = localStorage.getItem('token');
+    const level = document.getElementById('lessonFilterLevel')?.value || "";
+
+    try {
+        let url = '/api/admin/categories';
+        if (level) {
+            url = `/api/admin/categories/filter?level=${level}`;
+        }
+
+        const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+        const categories = await res.json();
+        const select = document.getElementById('lessonFilterCategory');
+        if (select) {
+            select.innerHTML = '<option value="">Tất cả chủ đề</option>' +
+                categories.map(c => `<option value="${c.id}">${c.categoryName}</option>`).join('');
+        }
+    } catch (e) {
+        console.error("Lỗi tải danh sách chủ đề:", e);
+    }
+}
+
+    // Khi chọn cấp độ, load lại danh sách chủ đề theo cấp độ đó
+async function onLessonLevelChange() {
+    const token = localStorage.getItem('token');
+    const level = document.getElementById('lessonFilterLevel').value;
+    const categorySelect = document.getElementById('lessonFilterCategory');
+
+    if (!level) {
+        // Nếu bỏ chọn cấp độ, reset select về chỉ có "Tất cả chủ đề"
+        categorySelect.innerHTML = '<option value="">Tất cả chủ đề</option>';
+    } else {
+        try {
+            const res = await fetch(`/api/admin/categories/filter?level=${level}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (res.ok) {
+                const categories = await res.json();
+                categorySelect.innerHTML = '<option value="">Tất cả chủ đề</option>' +
+                    categories.map(c => `<option value="${c.id}">${c.categoryName}</option>`).join('');
+            }
+        } catch (e) {
+            console.error("Lỗi tải chủ đề theo cấp độ:", e);
+        }
+    }
+    // Reset về trang 1 sau khi thay đổi filter
+    loadAllLessonsWithPagination(0);
+}
+
+// Fallback function cho lessons
+async function loadAllLessonsClientSide(page, pageSize) {
+    const token = localStorage.getItem('token');
+    try {
+        const res = await fetch('/api/admin/lessons', { headers: { 'Authorization': 'Bearer ' + token } });
+        const lessons = await res.json();
+
+        const totalPages = Math.ceil(lessons.length / pageSize);
+        const start = page * pageSize;
+        const end = start + pageSize;
+        const pageData = lessons.slice(start, end);
+
+        const tbody = document.getElementById('lessonTableBody');
+
+        if (pageData.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">Chưa có bài học nào</td></tr>`;
+            if (paginationManager['lessonPagination']) {
+                paginationManager['lessonPagination'].reset();
+            }
+            return;
+        }
+
+        tbody.innerHTML = pageData.map((les, index) => `
+            <tr>
+                <td style="text-align: center;">${start + index + 1}</td>
                 <td style="text-align: center;"><span class="id-badge">#${les.id}</span></td>
                 <td><strong>${les.lessonName}</strong></td>
                 <td><strong style="color:var(--teal-dark)">${les.categoryName || 'Chưa phân loại'}</strong></td>
@@ -1089,9 +1293,16 @@ try {
                     <button class="btn-action btn-edit me-1" onclick="editLesson(${les.id})"><i class="fas fa-edit"></i></button>
                     <button class="btn-action btn-trash" onclick="deleteLesson(${les.id})"><i class="fas fa-trash"></i></button>
                 </td>
-            </tr>`).join('');
-        } catch (e) { console.error(e); }
+            </tr>
+        `).join('');
+
+        if (paginationManager['lessonPagination']) {
+            paginationManager['lessonPagination'].render(totalPages, page);
+        }
+    } catch (e) {
+        console.error(e);
     }
+}
 
     async function openAddLessonModal() {
         const token = localStorage.getItem('token');
@@ -1106,59 +1317,100 @@ try {
     }
 
     async function submitLesson() {
-        const name = document.getElementById('lessonName').value.trim();
-        const catId = document.getElementById('lessonCategorySelect').value;
+    const name = document.getElementById('lessonName').value.trim();
+    const catId = document.getElementById('lessonCategorySelect').value;
+    const token = localStorage.getItem('token');
+    if (!name) return Swal.fire('Lỗi', 'Tên không được trống', 'error');
+    try {
+        const res = await fetch('/api/admin/lessons', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lessonName: name, categoryId: catId })
+        });
+        if (res.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('lessonModal')).hide();
+            Swal.fire('Thành công', 'Đã thêm bài học!', 'success');
+            loadAllLessonsWithPagination(0); // Sửa: gọi hàm mới
+            loadLessonCategoryFilter(); // Refresh filter dropdown
+        } else {
+            const error = await res.text();
+            Swal.fire('Lỗi', error, 'error');
+        }
+    } catch (e) { console.error(e); }
+}
+
+async function deleteLesson(id) {
+    const result = await Swal.fire({
+        title: 'Xác nhận xóa?',
+        text: "Bạn có chắc muốn xóa bài học này?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#06BBCC',
+        confirmButtonText: 'Xác nhận',
+        cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
         const token = localStorage.getItem('token');
-        if (!name) return Swal.fire('Lỗi', 'Tên không được trống', 'error');
         try {
-            const res = await fetch('/api/admin/lessons', {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ lessonName: name, categoryId: catId })
+            const res = await fetch(`/api/admin/lessons/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
             });
             if (res.ok) {
-                bootstrap.Modal.getInstance(document.getElementById('lessonModal')).hide();
-                Swal.fire('Thành công', 'Đã thêm bài học!', 'success');
-                loadAllLessons(token);
+                Swal.fire('Thành công', 'Đã xóa bài học', 'success');
+                const currentPage = paginationManager['lessonPagination']?.currentPage || 0;
+                loadAllLessonsWithPagination(currentPage);
+                loadLessonCategoryFilter(); // Refresh filter dropdown
+            } else {
+                const error = await res.text();
+                Swal.fire('Lỗi', error, 'error');
             }
         } catch (e) { console.error(e); }
     }
+}
 
     async function loadVocabWithPagination(page) {
     const token = localStorage.getItem('token');
     const search = document.getElementById('vocabSearch')?.value || "";
-    const lessonId = document.getElementById('filterLesson')?.value || "";
     const cateId = document.getElementById('filterCate')?.value || "";
     const level = document.getElementById('filterLevel')?.value || "";
     const pageSize = 20;
+
     try {
         let url = `/api/admin/vocab/all?page=${page}&size=${pageSize}&search=${encodeURIComponent(search)}&cateId=${cateId}&level=${level}`;
         const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
         const data = await res.json();
 
         const tbody = document.getElementById('vocabTableBody');
-        const vocabSection = document.querySelector('.table-vocab');
-        const paginationContainer = document.getElementById('vocabPagination');
-        const paginationRight = vocabSection ? vocabSection.querySelector('.pagination-right') : null;
-        const infoContainer = document.getElementById('paginationInfo');
+
+        const countBadge = document.getElementById('vocabCountBadge');
+        if (countBadge) {
+            countBadge.innerText = `${data.totalElements || 0} từ vựng`;
+        }
 
         if (!data.content || data.content.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted">Không tìm thấy từ vựng nào</td></tr>`;
-
-            // Ẩn cả pagination-center và pagination-right khi không có dữ liệu
-            if (paginationContainer) paginationContainer.innerHTML = '';
-            if (paginationRight) paginationRight.style.display = 'none';
-            if (infoContainer) infoContainer.innerHTML = 'Trang 0 / 0';
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted">Không tìm thấy từ vựng nào</td</tr>`;
+            if (paginationManager['vocabPagination']) {
+                paginationManager['vocabPagination'].reset();
+            }
             return;
         }
 
-        // Hiện lại pagination-right nếu có dữ liệu
-        if (paginationRight) paginationRight.style.display = 'flex';
-
-        tbody.innerHTML = data.content.map((v, index) => `
+        tbody.innerHTML = data.content.map((v, index) => {
+            const sttNumber = (page * pageSize) + index + 1;
+            return `
             <tr>
-                <td style="text-align:center; font-size: 13px;">${(page * pageSize) + index + 1}</td>
-                <td style="text-align:center; font-size: 13px;"><span class="id-badge">#${v.id}</span></td>
+                ${bulkModeActive ?
+                    `<td class="checkbox-cell" style="text-align: center;">
+                        <input type="checkbox" class="select-checkbox row-select-vocab" value="${v.id}"
+                               onchange="updateVocabSelection(this)">
+                     </td>
+                     <td class="stt-cell" style="display: none; text-align: center;">${sttNumber}</td>` :
+                    `<td style="text-align: center;">${sttNumber}</td>`
+                }
+                <td style="text-align:center;"><span class="id-badge">#${v.id}</span></td>
                 <td><strong style="font-size: 18px; color: var(--text-dark);">${v.expression}</strong></td>
                 <td><span style="color: var(--teal); font-weight: 600;">${v.kana}</span></td>
                 <td><small style="font-size: 15px;">${v.romaji}</small></td>
@@ -1170,14 +1422,50 @@ try {
                     <button class="btn-action btn-trash" title="Xóa" onclick="deleteVocab(${v.id})">
                         <i class="fas fa-trash"></i>
                     </button>
-                </td>
-            </tr>`).join('');
-        renderPagination(data.totalPages, data.number);
+                 </td>
+            </tr>`;
+        }).join('');
+
+        if (paginationManager['vocabPagination']) {
+            paginationManager['vocabPagination'].render(data.totalPages, data.number);
+        }
     } catch (e) {
         console.error(e);
-        document.getElementById('vocabTableBody').innerHTML = `<tr><td colspan="8" class="text-center text-danger">Lỗi nạp dữ liệu</td></tr>`;
+        document.getElementById('vocabTableBody').innerHTML = `<tr><td colspan="8" class="text-center text-danger">Lỗi nạp dữ liệu</td</tr>`;
     }
 }
+
+        async function deleteVocab(id) {
+    const result = await Swal.fire({
+        title: 'Xác nhận xóa?',
+        text: "Bạn có chắc muốn xóa từ vựng này?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#06BBCC',
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`/api/admin/vocab/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (res.ok) {
+                Swal.fire('Thành công', 'Đã xóa từ vựng', 'success');
+                // SỬA: Lấy trang hiện tại và reload
+                const currentPage = paginationManager['vocabPagination']?.currentPage || 0;
+                loadVocabWithPagination(currentPage);
+            } else {
+                Swal.fire('Lỗi', 'Không thể xóa từ vựng', 'error');
+            }
+        } catch (e) { console.error(e); }
+    }
+}
+
 
     // 1. Hàm load danh sách Chủ đề khi chọn Level
     async function updateCategoryFilter() {
@@ -1206,109 +1494,7 @@ try {
         loadVocabWithPagination(0);
     }
 
-let totalPagesGlobal = 0;
 
-function renderPagination(totalPages, currentPage) {
-    totalPagesGlobal = totalPages;
-    const container = document.getElementById('vocabPagination');
-    const infoContainer = document.getElementById('paginationInfo');
-    const vocabSection = document.querySelector('.table-vocab');
-    const paginationRight = vocabSection ? vocabSection.querySelector('.pagination-right') : null;
-
-    if (totalPages <= 0) {
-        infoContainer.innerHTML = `<span class="pagination-label">Trang</span> <b class="pagination-number">0</b> / <b class="pagination-number">0</b>`;
-        if (container) container.innerHTML = '';
-        if (paginationRight) paginationRight.style.display = 'none';
-        return;
-    }
-
-    infoContainer.innerHTML = `<span class="pagination-label">Trang</span> <b class="pagination-number">${currentPage + 1}</b> / <b class="pagination-number">${totalPages}</b>`;
-
-    if (totalPages <= 1) {
-        if (container) container.innerHTML = '';
-        if (paginationRight) paginationRight.style.display = 'none';
-        return;
-    }
-
-    // Hiện pagination-right khi có nhiều hơn 1 trang
-    if (paginationRight) paginationRight.style.display = 'flex';
-
-    let html = '';
-    html += `<button class="pagination-btn" ${currentPage === 0 ? 'disabled' : ''} onclick="loadVocabWithPagination(0)" title="Trang đầu"><i class="fas fa-angle-double-left"></i></button>`;
-    html += `<button class="pagination-btn" ${currentPage === 0 ? 'disabled' : ''} onclick="loadVocabWithPagination(${currentPage - 1})"><i class="fas fa-chevron-left"></i></button>`;
-
-    let startPage = Math.max(0, currentPage - 2);
-    let endPage = Math.min(totalPages - 1, startPage + 4);
-
-    if (endPage - startPage < 4) {
-        startPage = Math.max(0, endPage - 4);
-    }
-
-    if (startPage > 0) {
-        html += `<span class="pagination-dots">...</span>`;
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-        html += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="loadVocabWithPagination(${i})">${i + 1}</button>`;
-    }
-
-    if (endPage < totalPages - 1) {
-        html += `<span class="pagination-dots">...</span>`;
-    }
-
-    html += `<button class="pagination-btn" ${currentPage === totalPages - 1 ? 'disabled' : ''} onclick="loadVocabWithPagination(${currentPage + 1})"><i class="fas fa-chevron-right"></i></button>`;
-    html += `<button class="pagination-btn" ${currentPage === totalPages - 1 ? 'disabled' : ''} onclick="loadVocabWithPagination(${totalPages - 1})" title="Trang cuối"><i class="fas fa-angle-double-right"></i></button>`;
-
-    container.innerHTML = `<div class="pagination-container">${html}</div>`;
-
-    // Lắng nghe sự kiện Enter cho ô nhập số trang
-    const jumpInput = document.getElementById('jumpPageInput');
-    if (jumpInput) {
-        // Remove old event listener by cloning and replacing
-        const newJumpInput = jumpInput.cloneNode(true);
-        jumpInput.parentNode.replaceChild(newJumpInput, jumpInput);
-
-        newJumpInput.onkeydown = function(e) {
-            if (e.key === 'Enter') jumpToPage();
-        };
-    }
-}
-
-    function jumpToPage() {
-    const input = document.getElementById('jumpPageInput');
-    const pageNum = parseInt(input.value);
-
-    // Lấy tổng số trang từ DOM thay vì dùng biến global
-    const infoContainer = document.getElementById('paginationInfo');
-    let totalPages = 0;
-
-    if (infoContainer) {
-        const text = infoContainer.innerText;
-        const match = text.match(/\/(\d+)$/);  // Lấy số sau dấu /
-        if (match) {
-            totalPages = parseInt(match[1]);
-        }
-    }
-
-    // Nếu không lấy được từ DOM, fallback sang biến global
-    if (totalPages === 0) {
-        totalPages = totalPagesGlobal;
-    }
-
-    if (isNaN(pageNum) || pageNum < 1 || pageNum > totalPages || totalPages === 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Số trang không hợp lệ',
-            text: `Vui lòng nhập số từ 1 đến ${totalPages}`,
-            timer: 1500,
-            showConfirmButton: false
-        });
-        input.value = '';
-        return;
-    }
-    loadVocabWithPagination(pageNum - 1);
-    input.value = '';
-}
 
     // 1. Mở modal và load danh sách bài học
     async function openAddVocabModal() {
@@ -1491,7 +1677,7 @@ function renderPagination(totalPages, currentPage) {
                 bootstrap.Modal.getInstance(document.getElementById('categoryModal')).hide();
                 await Swal.fire('Thành công', 'Chủ đề và ảnh đã được lưu!', 'success');
                 selectedFile = null; // Reset biến tạm
-                loadAllCategories(token);
+                loadAllCategoriesWithPagination(0);
             } else {
                 Swal.fire('Lỗi', 'Không thể lưu chủ đề', 'error');
             }
@@ -1529,7 +1715,8 @@ function renderPagination(totalPages, currentPage) {
                         timer: 1000,
                         showConfirmButton: false
                     });
-                    loadAllCategories(token);
+                    const currentPage = paginationManager['categoryPagination']?.currentPage || 0;
+                    loadAllCategoriesWithPagination(currentPage);
                 }
             } catch (e) { console.error(e); }
         }
@@ -1566,7 +1753,8 @@ function renderPagination(totalPages, currentPage) {
                     timer: 1000,
                     showConfirmButton: false
                 });
-                loadAllUsersWithFilter(token); // Tải lại bảng người dùng
+                const currentPage = paginationManager['userPagination']?.currentPage || 0;
+                loadAllUsersWithFilter(currentPage);
             }
         } catch (e) {
             console.error(e);
@@ -1574,6 +1762,356 @@ function renderPagination(totalPages, currentPage) {
         }
     }
 }
+
+
+    // ==================== HỆ THỐNG PHÂN TRANG DÙNG CHUNG ====================
+
+class PaginationManager {
+    constructor(config) {
+        this.containerId = config.containerId;      // ID của container chứa pagination (vd: 'userPagination', 'vocabPagination')
+        this.infoContainerId = config.infoContainerId; // ID của container hiển thị thông tin trang (thường là 'paginationInfo')
+        this.parentSelector = config.parentSelector;   // Selector của section cha (vd: '.table-users', '.table-vocab')
+        this.loadFunction = config.loadFunction;       // Hàm load dữ liệu (vd: loadAllUsersWithFilter, loadVocabWithPagination)
+        this.pageSize = config.pageSize || 10;         // Số item mỗi trang
+        this.currentPage = 0;
+        this.totalPages = 0;
+    }
+
+    // Hiển thị phân trang
+    render(totalPages, currentPage) {
+        this.totalPages = totalPages;
+        this.currentPage = currentPage;
+
+        const container = document.getElementById(this.containerId);
+        const infoContainer = document.getElementById(this.infoContainerId);
+        const parentSection = document.querySelector(this.parentSelector);
+        const paginationRight = parentSection ? parentSection.querySelector('.pagination-right') : null;
+
+        // Cập nhật thông tin trang
+        if (infoContainer) {
+            if (totalPages <= 0) {
+                infoContainer.innerHTML = `<span class="pagination-label">Trang</span> <b class="pagination-number">0</b> / <b class="pagination-number">0</b>`;
+            } else {
+                infoContainer.innerHTML = `<span class="pagination-label">Trang</span> <b class="pagination-number">${currentPage + 1}</b> / <b class="pagination-number">${totalPages}</b>`;
+            }
+        }
+
+        // Ẩn phân trang nếu không có dữ liệu hoặc chỉ có 1 trang
+        if (totalPages <= 1) {
+            if (container) container.innerHTML = '';
+            if (paginationRight) paginationRight.style.display = 'none';
+            return;
+        }
+
+        // Hiện phân trang
+        if (paginationRight) paginationRight.style.display = 'flex';
+
+        // Tạo HTML phân trang
+        let html = '';
+
+        // Nút First và Previous
+        html += `<button class="pagination-btn" ${currentPage === 0 ? 'disabled' : ''}
+                    onclick="paginationManager['${this.containerId}'].goToPage(0)">
+                    <i class="fas fa-angle-double-left"></i>
+                </button>`;
+        html += `<button class="pagination-btn" ${currentPage === 0 ? 'disabled' : ''}
+                    onclick="paginationManager['${this.containerId}'].goToPage(${currentPage - 1})">
+                    <i class="fas fa-chevron-left"></i>
+                </button>`;
+
+        // Tính toán dải số trang
+        let startPage = Math.max(0, currentPage - 2);
+        let endPage = Math.min(totalPages - 1, startPage + 4);
+        if (endPage - startPage < 4) {
+            startPage = Math.max(0, endPage - 4);
+        }
+
+        if (startPage > 0) {
+            html += `<span class="pagination-dots">...</span>`;
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}"
+                        onclick="paginationManager['${this.containerId}'].goToPage(${i})">${i + 1}</button>`;
+        }
+
+        if (endPage < totalPages - 1) {
+            html += `<span class="pagination-dots">...</span>`;
+        }
+
+        // Nút Next và Last
+        html += `<button class="pagination-btn" ${currentPage === totalPages - 1 ? 'disabled' : ''}
+                    onclick="paginationManager['${this.containerId}'].goToPage(${currentPage + 1})">
+                    <i class="fas fa-chevron-right"></i>
+                </button>`;
+        html += `<button class="pagination-btn" ${currentPage === totalPages - 1 ? 'disabled' : ''}
+                    onclick="paginationManager['${this.containerId}'].goToPage(${totalPages - 1})">
+                    <i class="fas fa-angle-double-right"></i>
+                </button>`;
+
+        container.innerHTML = `<div class="pagination-container">${html}</div>`;
+
+        // Gắn sự kiện Enter cho input nhảy trang
+        const jumpInput = parentSection ? parentSection.querySelector('#jumpPageInput') : document.getElementById('jumpPageInput');
+        if (jumpInput) {
+            const newJumpInput = jumpInput.cloneNode(true);
+            jumpInput.parentNode.replaceChild(newJumpInput, jumpInput);
+            newJumpInput.onkeydown = (e) => {
+                if (e.key === 'Enter') this.jumpToPage();
+            };
+        }
+    }
+
+    // Nhảy đến trang
+    jumpToPage() {
+        const parentSection = document.querySelector(this.parentSelector);
+        const jumpInput = parentSection ? parentSection.querySelector('#jumpPageInput') : document.getElementById('jumpPageInput');
+
+        if (!jumpInput) return;
+
+        const pageNum = parseInt(jumpInput.value);
+
+        if (isNaN(pageNum) || pageNum < 1 || pageNum > this.totalPages || this.totalPages === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Số trang không hợp lệ',
+                text: `Vui lòng nhập số từ 1 đến ${this.totalPages}`,
+                timer: 1500,
+                showConfirmButton: false
+            });
+            jumpInput.value = '';
+            return;
+        }
+
+        this.goToPage(pageNum - 1);
+        jumpInput.value = '';
+    }
+
+    // Đi đến trang cụ thể
+    goToPage(page) {
+        if (page >= 0 && page < this.totalPages) {
+            this.loadFunction(page);
+        }
+    }
+
+    // Reset khi không có dữ liệu
+    reset() {
+        const container = document.getElementById(this.containerId);
+        const parentSection = document.querySelector(this.parentSelector);
+        const paginationRight = parentSection ? parentSection.querySelector('.pagination-right') : null;
+        const infoContainer = document.getElementById(this.infoContainerId);
+
+        if (container) container.innerHTML = '';
+        if (paginationRight) paginationRight.style.display = 'none';
+        if (infoContainer) infoContainer.innerHTML = 'Trang 0 / 0';
+
+        this.totalPages = 0;
+        this.currentPage = 0;
+    }
+}
+
+// Lưu trữ các instance pagination
+const paginationManager = {};
+
+// Khởi tạo pagination cho từng trang
+function initPaginationManagers() {
+    // Pagination cho User
+    paginationManager['userPagination'] = new PaginationManager({
+        containerId: 'userPagination',
+        infoContainerId: 'paginationInfo',
+        parentSelector: '.table-users',
+        loadFunction: (page) => loadAllUsersWithFilter(page),
+        pageSize: 5
+    });
+
+    // Pagination cho Categories
+    paginationManager['categoryPagination'] = new PaginationManager({
+        containerId: 'categoryPagination',
+        infoContainerId: 'categoryPaginationInfo',
+        parentSelector: '.table-categories',
+        loadFunction: (page) => loadAllCategoriesWithPagination(page),
+        pageSize: 5
+    });
+
+    // Pagination cho Lessons
+    paginationManager['lessonPagination'] = new PaginationManager({
+        containerId: 'lessonPagination',
+        infoContainerId: 'lessonPaginationInfo',
+        parentSelector: '.table-lessons',
+        loadFunction: (page) => loadAllLessonsWithPagination(page),
+        pageSize: 10
+    });
+
+    // Pagination cho Vocabulary
+    paginationManager['vocabPagination'] = new PaginationManager({
+        containerId: 'vocabPagination',
+        infoContainerId: 'paginationInfo',
+        parentSelector: '.table-vocab',
+        loadFunction: (page) => loadVocabWithPagination(page),
+        pageSize: 20
+    });
+
+}
+
+
+    // Bulk mode state
+let bulkModeActive = false;
+let selectedVocabIds = new Set();
+
+// Toggle bulk mode
+function toggleBulkMode() {
+    bulkModeActive = !bulkModeActive;
+    const toggleBtn = document.getElementById('toggleBulkModeBtn');
+    const selectAllCheckbox = document.getElementById('selectAllVocab');
+    const tableSection = document.querySelector('.table-vocab');
+
+    if (bulkModeActive) {
+        toggleBtn.innerHTML = '<i class="fas fa-times"></i> Thoát';
+        toggleBtn.classList.add('active');
+        tableSection.classList.add('bulk-mode-active');
+        if (selectAllCheckbox) selectAllCheckbox.style.display = 'inline-block';
+        // Clear selections when entering bulk mode
+        selectedVocabIds.clear();
+        updateBulkBar();
+        // Reload để hiển thị checkbox thay vì STT
+        const currentPage = paginationManager['vocabPagination']?.currentPage || 0;
+        loadVocabWithPagination(currentPage);
+    } else {
+        toggleBtn.innerHTML = '<i class="fas fa-check-square"></i> Chọn nhiều';
+        toggleBtn.classList.remove('active');
+        tableSection.classList.remove('bulk-mode-active');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.style.display = 'none';
+            selectAllCheckbox.checked = false;
+        }
+        selectedVocabIds.clear();
+        hideBulkBar();
+        // Reload để hiển thị lại STT
+        const currentPage = paginationManager['vocabPagination']?.currentPage || 0;
+        loadVocabWithPagination(currentPage);
+    }
+}
+
+// Update bulk action bar
+function updateBulkBar() {
+    let bar = document.getElementById('vocab-bulk-bar');
+    if (!bar) {
+        bar = document.createElement('div');
+        bar.className = 'bulk-action-bar';
+        bar.id = 'vocab-bulk-bar';
+        bar.innerHTML = `
+            <span>📌 Đã chọn: <span class="selected-count" id="vocab-selected-count">0</span> từ</span>
+            <button class="btn-bulk btn-bulk-delete" onclick="bulkDeleteVocab()">
+                <i class="fas fa-trash-alt"></i> Xóa
+            </button>
+            <button class="btn-bulk btn-bulk-cancel" onclick="clearVocabSelection()">
+                <i class="fas fa-times"></i> Hủy chọn
+            </button>
+        `;
+        document.body.appendChild(bar);
+    }
+
+    const countSpan = document.getElementById('vocab-selected-count');
+    if (countSpan) countSpan.innerText = selectedVocabIds.size;
+
+    if (selectedVocabIds.size > 0) {
+        bar.classList.add('show');
+    } else {
+        bar.classList.remove('show');
+    }
+}
+
+function hideBulkBar() {
+    const bar = document.getElementById('vocab-bulk-bar');
+    if (bar) bar.classList.remove('show');
+}
+
+function clearVocabSelection() {
+    const checkboxes = document.querySelectorAll('#vocabTableBody .row-select-vocab');
+    checkboxes.forEach(cb => {
+        cb.checked = false;
+        const id = parseInt(cb.value);
+        selectedVocabIds.delete(id);
+    });
+    updateBulkBar();
+
+    const selectAll = document.getElementById('selectAllVocab');
+    if (selectAll) selectAll.checked = false;
+}
+
+function toggleSelectAllVocab() {
+    const selectAll = document.getElementById('selectAllVocab');
+    const checkboxes = document.querySelectorAll('#vocabTableBody .row-select-vocab');
+
+    checkboxes.forEach(cb => {
+        cb.checked = selectAll.checked;
+        const id = parseInt(cb.value);
+        if (selectAll.checked) {
+            selectedVocabIds.add(id);
+        } else {
+            selectedVocabIds.delete(id);
+        }
+    });
+    updateBulkBar();
+}
+
+function updateVocabSelection(checkbox) {
+    const id = parseInt(checkbox.value);
+    if (checkbox.checked) {
+        selectedVocabIds.add(id);
+    } else {
+        selectedVocabIds.delete(id);
+    }
+    updateBulkBar();
+
+    // Update select all checkbox state
+    const selectAll = document.getElementById('selectAllVocab');
+    if (selectAll) {
+        const totalCheckboxes = document.querySelectorAll('#vocabTableBody .row-select-vocab').length;
+        const checkedCheckboxes = document.querySelectorAll('#vocabTableBody .row-select-vocab:checked').length;
+        selectAll.checked = totalCheckboxes > 0 && totalCheckboxes === checkedCheckboxes;
+        selectAll.indeterminate = checkedCheckboxes > 0 && checkedCheckboxes < totalCheckboxes;
+    }
+}
+
+async function bulkDeleteVocab() {
+    if (selectedVocabIds.size === 0) return;
+
+    const result = await Swal.fire({
+        title: 'Xác nhận xóa',
+        text: `Bạn có chắc muốn xóa ${selectedVocabIds.size} từ vựng đã chọn?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
+        const token = localStorage.getItem('token');
+        let successCount = 0;
+
+        for (const id of selectedVocabIds) {
+            try {
+                const res = await fetch(`/api/admin/vocab/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (res.ok) successCount++;
+            } catch (e) { console.error(e); }
+        }
+
+        Swal.fire('Thành công', `Đã xóa ${successCount} từ vựng`, 'success');
+        clearVocabSelection();
+        // Exit bulk mode
+        if (bulkModeActive) toggleBulkMode();
+        // Reload data
+        const currentPage = paginationManager['vocabPagination']?.currentPage || 0;
+        loadVocabWithPagination(currentPage);
+    }
+}
+
+
 
 
     function logout() {
