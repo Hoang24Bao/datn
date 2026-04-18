@@ -365,23 +365,25 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+
 <script th:inline="javascript">
-    // HÀM TIỆN ÍCH
-    function getAvatarPath(url, fullname) {
-        const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullname)}&background=06BBCC&color=fff`;
-        if (!url) return defaultAvatar;
-        let path = (url.startsWith('img/') || url.startsWith('http')) ? url : `img/avatar/${url}`;
-        return `${path}?v=${new Date().getTime()}`;
-    }
+    // ===== NHÓM CHUNG ===== //
 
-    function toggleSidebar() {
-        const sidebar = document.querySelector('.sidebar');
-        const overlay = document.getElementById('overlay');
-        sidebar.classList.toggle('active');
-        overlay.classList.toggle('active');
-    }
+function getAvatarPath(url, fullname) {
+    const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullname)}&background=06BBCC&color=fff`;
+    if (!url) return defaultAvatar;
+    let path = (url.startsWith('img/') || url.startsWith('http')) ? url : `img/avatar/${url}`;
+    return `${path}?v=${new Date().getTime()}`;
+}
 
-    const dashboardTemplate = `
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('overlay');
+    sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+}
+
+const dashboardTemplate = `
     <div class="breadcrumb-bar">
         <div class="chip active"><i class="fas fa-chart-pie" style="margin-right:5px; font-size:10px;"></i>Thống kê</div>
         <span class="sep">›</span><div class="chip">Dashboard</div>
@@ -427,65 +429,65 @@
     </div>
 `;
 
-    window.onload = function () {
-        const role = localStorage.getItem('role');
-        const token = localStorage.getItem('token');
-        const fullname = localStorage.getItem('fullname') || 'Admin';
-        const avatarUrl = localStorage.getItem('avatarUrl');
+window.onload = function () {
+    const role = localStorage.getItem('role');
+    const token = localStorage.getItem('token');
+    const fullname = localStorage.getItem('fullname') || 'Admin';
+    const avatarUrl = localStorage.getItem('avatarUrl');
 
-        initPaginationManagers();
+    initPaginationManagers();
 
-        if (role !== 'ROLE_ADMIN' || !token) {
-            location.href = '/login';
-            return;
-        }
+    if (role !== 'ROLE_ADMIN' || !token) {
+        location.href = '/login';
+        return;
+    }
 
-        document.getElementById('adminName').innerText = fullname;
-        document.getElementById('sidebarAdminName').innerText = fullname;
+    document.getElementById('adminName').innerText = fullname;
+    document.getElementById('sidebarAdminName').innerText = fullname;
 
-        const sidebarImg = document.getElementById('sidebarAvatar');
-        const topbarImg = document.getElementById('adminAvatar');
-        const finalPath = getAvatarPath(avatarUrl, fullname);
+    const sidebarImg = document.getElementById('sidebarAvatar');
+    const topbarImg = document.getElementById('adminAvatar');
+    const finalPath = getAvatarPath(avatarUrl, fullname);
 
-        sidebarImg.src = finalPath;
-        topbarImg.src = finalPath;
+    sidebarImg.src = finalPath;
+    topbarImg.src = finalPath;
 
-        const savedTab = localStorage.getItem('activeAdminTab') || 'dashboard';
-        const targetBtn = document.querySelector(`button[onclick*="'${savedTab}'"]`);
+    const savedTab = localStorage.getItem('activeAdminTab') || 'dashboard';
+    const targetBtn = document.querySelector(`button[onclick*="'${savedTab}'"]`);
 
-        if (targetBtn) {
-            loadSection(savedTab, targetBtn);
-        } else {
-            const firstBtn = document.querySelector('.nav-item');
-            loadSection('dashboard', firstBtn);
-        }
-    };
+    if (targetBtn) {
+        loadSection(savedTab, targetBtn);
+    } else {
+        const firstBtn = document.querySelector('.nav-item');
+        loadSection('dashboard', firstBtn);
+    }
+};
 
-    function loadSection(section, element, event) {
-        if (event) event.preventDefault();
-        localStorage.setItem('activeAdminTab', section);
+function loadSection(section, element, event) {
+    if (event) event.preventDefault();
+    localStorage.setItem('activeAdminTab', section);
 
-        if (window.innerWidth <= 992) {
-            toggleSidebar();
-        }
-        const mainContent = document.getElementById('main-content');
-        const mainTitle = document.getElementById('page-main-title');
-        const token = localStorage.getItem('token');
+    if (window.innerWidth <= 992) {
+        toggleSidebar();
+    }
+    const mainContent = document.getElementById('main-content');
+    const mainTitle = document.getElementById('page-main-title');
+    const token = localStorage.getItem('token');
 
-        document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-        element.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+    element.classList.add('active');
 
-        switch (section) {
-            case 'dashboard':
-                mainTitle.innerText = "Dashboard Tổng Quan";
-                mainContent.innerHTML = dashboardTemplate;
-                loadDashboardStats(token);
-                loadLatestUsers(token);
-                break;
+    switch (section) {
+        case 'dashboard':
+            mainTitle.innerText = "Dashboard Tổng Quan";
+            mainContent.innerHTML = dashboardTemplate;
+            loadDashboardStats(token);
+            loadLatestUsers(token);
+            break;
 
-            case 'users':
-                mainTitle.innerText = "Quản Lý Người Dùng";
-                mainContent.innerHTML = `
+        case 'users':
+            mainTitle.innerText = "Quản Lý Người Dùng";
+            mainContent.innerHTML = `
                 <div class="table-section table-users">
                     <div class="table-header">
                     <div class="table-header-left">
@@ -550,12 +552,12 @@
             </div>
         </div>
                 </div>`;
-                loadAllUsersWithFilter(0);
-                break;
+            loadAllUsersWithFilter(0);
+            break;
 
-            case 'categories':
-    mainTitle.innerText = "Quản Lý Chủ đề";
-    mainContent.innerHTML = `
+        case 'categories':
+            mainTitle.innerText = "Quản Lý Chủ đề";
+            mainContent.innerHTML = `
     <div class="breadcrumb-bar">
         <div class="chip active">Chủ đề</div>
         <span class="sep">›</span><div class="chip">Chủ đề từ vựng</div>
@@ -617,14 +619,12 @@
             </div>
         </div>
     </div>`;
+            loadAllCategoriesWithPagination(0);
+            break;
 
-
-    loadAllCategoriesWithPagination(0);
-    break;
-
-case 'lessons':
-    mainTitle.innerText = "Quản Lý Bài Học";
-    mainContent.innerHTML = `
+        case 'lessons':
+            mainTitle.innerText = "Quản Lý Bài Học";
+            mainContent.innerHTML = `
     <div class="breadcrumb-bar">
         <div class="chip active">Nội dung</div>
         <span class="sep">›</span><div class="chip">Bài học</div>
@@ -685,13 +685,13 @@ case 'lessons':
         </div>
     </div>`;
 
-    // Load danh sách cho filter
-    loadAllLessonsWithPagination(0);
-    break;
+            // Load danh sách cho filter
+            loadAllLessonsWithPagination(0);
+            break;
 
-            case 'vocabulary':
-    mainTitle.innerText = "Quản Lý Từ Vựng";
-    mainContent.innerHTML = `
+        case 'vocabulary':
+            mainTitle.innerText = "Quản Lý Từ Vựng";
+            mainContent.innerHTML = `
     <div class="table-section table-vocab">
         <div class="table-header">
             <div class="table-header-left">
@@ -752,1019 +752,34 @@ case 'lessons':
         </div>
     </div>`;
 
-    // Reset bulk mode state
-    bulkModeActive = false;
-    selectedVocabIds.clear();
-    const toggleBtn = document.getElementById('toggleBulkModeBtn');
-    if (toggleBtn) toggleBtn.classList.remove('active');
+            // Reset bulk mode state
+            bulkModeActive = false;
+            selectedVocabIds.clear();
+            const toggleBtn = document.getElementById('toggleBulkModeBtn');
+            if (toggleBtn) toggleBtn.classList.remove('active');
 
-    loadVocabWithPagination(0);
-    updateCategoryFilter();
-    break;
+            loadVocabWithPagination(0);
+            updateCategoryFilter();
+            break;
 
-            default:
-                mainTitle.innerText = "Quản lý nội dung";
-                mainContent.innerHTML = `<div class="card p-5 text-center"><h5>Tính năng đang phát triển</h5></div>`;
-        }
+        default:
+            mainTitle.innerText = "Quản lý nội dung";
+            mainContent.innerHTML = `<div class="card p-5 text-center"><h5>Tính năng đang phát triển</h5></div>`;
     }
-
-    async function loadDashboardStats(token) {
-        try {
-            const res = await fetch('/api/admin/stats', { headers: { 'Authorization': 'Bearer ' + token } });
-            const data = await res.json();
-            document.getElementById('totalUsers').innerText = (data.totalUsers || 0).toLocaleString();
-            document.getElementById('totalLessons').innerText = (data.totalLessons || 0).toLocaleString();
-            document.getElementById('totalVocab').innerText = (data.totalVocab || 0).toLocaleString();
-            document.getElementById('totalCategories').innerText = (data.totalCategories || 0).toLocaleString();
-        } catch (e) { console.error(e); }
-    }
-
-    function getLevelName(levelId) {
-    if (levelId === 1) return 'N5';
-    if (levelId === 2) return 'N4';
-    if (levelId === 3) return 'N3';
-    if (levelId === 4) return 'N2';
-    if (levelId === 5) return 'N1';
-    return 'N5'; // Mặc định nếu chưa có
 }
 
-    async function loadLatestUsers(token) {
-        try {
-            const res = await fetch('/api/admin/users/latest', { headers: { 'Authorization': 'Bearer ' + token } });
-            let users = await res.json();
-            const tbody = document.getElementById('userTableBody');
-            tbody.innerHTML = users.map((user, index) => {
-                const createdDate = new Date(user.created);
-                const today = new Date();
-                const d1 = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate());
-                const d2 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-                const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
-                let time = diff === 0 ? "Hôm nay" : (diff === 1 ? "Hôm qua" : `${diff} ngày trước`);
-
-                return `<tr>
-                <td>${index + 1}</td>
-                <td><span class="id-badge">#${user.id}</span></td>
-                <td><div class="user-cell"><img src="${getAvatarPath(user.avatarUrl, user.fullname)}">
-                    <div><div class="name">${user.fullname}</div><div class="joined" style="font-size: 11px;">${time}</div></div></div></td>
-                <td>${user.email}</td>
-                <td style="text-align: center;"><span class="level-badge">${getLevelName(user.levelId)}</span></td>
-                <td style="text-align: center;"><span class="status-pill ${user.active ? 'active-pill' : 'locked-pill'}">${user.active ? 'Hoạt động' : 'Bị khóa'}</span></td>
-            </tr>`;
-            }).join('');
-        } catch (e) { console.error(e); }
-    }
-
-    let userTotalPagesGlobal = 0;
-
-async function loadAllUsersWithFilter(page = 0) {
-    const token = localStorage.getItem('token');
-    const search = document.getElementById('userSearch')?.value || "";
-    const levelId = document.getElementById('userFilterLevel')?.value || "";
-    const active = document.getElementById('userFilterStatus')?.value || "";
-    const timeFilter = document.getElementById('userFilterTime')?.value || "";
-    const pageSize = 5;
-
+async function loadDashboardStats(token) {
     try {
-        let url = `/api/admin/users/all-paging?page=${page}&size=${pageSize}&search=${encodeURIComponent(search)}&levelId=${levelId}&active=${active}&timeFilter=${timeFilter}`;
-
-        const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+        const res = await fetch('/api/admin/stats', { headers: { 'Authorization': 'Bearer ' + token } });
         const data = await res.json();
-
-        const tbody = document.getElementById('fullUserTable');
-        document.getElementById('userCountBadge').innerText = `${data.totalElements} người dùng`;
-
-        if (!data.content || data.content.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">Không tìm thấy học viên phù hợp</td></tr>`;
-            // Reset pagination
-            if (paginationManager['userPagination']) {
-                paginationManager['userPagination'].reset();
-            }
-            return;
-        }
-
-        tbody.innerHTML = data.content.map((user, index) => {
-            const isLocked = user.active === false;
-            return `
-            <tr class="${isLocked ? 'row-hidden' : ''}">
-                <td style="text-align: center;">${(page * pageSize) + index + 1}</td>
-                <td style="text-align: center;"><span class="id-badge">#${user.id}</span></td>
-                <td>
-                    <div class="user-cell">
-                        <img src="${getAvatarPath(user.avatarUrl, user.fullname)}">
-                        <div>
-                            <div class="name">${user.fullname}</div>
-                            <div class="small text-muted">@${user.userName}</div>
-                        </div>
-                    </div>
-                </td>
-                <td>${user.email}</td>
-                <td style="text-align: center;"><span class="level-badge">${getLevelName(user.levelId)}</span></td>
-                <td style="white-space: nowrap; text-align: center;">
-                    <span class="status-pill ${user.active ? 'active-pill' : 'locked-pill'}">
-                        ${user.active ? 'Hoạt động' : 'Bị khóa'}
-                    </span>
-                </td>
-                <td style="text-align: center; white-space: nowrap;">
-                    <button class="btn-action btn-view me-1" title="Xem chi tiết" onclick="viewUser(${user.id})">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    ${isLocked
-                        ? `<button class="btn-action btn-restore" onclick="deleteUser(${user.id}, false)"><i class="fas fa-user-check"></i></button>`
-                        : `<button class="btn-action btn-trash" onclick="deleteUser(${user.id}, true)"><i class="fas fa-user-slash"></i></button>`
-                    }
-                </td>
-            </tr>`;
-        }).join('');
-
-        // Render pagination
-        if (paginationManager['userPagination']) {
-            paginationManager['userPagination'].render(data.totalPages, data.number);
-        }
-    } catch (e) {
-        console.error("Lỗi tải người dùng:", e);
-    }
-}
-
-
-
-
-
-    async function viewUser(id) {
-    const token = localStorage.getItem('token');
-    try {
-        const res = await fetch(`/api/admin/users/${id}`, {
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
-        const user = await res.json();
-
-        // 1. Ảnh và tiêu đề
-        document.getElementById('viewUserAvatar').src = getAvatarPath(user.avatarUrl, user.fullname);
-        document.getElementById('viewFullnameTitle').innerText = user.fullname;
-
-        // 2. Tách ID và Username
-        document.getElementById('viewId').value = `#${user.id}`;
-        document.getElementById('viewUsername').value = user.userName;
-
-        // 3. Các thông tin khác
-        document.getElementById('viewEmail').value = user.email || 'Chưa cập nhật';
-        document.getElementById('viewLevel').value = getLevelName(user.levelId);
-        document.getElementById('viewPoints').value = `${user.totalPoints || 0} điểm`;
-
-        // 4. Định dạng ngày tháng (Ví dụ: 08/04/2026)
-        const date = new Date(user.created);
-        document.getElementById('viewCreated').value = date.toLocaleDateString('vi-VN');
-
-        // 5. Trạng thái Badge
-        const badgeContainer = document.getElementById('viewUserStatusBadge');
-        if (user.active) {
-            badgeContainer.innerHTML = '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Đang hoạt động</span>';
-        } else {
-            badgeContainer.innerHTML = '<span class="badge bg-danger"><i class="fas fa-lock me-1"></i>Đã bị khóa</span>';
-        }
-
-        // Mở Modal
-        new bootstrap.Modal(document.getElementById('userViewModal')).show();
-    } catch (e) {
-        console.error(e);
-        Swal.fire('Lỗi', 'Không thể lấy thông tin chi tiết học viên', 'error');
-    }
-}
-
-
-    function navigateToUsers() {
-        const btn = document.querySelectorAll('.nav-item')[1];
-        loadSection('users', btn);
-    }
-
-    async function loadAllCategoriesWithPagination(page = 0) {
-    const token = localStorage.getItem('token');
-    const search = document.getElementById('categorySearch')?.value || "";
-    const level = document.getElementById('categoryFilterLevel')?.value || "";
-    const isActive = document.getElementById('categoryFilterStatus')?.value || "";
-    const pageSize = 5;
-
-    try {
-        let url = `/api/admin/categories/paging?page=${page}&size=${pageSize}`;
-        if (search) url += `&search=${encodeURIComponent(search)}`;
-        if (level) url += `&level=${level}`;
-        if (isActive !== "") url += `&isActive=${isActive}`;
-
-        const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
-
-        if (!res.ok) {
-            throw new Error('Network response was not ok');
-        }
-
-        const data = await res.json();
-        const tbody = document.getElementById('categoryTableBody');
-
-        const countBadge = document.getElementById('categoryCountBadge');
-        if (countBadge) {
-            countBadge.innerText = `${data.totalElements || 0} chủ đề`;
-        }
-
-        if (!data.content || data.content.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">Không tìm thấy chủ đề nào</td</tr>`;
-            if (paginationManager['categoryPagination']) {
-                paginationManager['categoryPagination'].reset();
-            }
-            return;
-        }
-
-        tbody.innerHTML = data.content.map((cat, index) => {
-            const isHidden = cat.isActive === false;
-            const rowClass = isHidden ? 'row-hidden' : '';
-            const statusBadge = isHidden ? '<span class="status-badge badge-hidden">Đã ẩn</span>' : '';
-            const actionBtn = isHidden
-                ? `<button class="btn-action btn-restore me-1" title="Khôi phục" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash-restore"></i></button>`
-                : `<button class="btn-action btn-trash me-1" title="Ẩn" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash"></i></button>`;
-
-            return `
-            <tr class="${rowClass}">
-                <td style="text-align: center;">${(page * pageSize) + index + 1}</td>
-                <td style="text-align: center;"><span class="id-badge">#${cat.id}</span></td>
-                <td style="padding-left: 40px;">
-                    <div class="d-flex align-items-center gap-2">
-                        ${cat.iconUrl ? `<img src="${cat.iconUrl}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 8px;">` : ''}
-                        <strong style="color:var(--teal-dark)">${cat.categoryName}</strong>
-                    </div>
-                    <div class="mt-1">${statusBadge}</div>
-                </td>
-                <td style="text-align: center;">${cat.totalLessons || 0} bài</td>
-                <td style="text-align: center;"><span class="level-badge">${cat.jlptLevel || 'N5'}</span></td>
-                <td style="text-align: center;">
-                    <button class="btn-action btn-edit me-1" title="Sửa" onclick="editCategory(${cat.id})"><i class="fas fa-edit"></i></button>
-                    ${actionBtn}
-                </td>
-            </tr>`;
-        }).join('');
-
-        // Render pagination
-        if (paginationManager['categoryPagination']) {
-            paginationManager['categoryPagination'].render(data.totalPages, data.number);
-        }
-    } catch (e) {
-        console.error("Lỗi tải chủ đề:", e);
-        document.getElementById('categoryTableBody').innerHTML = `<tr><td colspan="6" class="text-center text-danger">Lỗi nạp dữ liệu</td</tr>`;
-    }
-}
-
-// Fallback function cho categories nếu backend chưa hỗ trợ phân trang
-async function loadAllCategoriesClientSide(page, pageSize) {
-    const token = localStorage.getItem('token');
-    try {
-        const res = await fetch('/api/admin/categories', { headers: { 'Authorization': 'Bearer ' + token } });
-        if (!res.ok) return;
-        let categories = await res.json();
-        categories.sort((a, b) => a.id - b.id);
-
-        const totalPages = Math.ceil(categories.length / pageSize);
-        const start = page * pageSize;
-        const end = start + pageSize;
-        const pageData = categories.slice(start, end);
-
-        const tbody = document.getElementById('categoryTableBody');
-
-        if (pageData.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-muted">Chưa có chủ đề nào</td></tr>`;
-            if (paginationManager['categoryPagination']) {
-                paginationManager['categoryPagination'].reset();
-            }
-            return;
-        }
-
-        tbody.innerHTML = pageData.map((cat, index) => {
-            const isHidden = cat.isActive === false;
-            const rowClass = isHidden ? 'row-hidden' : '';
-            const statusBadge = isHidden ? '<span class="status-badge badge-hidden">Đã ẩn</span>' : '';
-            const actionBtn = isHidden
-                ? `<button class="btn-action btn-restore me-1" title="Khôi phục" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash-restore"></i></button>`
-                : `<button class="btn-action btn-trash me-1" title="Ẩn" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash"></i></button>`;
-
-            return `
-            <tr class="${rowClass}">
-                <td style="text-align: center;">${start + index + 1}</td>
-                <td style="text-align: center;"><span class="id-badge">#${cat.id}</span></td>
-                <td style="padding-left: 40px;">
-                    <strong style="color:var(--teal-dark)">${cat.categoryName}</strong>
-                    <div class="mt-1">${statusBadge}</div>
-                </td>
-                <td style="text-align: center;">${cat.totalLessons || 0} bài</td>
-                <td style="text-align: center;"><span class="level-badge">${cat.jlptLevel || 'N5'}</span></td>
-                <td style="text-align: center;">
-                    <button class="btn-action btn-edit me-1" title="Sửa" onclick="editCategory(${cat.id})"><i class="fas fa-edit"></i></button>
-                    ${actionBtn}
-                </td>
-            </tr>`;
-        }).join('');
-
-        if (paginationManager['categoryPagination']) {
-            paginationManager['categoryPagination'].render(totalPages, page);
-        }
-    } catch (e) {
-        console.error(e);
-    }
-}
-
-    function openAddCategoryModal() {
-        document.getElementById('categoryForm').reset();
-        new bootstrap.Modal(document.getElementById('categoryModal')).show();
-    }
-
-    // Hiển thị ảnh xem trước khi nhập URL vào ô icon
-    document.getElementById('catIconUrl')?.addEventListener('input', function (e) {
-        const url = e.target.value;
-        const previewDiv = document.getElementById('iconPreview');
-        const previewImg = document.getElementById('previewImg');
-
-        if (url && url.trim() !== "") {
-            previewImg.src = url.startsWith('http') ? url : '/' + url;
-            previewDiv.style.display = 'block';
-        } else {
-            previewDiv.style.display = 'none';
-        }
-    });
-
-    async function submitCategory() {
-        const name = document.getElementById('catName').value.trim();
-        const level = document.getElementById('catLevel').value;
-        const iconUrl = document.getElementById('catIconUrl').value.trim();
-        const token = localStorage.getItem('token');
-
-
-
-        if (!name) {
-            return Swal.fire('Lỗi', 'Vui lòng nhập tên chủ đề!', 'error');
-        }
-
-try {
-        const response = await fetch('/api/admin/categories', {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                categoryName: name,
-                jlptLevel: level,
-                iconUrl: iconUrl,
-                is_active: 1, // Mặc định cho chủ đề mới
-                totalLessons: 0,
-                progress: 0
-            })
-        });
-
-        if (response.ok) {
-            // Đóng Modal bằng Bootstrap API
-            const modalElement = document.getElementById('categoryModal');
-            const modalInstance = bootstrap.Modal.getInstance(modalElement);
-            if (modalInstance) modalInstance.hide();
-
-            // Thông báo thành công
-            await Swal.fire({
-                icon: 'success',
-                title: 'Thành công!',
-                text: 'Chủ đề mới đã được lưu vào hệ thống.',
-                showConfirmButton: false,
-                timer: 1500
-            });
-
-            // LÀM MỚI DỮ LIỆU: Gọi lại hàm load danh sách
-            loadAllCategoriesWithPagination(0);
-        } else {
-            const errorText = await response.text();
-            Swal.fire('Thất bại', 'Lỗi: ' + errorText, 'error');
-        }
-    } catch (error) {
-        console.error("Error submitting category:", error);
-        Swal.fire('Lỗi kết nối', 'Không thể kết nối tới máy chủ!', 'error');
-    }
-}
-
-    async function loadAllLessonsWithPagination(page = 0) {
-    const token = localStorage.getItem('token');
-    const search = document.getElementById('lessonSearch')?.value || "";
-    const categoryId = document.getElementById('lessonFilterCategory')?.value || "";
-    const level = document.getElementById('lessonFilterLevel')?.value || "";
-    const pageSize = 10;
-
-    try {
-        let url = `/api/admin/lessons/paging?page=${page}&size=${pageSize}`;
-        if (search) url += `&search=${encodeURIComponent(search)}`;
-        if (categoryId) url += `&categoryId=${categoryId}`;
-        if (level) url += `&level=${level}`;
-
-        const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
-
-        if (!res.ok) {
-            throw new Error('Network response was not ok');
-        }
-
-        const data = await res.json();
-        const tbody = document.getElementById('lessonTableBody');
-
-        const countBadge = document.getElementById('lessonCountBadge');
-        if (countBadge) {
-            countBadge.innerText = `${data.totalElements || 0} bài học`;
-        }
-
-        if (!data.content || data.content.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">Không tìm thấy bài học nào</td</tr>`;
-            if (paginationManager['lessonPagination']) {
-                paginationManager['lessonPagination'].reset();
-            }
-            return;
-        }
-
-        tbody.innerHTML = data.content.map((les, index) => {
-            // Tính tổng số từ vựng (nếu có trong response)
-            const totalVocab = les.totalVocab || 0;
-            const lessonName = les.lessonName || '';
-            const categoryName = les.categoryName || 'Chưa phân loại';
-            return `
-            <tr>
-        <td style="text-align: center;">${(page * pageSize) + index + 1}</td>
-        <td style="text-align: center;"><span class="id-badge">#${les.id}</span></td>
-        <td><strong>${lessonName}</strong></td>
-        <td><strong style="color:var(--teal-dark)">${categoryName}</strong></td>
-        <td style="text-align: center;"><span class="level-badge">${totalVocab} từ</span></td>
-        <td style="text-align: center;">
-            <button class="btn-action btn-edit me-1" title="Sửa" onclick="editLesson(${les.id})">
-                <i class="fas fa-edit"></i>
-            </button>
-            <button class="btn-action btn-trash" title="Xóa" onclick="deleteLesson(${les.id})">
-                <i class="fas fa-trash"></i>
-            </button>
-        </td>
-    </tr>
-            `;
-        }).join('');
-
-        // Render pagination
-        if (paginationManager['lessonPagination']) {
-            paginationManager['lessonPagination'].render(data.totalPages, data.number);
-        }
-    } catch (e) {
-        console.error("Lỗi tải bài học:", e);
-        document.getElementById('lessonTableBody').innerHTML = `<tr><td colspan="6" class="text-center text-danger">Lỗi nạp dữ liệu</td</tr>`;
-    }
-}
-
-        // Load danh sách category cho filter của lessons
-        async function loadLessonCategoryFilter() {
-    const token = localStorage.getItem('token');
-    const level = document.getElementById('lessonFilterLevel')?.value || "";
-
-    try {
-        let url = '/api/admin/categories';
-        if (level) {
-            url = `/api/admin/categories/filter?level=${level}`;
-        }
-
-        const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
-        const categories = await res.json();
-        const select = document.getElementById('lessonFilterCategory');
-        if (select) {
-            select.innerHTML = '<option value="">Tất cả chủ đề</option>' +
-                categories.map(c => `<option value="${c.id}">${c.categoryName}</option>`).join('');
-        }
-    } catch (e) {
-        console.error("Lỗi tải danh sách chủ đề:", e);
-    }
-}
-
-    // Khi chọn cấp độ, load lại danh sách chủ đề theo cấp độ đó
-async function onLessonLevelChange() {
-    const token = localStorage.getItem('token');
-    const level = document.getElementById('lessonFilterLevel').value;
-    const categorySelect = document.getElementById('lessonFilterCategory');
-
-    if (!level) {
-        // Nếu bỏ chọn cấp độ, reset select về chỉ có "Tất cả chủ đề"
-        categorySelect.innerHTML = '<option value="">Tất cả chủ đề</option>';
-    } else {
-        try {
-            const res = await fetch(`/api/admin/categories/filter?level=${level}`, {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            if (res.ok) {
-                const categories = await res.json();
-                categorySelect.innerHTML = '<option value="">Tất cả chủ đề</option>' +
-                    categories.map(c => `<option value="${c.id}">${c.categoryName}</option>`).join('');
-            }
-        } catch (e) {
-            console.error("Lỗi tải chủ đề theo cấp độ:", e);
-        }
-    }
-    // Reset về trang 1 sau khi thay đổi filter
-    loadAllLessonsWithPagination(0);
-}
-
-// Fallback function cho lessons
-async function loadAllLessonsClientSide(page, pageSize) {
-    const token = localStorage.getItem('token');
-    try {
-        const res = await fetch('/api/admin/lessons', { headers: { 'Authorization': 'Bearer ' + token } });
-        const lessons = await res.json();
-
-        const totalPages = Math.ceil(lessons.length / pageSize);
-        const start = page * pageSize;
-        const end = start + pageSize;
-        const pageData = lessons.slice(start, end);
-
-        const tbody = document.getElementById('lessonTableBody');
-
-        if (pageData.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">Chưa có bài học nào</td></tr>`;
-            if (paginationManager['lessonPagination']) {
-                paginationManager['lessonPagination'].reset();
-            }
-            return;
-        }
-
-        tbody.innerHTML = pageData.map((les, index) => `
-            <tr>
-                <td style="text-align: center;">${start + index + 1}</td>
-                <td style="text-align: center;"><span class="id-badge">#${les.id}</span></td>
-                <td><strong>${les.lessonName}</strong></td>
-                <td><strong style="color:var(--teal-dark)">${les.categoryName || 'Chưa phân loại'}</strong></td>
-                <td style="text-align: center;"><span class="level-badge">${les.totalVocab || 0} từ</span></td>
-                <td style="text-align: center;">
-                    <button class="btn-action btn-edit me-1" onclick="editLesson(${les.id})"><i class="fas fa-edit"></i></button>
-                    <button class="btn-action btn-trash" onclick="deleteLesson(${les.id})"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>
-        `).join('');
-
-        if (paginationManager['lessonPagination']) {
-            paginationManager['lessonPagination'].render(totalPages, page);
-        }
-    } catch (e) {
-        console.error(e);
-    }
-}
-
-    async function openAddLessonModal() {
-        const token = localStorage.getItem('token');
-        document.getElementById('lessonForm').reset();
-        try {
-            const res = await fetch('/api/admin/categories', { headers: { 'Authorization': 'Bearer ' + token } });
-            const categories = await res.json();
-            const select = document.getElementById('lessonCategorySelect');
-            select.innerHTML = categories.map(c => `<option value="${c.id}">${c.categoryName} (${c.jlptLevel})</option>`).join('');
-            new bootstrap.Modal(document.getElementById('lessonModal')).show();
-        } catch (e) { Swal.fire('Lỗi', 'Không thể tải chủ đề', 'error'); }
-    }
-
-    async function submitLesson() {
-    const name = document.getElementById('lessonName').value.trim();
-    const catId = document.getElementById('lessonCategorySelect').value;
-    const token = localStorage.getItem('token');
-    if (!name) return Swal.fire('Lỗi', 'Tên không được trống', 'error');
-    try {
-        const res = await fetch('/api/admin/lessons', {
-            method: 'POST',
-            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ lessonName: name, categoryId: catId })
-        });
-        if (res.ok) {
-            bootstrap.Modal.getInstance(document.getElementById('lessonModal')).hide();
-            Swal.fire('Thành công', 'Đã thêm bài học!', 'success');
-            loadAllLessonsWithPagination(0); // Sửa: gọi hàm mới
-            loadLessonCategoryFilter(); // Refresh filter dropdown
-        } else {
-            const error = await res.text();
-            Swal.fire('Lỗi', error, 'error');
-        }
+        document.getElementById('totalUsers').innerText = (data.totalUsers || 0).toLocaleString();
+        document.getElementById('totalLessons').innerText = (data.totalLessons || 0).toLocaleString();
+        document.getElementById('totalVocab').innerText = (data.totalVocab || 0).toLocaleString();
+        document.getElementById('totalCategories').innerText = (data.totalCategories || 0).toLocaleString();
     } catch (e) { console.error(e); }
 }
 
-async function deleteLesson(id) {
-    const result = await Swal.fire({
-        title: 'Xác nhận xóa?',
-        text: "Bạn có chắc muốn xóa bài học này?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#06BBCC',
-        confirmButtonText: 'Xác nhận',
-        cancelButtonText: 'Hủy'
-    });
-
-    if (result.isConfirmed) {
-        const token = localStorage.getItem('token');
-        try {
-            const res = await fetch(`/api/admin/lessons/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            if (res.ok) {
-                Swal.fire('Thành công', 'Đã xóa bài học', 'success');
-                const currentPage = paginationManager['lessonPagination']?.currentPage || 0;
-                loadAllLessonsWithPagination(currentPage);
-                loadLessonCategoryFilter(); // Refresh filter dropdown
-            } else {
-                const error = await res.text();
-                Swal.fire('Lỗi', error, 'error');
-            }
-        } catch (e) { console.error(e); }
-    }
-}
-
-    async function loadVocabWithPagination(page) {
-    const token = localStorage.getItem('token');
-    const search = document.getElementById('vocabSearch')?.value || "";
-    const cateId = document.getElementById('filterCate')?.value || "";
-    const level = document.getElementById('filterLevel')?.value || "";
-    const pageSize = 20;
-
-    try {
-        let url = `/api/admin/vocab/all?page=${page}&size=${pageSize}&search=${encodeURIComponent(search)}&cateId=${cateId}&level=${level}`;
-        const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
-        const data = await res.json();
-
-        const tbody = document.getElementById('vocabTableBody');
-
-        const countBadge = document.getElementById('vocabCountBadge');
-        if (countBadge) {
-            countBadge.innerText = `${data.totalElements || 0} từ vựng`;
-        }
-
-        if (!data.content || data.content.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted">Không tìm thấy từ vựng nào</td</tr>`;
-            if (paginationManager['vocabPagination']) {
-                paginationManager['vocabPagination'].reset();
-            }
-            return;
-        }
-
-        tbody.innerHTML = data.content.map((v, index) => {
-            const sttNumber = (page * pageSize) + index + 1;
-            return `
-            <tr>
-                ${bulkModeActive ?
-                    `<td class="checkbox-cell" style="text-align: center;">
-                        <input type="checkbox" class="select-checkbox row-select-vocab" value="${v.id}"
-                               onchange="updateVocabSelection(this)">
-                     </td>
-                     <td class="stt-cell" style="display: none; text-align: center;">${sttNumber}</td>` :
-                    `<td style="text-align: center;">${sttNumber}</td>`
-                }
-                <td style="text-align:center;"><span class="id-badge">#${v.id}</span></td>
-                <td><strong style="font-size: 18px; color: var(--text-dark);">${v.expression}</strong></td>
-                <td><span style="color: var(--teal); font-weight: 600;">${v.kana}</span></td>
-                <td><small style="font-size: 15px;">${v.romaji}</small></td>
-                <td>${v.meaning}</td>
-                <td style="text-align:center;">
-                    <button class="btn-action btn-edit me-1" title="Sửa" onclick="editVocab(${v.id})">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-action btn-trash" title="Xóa" onclick="deleteVocab(${v.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                 </td>
-            </tr>`;
-        }).join('');
-
-        if (paginationManager['vocabPagination']) {
-            paginationManager['vocabPagination'].render(data.totalPages, data.number);
-        }
-    } catch (e) {
-        console.error(e);
-        document.getElementById('vocabTableBody').innerHTML = `<tr><td colspan="8" class="text-center text-danger">Lỗi nạp dữ liệu</td</tr>`;
-    }
-}
-
-        async function deleteVocab(id) {
-    const result = await Swal.fire({
-        title: 'Xác nhận xóa?',
-        text: "Bạn có chắc muốn xóa từ vựng này?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#06BBCC',
-        confirmButtonText: 'Xóa',
-        cancelButtonText: 'Hủy'
-    });
-
-    if (result.isConfirmed) {
-        const token = localStorage.getItem('token');
-        try {
-            const res = await fetch(`/api/admin/vocab/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            if (res.ok) {
-                Swal.fire('Thành công', 'Đã xóa từ vựng', 'success');
-                // SỬA: Lấy trang hiện tại và reload
-                const currentPage = paginationManager['vocabPagination']?.currentPage || 0;
-                loadVocabWithPagination(currentPage);
-            } else {
-                Swal.fire('Lỗi', 'Không thể xóa từ vựng', 'error');
-            }
-        } catch (e) { console.error(e); }
-    }
-}
-
-
-    // 1. Hàm load danh sách Chủ đề khi chọn Level
-    async function updateCategoryFilter() {
-        const token = localStorage.getItem('token');
-        const level = document.getElementById('filterLevel').value;
-        const cateSelect = document.getElementById('filterCate');
-
-        if (!level) {
-            cateSelect.innerHTML = '<option value="">Tất cả chủ đề</option>';
-            loadVocabWithPagination(0);
-            return;
-        }
-        try {
-            // Gọi API lấy Cate theo Level (Bạn cần có endpoint này ở Backend)
-            const res = await fetch(`/api/admin/categories/filter?level=${level}`, {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-
-            if (res.ok) {
-                const categories = await res.json();
-                let options = '<option value="">Tất cả chủ đề</option>';
-                options += categories.map(c => `<option value="${c.id}">${c.categoryName}</option>`).join('');
-                cateSelect.innerHTML = options;
-            }
-        } catch (e) { console.error(e); }
-        loadVocabWithPagination(0);
-    }
-
-
-
-    // 1. Mở modal và load danh sách bài học
-    async function openAddVocabModal() {
-        const token = localStorage.getItem('token');
-        document.getElementById('vocabForm').reset();
-        document.getElementById('quickAddLessonContainer').style.display = 'none';
-
-        try {
-            // 1. Load danh sách Chủ đề
-            const res = await fetch('/api/admin/categories', { headers: { 'Authorization': 'Bearer ' + token } });
-            const categories = await res.json();
-
-            const catSelect = document.getElementById('vCategoryId');
-            catSelect.innerHTML = '<option value="">-- Chọn chủ đề --</option>' +
-                categories.map(c => `<option value="${c.id}">${c.categoryName}</option>`).join('');
-
-            // 2. Reset ô bài học
-            document.getElementById('vLessonId').innerHTML = '<option value="">-- Vui lòng chọn chủ đề trước --</option>';
-
-            new bootstrap.Modal(document.getElementById('vocabModal')).show();
-        } catch (e) {
-            Swal.fire('Lỗi', 'Không thể khởi tạo modal', 'error');
-        }
-    }
-
-    // 2. Gửi dữ liệu về Server
-    async function submitVocab() {
-        const token = localStorage.getItem('token');
-        const data = {
-            expression: document.getElementById('vExpression').value,
-            kana: document.getElementById('vKana').value,
-            romaji: document.getElementById('vRomaji').value,
-            meaning: document.getElementById('vMeaning').value,
-            wordType: document.getElementById('vWordType').value,
-            example: document.getElementById('vExample').value,
-            exampleVi: document.getElementById('vExampleVi').value,
-            imageUrl: document.getElementById('vImageUrl').value,
-            audioUrl: document.getElementById('vAudioUrl').value,
-            lessonId: document.getElementById('vLessonId').value // Quan trọng để map bài học
-        };
-
-        if (!data.expression || !data.meaning || !data.lessonId) {
-            return Swal.fire('Chú ý', 'Vui lòng điền các trường bắt buộc!', 'warning');
-        }
-
-        try {
-            const res = await fetch('/api/admin/vocab/add', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-
-            if (res.ok) {
-                bootstrap.Modal.getInstance(document.getElementById('vocabModal')).hide();
-                Swal.fire('Thành công', 'Đã thêm từ vựng mới!', 'success');
-                loadVocabWithPagination(0); // Reload lại bảng
-            } else {
-                Swal.fire('Lỗi', 'Không thể lưu từ vựng', 'error');
-            }
-        } catch (e) { console.error(e); }
-    }
-
-    async function onVocabCategoryChange() {
-        const catId = document.getElementById('vCategoryId').value;
-        const lessonSelect = document.getElementById('vLessonId');
-        const quickAddContainer = document.getElementById('quickAddLessonContainer');
-        const token = localStorage.getItem('token');
-
-        if (!catId) {
-            lessonSelect.innerHTML = '<option value="">-- Vui lòng chọn chủ đề trước --</option>';
-            quickAddContainer.style.display = 'none';
-            return;
-        }
-
-        try {
-            // Gọi API lấy bài học theo chủ đề
-            // Lưu ý: Tận dụng endpoint bạn đã làm cho phần filter
-            const res = await fetch(`/api/admin/lessons/by-category/${catId}`, {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            const lessons = await res.json();
-
-            if (lessons && lessons.length > 0) {
-                lessonSelect.innerHTML = lessons.map(l => `<option value="${l.id}">${l.lessonName}</option>`).join('');
-                quickAddContainer.style.display = 'none';
-                lessonSelect.disabled = false;
-            } else {
-                lessonSelect.innerHTML = '<option value="">(Trống)</option>';
-                lessonSelect.disabled = true;
-                quickAddContainer.style.display = 'block'; // Hiện nút tạo nhanh
-            }
-        } catch (e) { console.error(e); }
-    }
-
-    function openQuickAddLesson() {
-        const catId = document.getElementById('vCategoryId').value;
-        const catName = document.getElementById('vCategoryId').options[document.getElementById('vCategoryId').selectedIndex].text;
-
-        // 1. Tự động chọn chủ đề bên modal Bài học
-        const lessonCatSelect = document.getElementById('lessonCategorySelect');
-        if (lessonCatSelect) {
-            lessonCatSelect.value = catId;
-        }
-
-        // 2. Mở modal Bài học (ẩn modal từ vựng tạm thời hoặc để chồng lên)
-        const lessonModal = new bootstrap.Modal(document.getElementById('lessonModal'));
-        lessonModal.show();
-
-        // Thông báo nhỏ để Admin biết
-        console.log(`Đang tạo bài học cho chủ đề: ${catName}`);
-    }
-
-    let selectedFile = null; // Biến tạm để giữ file ảnh
-
-    // 1. Hàm xử lý khi chọn file từ máy tính
-    function handleFileSelect(input) {
-        if (input.files && input.files[0]) {
-            selectedFile = input.files[0];
-
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const previewImg = document.getElementById('previewImg');
-                const previewDiv = document.getElementById('iconPreview');
-
-                previewImg.src = e.target.result;
-                previewDiv.style.display = 'block'; // Hiện khung ảnh to
-
-                // Hiển thị tên file vào ô input
-                document.getElementById('catIconUrl').value = selectedFile.name;
-            };
-            reader.readAsDataURL(selectedFile);
-        }
-    }
-
-
-    // 2. Hàm cập nhật preview khi nhập link thủ công (vẫn giữ nếu bạn muốn nhập link ngoài)
-    function updatePreview(url) {
-        selectedFile = null; // Nếu nhập link tay thì xóa file đã chọn (nếu có)
-        const previewDiv = document.getElementById('iconPreview');
-        const previewImg = document.getElementById('previewImg');
-        if (url) {
-            previewImg.src = url.startsWith('http') ? url : '/' + url;
-            previewDiv.style.display = 'block';
-        }
-    }
-
-    // 3. Hàm Submit gộp (Gửi cả Text và File)
-    async function submitCategory() {
-        const name = document.getElementById('catName').value.trim();
-        const level = document.getElementById('catLevel').value;
-        const token = localStorage.getItem('token');
-
-        if (!name) return Swal.fire('Lỗi', 'Vui lòng nhập tên chủ đề!', 'error');
-
-        // Dùng FormData để gửi cả file và text
-        const formData = new FormData();
-        formData.append("categoryName", name);
-        formData.append("jlptLevel", level);
-
-        // Nếu có chọn file thì gửi file, nếu không thì gửi link nhập tay (nếu có)
-        if (selectedFile) {
-            formData.append("file", selectedFile);
-        } else {
-            formData.append("iconUrl", document.getElementById('catIconUrl').value);
-        }
-
-        try {
-            Swal.fire({ title: 'Đang xử lý...', didOpen: () => Swal.showLoading() });
-
-            const response = await fetch('/api/admin/categories/add-with-file', {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + token },
-                body: formData // Không set Content-Type, trình duyệt tự xử lý Multipart
-            });
-
-            if (response.ok) {
-                bootstrap.Modal.getInstance(document.getElementById('categoryModal')).hide();
-                await Swal.fire('Thành công', 'Chủ đề và ảnh đã được lưu!', 'success');
-                selectedFile = null; // Reset biến tạm
-                loadAllCategoriesWithPagination(0);
-            } else {
-                Swal.fire('Lỗi', 'Không thể lưu chủ đề', 'error');
-            }
-        } catch (e) { console.error(e); }
-    }
-
-    async function deleteCategory(id) {
-        // Tìm trong danh sách hiện tại để biết nó đang ẩn hay hiện (nâng cao)
-        // Hoặc đơn giản là dùng thông báo chung:
-        const result = await Swal.fire({
-            title: 'Xác nhận thay đổi?',
-            text: "Hành động này sẽ thay đổi trạng thái hiển thị của chủ đề đối với người dùng.",
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#06BBCC',
-            cancelButtonColor: '#ef4444',
-            confirmButtonText: 'Đồng ý',
-            cancelButtonText: 'Hủy'
-        });
-
-        if (result.isConfirmed) {
-            const token = localStorage.getItem('token');
-            try {
-                const res = await fetch(`/api/admin/categories/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-
-                if (res.ok) {
-                    const message = await res.text();
-                    await Swal.fire({
-                        icon: 'success',
-                        title: 'Thành công',
-                        text: message,
-                        timer: 1000,
-                        showConfirmButton: false
-                    });
-                    const currentPage = paginationManager['categoryPagination']?.currentPage || 0;
-                    loadAllCategoriesWithPagination(currentPage);
-                }
-            } catch (e) { console.error(e); }
-        }
-    }
-
-    async function deleteUser(id, isLocking) {
-    const actionText = isLocking ? "khóa" : "mở khóa";
-
-    const result = await Swal.fire({
-        title: `Xác nhận ${actionText}?`,
-        text: isLocking ? "Học viên này sẽ không thể đăng nhập!" : "Học viên sẽ có thể truy cập lại hệ thống.",
-        icon: 'warning',
-        showCancelButton: true,
-            confirmButtonColor: '#06BBCC',
-            cancelButtonColor: '#ef4444',
-            confirmButtonText: 'Đồng ý',
-            cancelButtonText: 'Hủy'
-    });
-
-    if (result.isConfirmed) {
-        const token = localStorage.getItem('token');
-        try {
-            const res = await fetch(`/api/admin/users/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-
-            if (res.ok) {
-                const message = await res.text();
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Thành công',
-                    text: message,
-                    timer: 1000,
-                    showConfirmButton: false
-                });
-                const currentPage = paginationManager['userPagination']?.currentPage || 0;
-                loadAllUsersWithFilter(currentPage);
-            }
-        } catch (e) {
-            console.error(e);
-            Swal.fire('Lỗi', 'Không thể thay đổi trạng thái người dùng', 'error');
-        }
-    }
-}
-
-
-    // ==================== HỆ THỐNG PHÂN TRANG DÙNG CHUNG ====================
+// ==================== HỆ THỐNG PHÂN TRANG DÙNG CHUNG ====================
 
 class PaginationManager {
     constructor(config) {
@@ -1954,7 +969,7 @@ function initPaginationManagers() {
 }
 
 
-    // Bulk mode state
+// Bulk mode state
 let bulkModeActive = false;
 let selectedVocabIds = new Set();
 
@@ -2112,22 +1127,1255 @@ async function bulkDeleteVocab() {
 }
 
 
+// ==================== HÀM XỬ LÝ BÀI HỌC DÙNG CHUNG ====================
 
+// ===== LESSON ===== //
 
-    function logout() {
-        Swal.fire({
-            title: 'Đăng xuất?',
-            icon: 'warning',
-            showCancelButton: true,
-            cancelButtonColor: '#ef4444',
-            cancelButtonText: 'Hủy',
-            confirmButtonColor: '#06BBCC',
-            confirmButtonText: 'Đồng ý'
-        }).then(res => {
-            if (res.isConfirmed) { localStorage.clear(); location.href = '/login'; }
-        });
+// 1. Chỉnh sửa bài học (dùng chung)
+async function editLesson(id) {
+    Swal.fire({
+        icon: 'info',
+        title: 'Thông báo',
+        text: `Chức năng sửa bài học ID: ${id} đang phát triển`,
+        timer: 1500,
+        showConfirmButton: false
+    });
+}
+
+// 2. Xóa/Ẩn bài học (toggle isActive) - GIỐNG deleteCategory
+async function deleteLesson(id) {
+    const result = await Swal.fire({
+        title: 'Xác nhận thay đổi?',
+        text: "Hành động này sẽ thay đổi trạng thái hiển thị của bài học đối với người dùng.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#06BBCC',
+        cancelButtonColor: '#ef4444',
+        confirmButtonText: 'Đồng ý',
+        cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
+        const token = localStorage.getItem('token');
+        try {
+            // Dùng API toggle-status (PATCH) giống backend
+            const res = await fetch(`/api/admin/lessons/${id}/toggle-status`, {
+                method: 'PATCH',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (res.ok) {
+                const message = await res.text();
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: message,
+                    timer: 1000,
+                    showConfirmButton: false
+                });
+                refreshCurrentView();
+            } else {
+                const error = await res.text();
+                Swal.fire('Lỗi', error, 'error');
+            }
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Lỗi', 'Không thể kết nối đến server', 'error');
+        }
     }
+}
+
+// 3. Hàm refresh view hiện tại
+function refreshCurrentView() {
+    const currentSection = localStorage.getItem('activeAdminTab');
+
+    if (currentSection === 'lessons') {
+        const currentPage = paginationManager['lessonPagination']?.currentPage || 0;
+        loadAllLessonsWithPagination(currentPage);
+        loadLessonCategoryFilter();
+    } else if (currentSection === 'categories') {
+        const categoryId = document.querySelector('.category-detail-container')?.getAttribute('data-category-id');
+        if (categoryId) {
+            editCategory(parseInt(categoryId));
+        } else {
+            const categoriesBtn = document.querySelector('.nav-item[onclick*="categories"]');
+            if (categoriesBtn) {
+                loadSection('categories', categoriesBtn, new Event('click'));
+            }
+        }
+    } else {
+        const activeBtn = document.querySelector('.nav-item.active');
+        if (activeBtn) {
+            loadSection(currentSection, activeBtn, new Event('click'));
+        }
+    }
+}
+
+
+// ==================== ĐĂNG XUẤT ====================
+function logout() {
+    Swal.fire({
+        title: 'Đăng xuất?',
+        icon: 'warning',
+        showCancelButton: true,
+        cancelButtonColor: '#ef4444',
+        cancelButtonText: 'Hủy',
+        confirmButtonColor: '#06BBCC',
+        confirmButtonText: 'Đồng ý'
+    }).then(res => {
+        if (res.isConfirmed) { localStorage.clear(); location.href = '/login'; }
+    });
+}
+
+
+
+
+
+
+
+// ===== USER ===== //
+function getLevelName(levelId) {
+    if (levelId === 1) return 'N5';
+    if (levelId === 2) return 'N4';
+    if (levelId === 3) return 'N3';
+    if (levelId === 4) return 'N2';
+    if (levelId === 5) return 'N1';
+    return 'N5'; // Mặc định nếu chưa có
+}
+
+async function loadLatestUsers(token) {
+    try {
+        const res = await fetch('/api/admin/users/latest', { headers: { 'Authorization': 'Bearer ' + token } });
+        let users = await res.json();
+        const tbody = document.getElementById('userTableBody');
+        tbody.innerHTML = users.map((user, index) => {
+            const createdDate = new Date(user.created);
+            const today = new Date();
+            const d1 = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate());
+            const d2 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+            let time = diff === 0 ? "Hôm nay" : (diff === 1 ? "Hôm qua" : `${diff} ngày trước`);
+
+            return `<tr>
+                <td>${index + 1}</td>
+                <td><span class="id-badge">#${user.id}</span></td>
+                <td><div class="user-cell"><img src="${getAvatarPath(user.avatarUrl, user.fullname)}">
+                    <div><div class="name">${user.fullname}</div><div class="joined" style="font-size: 11px;">${time}</div></div></div></td>
+                <td>${user.email}</td>
+                <td style="text-align: center;"><span class="level-badge">${getLevelName(user.levelId)}</span></td>
+                <td style="text-align: center;"><span class="status-pill ${user.active ? 'active-pill' : 'locked-pill'}">${user.active ? 'Hoạt động' : 'Bị khóa'}</span></td>
+            </tr>`;
+        }).join('');
+    } catch (e) { console.error(e); }
+}
+
+async function loadAllUsersWithFilter(page = 0) {
+    const token = localStorage.getItem('token');
+    const search = document.getElementById('userSearch')?.value || "";
+    const levelId = document.getElementById('userFilterLevel')?.value || "";
+    const active = document.getElementById('userFilterStatus')?.value || "";
+    const timeFilter = document.getElementById('userFilterTime')?.value || "";
+    const pageSize = 5;
+
+    try {
+        let url = `/api/admin/users/all-paging?page=${page}&size=${pageSize}&search=${encodeURIComponent(search)}&levelId=${levelId}&active=${active}&timeFilter=${timeFilter}`;
+
+        const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+        const data = await res.json();
+
+        const tbody = document.getElementById('fullUserTable');
+        document.getElementById('userCountBadge').innerText = `${data.totalElements} người dùng`;
+
+        if (!data.content || data.content.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">Không tìm thấy học viên phù hợp</td></tr>`;
+            // Reset pagination
+            if (paginationManager['userPagination']) {
+                paginationManager['userPagination'].reset();
+            }
+            return;
+        }
+
+        tbody.innerHTML = data.content.map((user, index) => {
+            const isLocked = user.active === false;
+            return `
+            <tr class="${isLocked ? 'row-hidden' : ''}">
+                <td style="text-align: center;">${(page * pageSize) + index + 1}</td>
+                <td style="text-align: center;"><span class="id-badge">#${user.id}</span></td>
+                <td>
+                    <div class="user-cell">
+                        <img src="${getAvatarPath(user.avatarUrl, user.fullname)}">
+                        <div>
+                            <div class="name">${user.fullname}</div>
+                            <div class="small text-muted">@${user.userName}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>${user.email}</td>
+                <td style="text-align: center;"><span class="level-badge">${getLevelName(user.levelId)}</span></td>
+                <td style="white-space: nowrap; text-align: center;">
+                    <span class="status-pill ${user.active ? 'active-pill' : 'locked-pill'}">
+                        ${user.active ? 'Hoạt động' : 'Bị khóa'}
+                    </span>
+                </td>
+                <td style="text-align: center; white-space: nowrap;">
+                    <button class="btn-action btn-view me-1" title="Xem chi tiết" onclick="viewUser(${user.id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    ${isLocked
+                    ? `<button class="btn-action btn-restore" onclick="deleteUser(${user.id}, false)"><i class="fas fa-user-check"></i></button>`
+                    : `<button class="btn-action btn-trash" onclick="deleteUser(${user.id}, true)"><i class="fas fa-user-slash"></i></button>`
+                }
+                </td>
+            </tr>`;
+        }).join('');
+
+        // Render pagination
+        if (paginationManager['userPagination']) {
+            paginationManager['userPagination'].render(data.totalPages, data.number);
+        }
+    } catch (e) {
+        console.error("Lỗi tải người dùng:", e);
+    }
+}
+
+async function viewUser(id) {
+    const token = localStorage.getItem('token');
+    try {
+        const res = await fetch(`/api/admin/users/${id}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const user = await res.json();
+
+        // 1. Ảnh và tiêu đề
+        document.getElementById('viewUserAvatar').src = getAvatarPath(user.avatarUrl, user.fullname);
+        document.getElementById('viewFullnameTitle').innerText = user.fullname;
+
+        // 2. Tách ID và Username
+        document.getElementById('viewId').value = `#${user.id}`;
+        document.getElementById('viewUsername').value = user.userName;
+
+        // 3. Các thông tin khác
+        document.getElementById('viewEmail').value = user.email || 'Chưa cập nhật';
+        document.getElementById('viewLevel').value = getLevelName(user.levelId);
+        document.getElementById('viewPoints').value = `${user.totalPoints || 0} điểm`;
+
+        // 4. Định dạng ngày tháng (Ví dụ: 08/04/2026)
+        const date = new Date(user.created);
+        document.getElementById('viewCreated').value = date.toLocaleDateString('vi-VN');
+
+        // 5. Trạng thái Badge
+        const badgeContainer = document.getElementById('viewUserStatusBadge');
+        if (user.active) {
+            badgeContainer.innerHTML = '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Đang hoạt động</span>';
+        } else {
+            badgeContainer.innerHTML = '<span class="badge bg-danger"><i class="fas fa-lock me-1"></i>Đã bị khóa</span>';
+        }
+
+        // Mở Modal
+        new bootstrap.Modal(document.getElementById('userViewModal')).show();
+    } catch (e) {
+        console.error(e);
+        Swal.fire('Lỗi', 'Không thể lấy thông tin chi tiết học viên', 'error');
+    }
+}
+
+function navigateToUsers() {
+    const btn = document.querySelectorAll('.nav-item')[1];
+    loadSection('users', btn);
+}
+
+async function deleteUser(id, isLocking) {
+    const actionText = isLocking ? "khóa" : "mở khóa";
+
+    const result = await Swal.fire({
+        title: `Xác nhận ${actionText}?`,
+        text: isLocking ? "Học viên này sẽ không thể đăng nhập!" : "Học viên sẽ có thể truy cập lại hệ thống.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#06BBCC',
+        cancelButtonColor: '#ef4444',
+        confirmButtonText: 'Đồng ý',
+        cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`/api/admin/users/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (res.ok) {
+                const message = await res.text();
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: message,
+                    timer: 1000,
+                    showConfirmButton: false
+                });
+                const currentPage = paginationManager['userPagination']?.currentPage || 0;
+                loadAllUsersWithFilter(currentPage);
+            }
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Lỗi', 'Không thể thay đổi trạng thái người dùng', 'error');
+        }
+    }
+}
+
+
+
+// ===== CATEGORY ===== //
+async function loadAllCategoriesWithPagination(page = 0) {
+    const token = localStorage.getItem('token');
+    const search = document.getElementById('categorySearch')?.value || "";
+    const level = document.getElementById('categoryFilterLevel')?.value || "";
+    const isActive = document.getElementById('categoryFilterStatus')?.value || "";
+    const pageSize = 5;
+
+    try {
+        let url = `/api/admin/categories/paging?page=${page}&size=${pageSize}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        if (level) url += `&level=${level}`;
+        if (isActive !== "") url += `&isActive=${isActive}`;
+
+        const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+
+        if (!res.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const data = await res.json();
+        const tbody = document.getElementById('categoryTableBody');
+
+        const countBadge = document.getElementById('categoryCountBadge');
+        if (countBadge) {
+            countBadge.innerText = `${data.totalElements || 0} chủ đề`;
+        }
+
+        if (!data.content || data.content.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">Không tìm thấy chủ đề nào</td</tr>`;
+            if (paginationManager['categoryPagination']) {
+                paginationManager['categoryPagination'].reset();
+            }
+            return;
+        }
+
+        tbody.innerHTML = data.content.map((cat, index) => {
+            const isHidden = cat.isActive === false;
+            const rowClass = isHidden ? 'row-hidden' : '';
+            const statusBadge = isHidden ? '<span class="status-badge badge-hidden">Đã ẩn</span>' : '';
+            const actionBtn = isHidden
+                ? `<button class="btn-action btn-restore me-1" title="Khôi phục" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash-restore"></i></button>`
+                : `<button class="btn-action btn-trash me-1" title="Ẩn" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash"></i></button>`;
+
+            return `
+            <tr class="${rowClass}">
+                <td style="text-align: center;">${(page * pageSize) + index + 1}</td>
+                <td style="text-align: center;"><span class="id-badge">#${cat.id}</span></td>
+                <td style="padding-left: 40px;">
+                    <div class="d-flex align-items-center gap-2">
+                        ${cat.iconUrl ? `<img src="${cat.iconUrl}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 8px;">` : ''}
+                        <strong style="color:var(--teal-dark)">${cat.categoryName}</strong>
+                    </div>
+                    <div class="mt-1">${statusBadge}</div>
+                </td>
+                <td style="text-align: center;">${cat.totalLessons || 0} bài</td>
+                <td style="text-align: center;"><span class="level-badge">${cat.jlptLevel || 'N5'}</span></td>
+                <td style="text-align: center;">
+                    <button class="btn-action btn-edit me-1" title="Sửa" onclick="editCategory(${cat.id})"><i class="fas fa-edit"></i></button>
+                    ${actionBtn}
+                </td>
+            </tr>`;
+        }).join('');
+
+        // Render pagination
+        if (paginationManager['categoryPagination']) {
+            paginationManager['categoryPagination'].render(data.totalPages, data.number);
+        }
+    } catch (e) {
+        console.error("Lỗi tải chủ đề:", e);
+        document.getElementById('categoryTableBody').innerHTML = `<tr><td colspan="6" class="text-center text-danger">Lỗi nạp dữ liệu</td</tr>`;
+    }
+}
+
+async function loadAllCategoriesClientSide(page, pageSize) {
+    const token = localStorage.getItem('token');
+    try {
+        const res = await fetch('/api/admin/categories', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (!res.ok) return;
+        let categories = await res.json();
+        categories.sort((a, b) => a.id - b.id);
+
+        const totalPages = Math.ceil(categories.length / pageSize);
+        const start = page * pageSize;
+        const end = start + pageSize;
+        const pageData = categories.slice(start, end);
+
+        const tbody = document.getElementById('categoryTableBody');
+
+        if (pageData.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-muted">Chưa có chủ đề nào</td></tr>`;
+            if (paginationManager['categoryPagination']) {
+                paginationManager['categoryPagination'].reset();
+            }
+            return;
+        }
+
+        tbody.innerHTML = pageData.map((cat, index) => {
+            const isHidden = cat.isActive === false;
+            const rowClass = isHidden ? 'row-hidden' : '';
+            const statusBadge = isHidden ? '<span class="status-badge badge-hidden">Đã ẩn</span>' : '';
+            const actionBtn = isHidden
+                ? `<button class="btn-action btn-restore me-1" title="Khôi phục" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash-restore"></i></button>`
+                : `<button class="btn-action btn-trash me-1" title="Ẩn" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash"></i></button>`;
+
+            return `
+            <tr class="${rowClass}">
+                <td style="text-align: center;">${start + index + 1}</td>
+                <td style="text-align: center;"><span class="id-badge">#${cat.id}</span></td>
+                <td style="padding-left: 40px;">
+                    <strong style="color:var(--teal-dark)">${cat.categoryName}</strong>
+                    <div class="mt-1">${statusBadge}</div>
+                </td>
+                <td style="text-align: center;">${cat.totalLessons || 0} bài</td>
+                <td style="text-align: center;"><span class="level-badge">${cat.jlptLevel || 'N5'}</span></td>
+                <td style="text-align: center;">
+                    <button class="btn-action btn-edit me-1" title="Sửa" onclick="editCategory(${cat.id})"><i class="fas fa-edit"></i></button>
+                    ${actionBtn}
+                </td>
+            </tr>`;
+        }).join('');
+
+        if (paginationManager['categoryPagination']) {
+            paginationManager['categoryPagination'].render(totalPages, page);
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function openAddCategoryModal() {
+    document.getElementById('categoryForm').reset();
+    new bootstrap.Modal(document.getElementById('categoryModal')).show();
+}
+
+document.getElementById('catIconUrl')?.addEventListener('input', function (e) {
+    const url = e.target.value;
+    const previewDiv = document.getElementById('iconPreview');
+    const previewImg = document.getElementById('previewImg');
+
+    if (url && url.trim() !== "") {
+        previewImg.src = url.startsWith('http') ? url : '/' + url;
+        previewDiv.style.display = 'block';
+    } else {
+        previewDiv.style.display = 'none';
+    }
+});
+
+let selectedFile = null;
+function handleFileSelect(input) {
+    if (input.files && input.files[0]) {
+        selectedFile = input.files[0];
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const previewImg = document.getElementById('previewImg');
+            const previewDiv = document.getElementById('iconPreview');
+
+            previewImg.src = e.target.result;
+            previewDiv.style.display = 'block'; // Hiện khung ảnh to
+
+            // Hiển thị tên file vào ô input
+            document.getElementById('catIconUrl').value = selectedFile.name;
+        };
+        reader.readAsDataURL(selectedFile);
+    }
+}
+
+async function submitCategory() {
+    const name = document.getElementById('catName').value.trim();
+    const level = document.getElementById('catLevel').value;
+    const token = localStorage.getItem('token');
+
+    if (!name) return Swal.fire('Lỗi', 'Vui lòng nhập tên chủ đề!', 'error');
+
+    // Dùng FormData để gửi cả file và text
+    const formData = new FormData();
+    formData.append("categoryName", name);
+    formData.append("jlptLevel", level);
+
+    // Nếu có chọn file thì gửi file, nếu không thì gửi link nhập tay (nếu có)
+    if (selectedFile) {
+        formData.append("file", selectedFile);
+    } else {
+        formData.append("iconUrl", document.getElementById('catIconUrl').value);
+    }
+
+    try {
+        Swal.fire({ title: 'Đang xử lý...', didOpen: () => Swal.showLoading() });
+
+        const response = await fetch('/api/admin/categories/add-with-file', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token },
+            body: formData // Không set Content-Type, trình duyệt tự xử lý Multipart
+        });
+
+        if (response.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('categoryModal')).hide();
+            await Swal.fire('Thành công', 'Chủ đề và ảnh đã được lưu!', 'success');
+            selectedFile = null; // Reset biến tạm
+            loadAllCategoriesWithPagination(0);
+        } else {
+            Swal.fire('Lỗi', 'Không thể lưu chủ đề', 'error');
+        }
+    } catch (e) { console.error(e); }
+}
+
+async function deleteCategory(id) {
+    // Tìm trong danh sách hiện tại để biết nó đang ẩn hay hiện (nâng cao)
+    // Hoặc đơn giản là dùng thông báo chung:
+    const result = await Swal.fire({
+        title: 'Xác nhận ẩn?',
+        text: "Hành động này sẽ thay đổi trạng thái hiển thị của chủ đề đối với người dùng.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#06BBCC',
+        cancelButtonColor: '#ef4444',
+        confirmButtonText: 'Đồng ý',
+        cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`/api/admin/categories/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (res.ok) {
+                const message = await res.text();
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: message,
+                    timer: 1000,
+                    showConfirmButton: false
+                });
+                const currentPage = paginationManager['categoryPagination']?.currentPage || 0;
+                loadAllCategoriesWithPagination(currentPage);
+            }
+        } catch (e) { console.error(e); }
+    }
+}
+
+async function editCategory(id) {
+    const token = localStorage.getItem('token');
+    const mainContent = document.getElementById('main-content');
+    const mainTitle = document.getElementById('page-main-title');
+
+    try {
+        const res = await fetch(`/api/admin/categories/${id}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (!res.ok) throw new Error('Không thể tải thông tin chủ đề');
+
+        const category = await res.json();
+
+        const lessonsRes = await fetch(`/api/admin/lessons/by-category/${id}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        let lessons = [];
+        if (lessonsRes.ok) {
+            lessons = await lessonsRes.json();
+        }
+
+        mainTitle.innerText = `Chỉnh sửa Chủ đề: ${category.categoryName}`;
+
+        mainContent.innerHTML = `
+            <div class="category-detail-container" data-category-id="${id}">
+                <button class="back-to-list" onclick="goBackToCategories()">
+                    <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                </button>
+
+                <div class="category-detail-header">
+                    <img src="${category.iconUrl || 'https://placehold.co/100x100?text=No+Image'}"
+                         alt="${category.categoryName}"
+                         class="category-detail-avatar"
+                         id="detailAvatar"
+                         onerror="this.src='https://placehold.co/100x100?text=No+Image'">
+                    <div class="category-detail-title" style="flex: 1;">
+                        <input type="text" id="editCategoryName" class="form-control form-control-lg"
+                               value="${category.categoryName}"
+                               style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">
+                        <p><i class="fas fa-tag"></i> Slug: <span id="slugPreview">${category.slug || ''}</span></p>
+                    </div>
+                </div>
+
+                <form id="editCategoryForm">
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <h4><i class="fas fa-chart-line"></i> Cấp độ JLPT</h4>
+                            <select id="editJlptLevel" class="form-select">
+                                <option value="N5" ${category.jlptLevel === 'N5' ? 'selected' : ''}>N5 (Cơ bản)</option>
+                                <option value="N4" ${category.jlptLevel === 'N4' ? 'selected' : ''}>N4 (Sơ cấp)</option>
+                                <option value="N3" ${category.jlptLevel === 'N3' ? 'selected' : ''}>N3 (Trung cấp)</option>
+                                <option value="N2" ${category.jlptLevel === 'N2' ? 'selected' : ''}>N2 (Thượng cấp)</option>
+                                <option value="N1" ${category.jlptLevel === 'N1' ? 'selected' : ''}>N1 (Cao cấp)</option>
+                            </select>
+                        </div>
+                        <div class="info-card">
+                            <h4><i class="fas fa-image"></i> URL Ảnh đại diện</h4>
+                            <div class="input-group">
+                                <input type="text" id="editIconUrl" class="form-control" value="${category.iconUrl || ''}"
+                                       placeholder="Nhập URL ảnh" onchange="updateAvatarPreview()">
+                                <button class="btn btn-orange" type="button" onclick="document.getElementById('editFileInput').click()">
+                                    <i class="fas fa-upload"></i> Upload
+                                </button>
+                            </div>
+                            <input type="file" id="editFileInput" style="display: none;" accept="image/*" onchange="handleEditFileSelect(this, ${id})">
+                        </div>
+                        <div class="info-card">
+                            <h4><i class="fas fa-toggle-on"></i> Trạng thái</h4>
+                            <select id="editIsActive" class="form-select">
+                                <option value="true" ${category.isActive ? 'selected' : ''}>Đang hiển thị</option>
+                                <option value="false" ${!category.isActive ? 'selected' : ''}>Đã ẩn</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="d-flex gap-2 mb-4">
+                    <button class="btn-custom btn-teal" onclick="saveCategoryChanges(${id})">
+                        <i class="fas fa-save me-1"></i> Lưu thay đổi
+                    </button>
+                </div>
+
+                <div class="lessons-list">
+                    <h3><i class="fas fa-list"></i> Danh sách bài học</h3>
+                    ${lessons.length === 0 ?
+                '<p class="text-muted text-center py-4">Chưa có bài học nào trong chủ đề này</p>' :
+                `<table class="lessons-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>ID</th>
+                                    <th style="padding-left: 30px;">Tên bài học</th>
+                                    <th style="text-align: center;">Số từ vựng</th>
+                                    <th style="text-align: center;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${lessons.map((lesson, idx) => {
+                    const isHidden = lesson.isActive === false;
+                    const rowClass = isHidden ? 'row-hidden' : '';
+                    const actionBtn = isHidden
+                        ? `<button class="btn-action btn-restore" title="Khôi phục" onclick="deleteLesson(${lesson.id})">
+                            <i class="fas fa-trash-restore"></i>
+                           </button>`
+                        : `<button class="btn-action btn-trash" title="Ẩn bài học" onclick="deleteLesson(${lesson.id})">
+                            <i class="fas fa-trash"></i>
+                           </button>`;
+
+                    return `
+                    <tr class="${rowClass}" data-lesson-id="${lesson.id}">
+                        <td>${idx + 1}</td>
+                        <td><span class="id-badge">#${lesson.id}</span></td>
+                        <td style="padding-left: 30px;"><strong>${lesson.lessonName}</strong></td>
+                        <td style="text-align: center;"><span class="level-badge">${lesson.totalVocab || 0} từ</span></td>
+                        <td style="text-align: center;">
+                            <button class="btn-action btn-view me-1" title="Xem & Sửa" onclick="editLesson(${lesson.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            ${actionBtn}
+                        </td>
+                    </tr>`;
+                }).join('')}
+                            </tbody>
+                        </table>`
+            }
+                </div>
+            </div>
+        `;
+
+        localStorage.setItem('activeAdminTab', 'categories');
+
+    } catch (e) {
+        console.error(e);
+        Swal.fire('Lỗi', 'Không thể tải thông tin chi tiết', 'error');
+    }
+}
+
+// Cập nhật preview ảnh
+function updateAvatarPreview() {
+    const url = document.getElementById('editIconUrl').value;
+    const avatar = document.getElementById('detailAvatar');
+    if (url) {
+        avatar.src = url;
+    }
+}
+
+// Xử lý upload file khi edit
+async function handleEditFileSelect(input, categoryId) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("categoryId", categoryId);
+
+        Swal.fire({ title: 'Đang upload...', didOpen: () => Swal.showLoading() });
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/api/admin/categories/upload-icon', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token },
+                body: formData
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('editIconUrl').value = data.iconUrl;
+                document.getElementById('detailAvatar').src = data.iconUrl;
+                Swal.fire('Thành công', 'Đã upload ảnh mới', 'success');
+            } else {
+                Swal.fire('Lỗi', 'Không thể upload ảnh', 'error');
+            }
+        } catch (e) {
+            Swal.fire('Lỗi', 'Không thể upload ảnh', 'error');
+        }
+    }
+}
+
+// Lưu thay đổi category - KHÔNG cần tạo slug ở đây, backend tự tạo
+async function saveCategoryChanges(id) {
+    const token = localStorage.getItem('token');
+
+    const updatedData = {
+        categoryName: document.getElementById('editCategoryName').value,
+        jlptLevel: document.getElementById('editJlptLevel').value,
+        iconUrl: document.getElementById('editIconUrl').value,
+        isActive: document.getElementById('editIsActive').value === 'true'
+        // KHÔNG gửi slug, backend sẽ tự tạo từ categoryName
+    };
+
+    if (!updatedData.categoryName) {
+        Swal.fire('Lỗi', 'Tên chủ đề không được để trống', 'error');
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/admin/categories/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedData)
+        });
+
+        if (res.ok) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công',
+                text: 'Đã cập nhật chủ đề',
+                timer: 1000,
+                showConfirmButton: false
+            });
+            goBackToCategories();
+        } else {
+            const error = await res.text();
+            Swal.fire('Lỗi', error, 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        Swal.fire('Lỗi', 'Không thể cập nhật', 'error');
+    }
+}
+
+// Quay lại danh sách chủ đề
+function goBackToCategories() {
+    const navItems = document.querySelectorAll('.nav-item');
+    for (let item of navItems) {
+        if (item.innerText.trim() === 'Chủ đề') {
+            loadSection('categories', item, new Event('click'));
+            break;
+        }
+    }
+}
+
+
+
+// ===== LESSON ===== //
+async function loadAllLessonsWithPagination(page = 0) {
+    const token = localStorage.getItem('token');
+    const search = document.getElementById('lessonSearch')?.value || "";
+    const categoryId = document.getElementById('lessonFilterCategory')?.value || "";
+    const level = document.getElementById('lessonFilterLevel')?.value || "";
+    const pageSize = 10;
+
+    try {
+        let url = `/api/admin/lessons/paging?page=${page}&size=${pageSize}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        if (categoryId) url += `&categoryId=${categoryId}`;
+        if (level) url += `&level=${level}`;
+
+        const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+
+        if (!res.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const data = await res.json();
+        const tbody = document.getElementById('lessonTableBody');
+
+        const countBadge = document.getElementById('lessonCountBadge');
+        if (countBadge) {
+            countBadge.innerText = `${data.totalElements || 0} bài học`;
+        }
+
+        if (!data.content || data.content.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">Không tìm thấy bài học nào</td</tr>`;
+            if (paginationManager['lessonPagination']) {
+                paginationManager['lessonPagination'].reset();
+            }
+            return;
+        }
+
+        tbody.innerHTML = data.content.map((les, index) => {
+            const totalVocab = les.totalVocab || 0;
+            const lessonName = les.lessonName || '';
+            const categoryName = les.categoryName || 'Chưa phân loại';
+            const isActive = les.isActive === true;
+
+            // Thêm class row-hidden nếu bài học đang bị ẩn
+            const rowClass = !isActive ? 'row-hidden' : '';
+
+            const actionBtn = !isActive
+        ? `<button class="btn-action btn-restore" title="Khôi phục" onclick="deleteLesson(${les.id})">
+            <i class="fas fa-trash-restore"></i>
+            </button>`
+        : `<button class="btn-action btn-trash" title="Ẩn" onclick="deleteLesson(${les.id})">
+            <i class="fas fa-trash"></i>
+            </button>`;
+
+            return `
+            <tr class="${rowClass}">
+                <td style="text-align: center;">${(page * pageSize) + index + 1}</td>
+                <td style="text-align: center;"><span class="id-badge">#${les.id}</span></td>
+                <td><strong>${lessonName}</strong></td>
+                <td><strong style="color:var(--teal-dark)">${categoryName}</strong></td>
+                <td style="text-align: center;"><span class="level-badge">${totalVocab} từ</span></td>
+                <td style="text-align: center;">
+                    <button class="btn-action btn-edit me-1" title="Sửa" onclick="editLesson(${les.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    ${actionBtn}
+                </td>
+            </tr>`;
+        }).join('');
+
+        if (paginationManager['lessonPagination']) {
+            paginationManager['lessonPagination'].render(data.totalPages, data.number);
+        }
+    } catch (e) {
+        console.error("Lỗi tải bài học:", e);
+        document.getElementById('lessonTableBody').innerHTML = `<tr><td colspan="6" class="text-center text-danger">Lỗi nạp dữ liệu</td</tr>`;
+    }
+}
+
+async function loadLessonCategoryFilter() {
+    const token = localStorage.getItem('token');
+    const level = document.getElementById('lessonFilterLevel')?.value || "";
+
+    try {
+        let url = '/api/admin/categories';
+        if (level) {
+            url = `/api/admin/categories/filter?level=${level}`;
+        }
+
+        const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+        const categories = await res.json();
+        const select = document.getElementById('lessonFilterCategory');
+        if (select) {
+            select.innerHTML = '<option value="">Tất cả chủ đề</option>' +
+                categories.map(c => `<option value="${c.id}">${c.categoryName}</option>`).join('');
+        }
+    } catch (e) {
+        console.error("Lỗi tải danh sách chủ đề:", e);
+    }
+}
+
+async function onLessonLevelChange() {
+    const token = localStorage.getItem('token');
+    const level = document.getElementById('lessonFilterLevel').value;
+    const categorySelect = document.getElementById('lessonFilterCategory');
+
+    if (!level) {
+        // Nếu bỏ chọn cấp độ, reset select về chỉ có "Tất cả chủ đề"
+        categorySelect.innerHTML = '<option value="">Tất cả chủ đề</option>';
+    } else {
+        try {
+            const res = await fetch(`/api/admin/categories/filter?level=${level}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (res.ok) {
+                const categories = await res.json();
+                categorySelect.innerHTML = '<option value="">Tất cả chủ đề</option>' +
+                    categories.map(c => `<option value="${c.id}">${c.categoryName}</option>`).join('');
+            }
+        } catch (e) {
+            console.error("Lỗi tải chủ đề theo cấp độ:", e);
+        }
+    }
+    // Reset về trang 1 sau khi thay đổi filter
+    loadAllLessonsWithPagination(0);
+}
+
+async function loadAllLessonsClientSide(page, pageSize) {
+    const token = localStorage.getItem('token');
+    try {
+        const res = await fetch('/api/admin/lessons', { headers: { 'Authorization': 'Bearer ' + token } });
+        const lessons = await res.json();
+
+        const totalPages = Math.ceil(lessons.length / pageSize);
+        const start = page * pageSize;
+        const end = start + pageSize;
+        const pageData = lessons.slice(start, end);
+
+        const tbody = document.getElementById('lessonTableBody');
+
+        if (pageData.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">Chưa có bài học nào</td></tr>`;
+            if (paginationManager['lessonPagination']) {
+                paginationManager['lessonPagination'].reset();
+            }
+            return;
+        }
+
+        tbody.innerHTML = pageData.map((les, index) => `
+            <tr>
+                <td style="text-align: center;">${start + index + 1}</td>
+                <td style="text-align: center;"><span class="id-badge">#${les.id}</span></td>
+                <td><strong>${les.lessonName}</strong></td>
+                <td><strong style="color:var(--teal-dark)">${les.categoryName || 'Chưa phân loại'}</strong></td>
+                <td style="text-align: center;"><span class="level-badge">${les.totalVocab || 0} từ</span></td>
+                <td style="text-align: center;">
+                    <button class="btn-action btn-edit me-1" onclick="editLesson(${les.id})"><i class="fas fa-edit"></i></button>
+                    <button class="btn-action btn-trash" onclick="deleteLesson(${les.id})"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+
+        if (paginationManager['lessonPagination']) {
+            paginationManager['lessonPagination'].render(totalPages, page);
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function openAddLessonModal() {
+    const token = localStorage.getItem('token');
+    document.getElementById('lessonForm').reset();
+    try {
+        const res = await fetch('/api/admin/categories', { headers: { 'Authorization': 'Bearer ' + token } });
+        const categories = await res.json();
+        const select = document.getElementById('lessonCategorySelect');
+        select.innerHTML = categories.map(c => `<option value="${c.id}">${c.categoryName} (${c.jlptLevel})</option>`).join('');
+        new bootstrap.Modal(document.getElementById('lessonModal')).show();
+    } catch (e) { Swal.fire('Lỗi', 'Không thể tải chủ đề', 'error'); }
+}
+
+async function submitLesson() {
+    const name = document.getElementById('lessonName').value.trim();
+    const catId = document.getElementById('lessonCategorySelect').value;
+    const token = localStorage.getItem('token');
+    if (!name) return Swal.fire('Lỗi', 'Tên không được trống', 'error');
+    try {
+        const res = await fetch('/api/admin/lessons', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lessonName: name, categoryId: catId })
+        });
+        if (res.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('lessonModal')).hide();
+            Swal.fire('Thành công', 'Đã thêm bài học!', 'success');
+            loadAllLessonsWithPagination(0); // Sửa: gọi hàm mới
+            loadLessonCategoryFilter(); // Refresh filter dropdown
+        } else {
+            const error = await res.text();
+            Swal.fire('Lỗi', error, 'error');
+        }
+    } catch (e) { console.error(e); }
+}
+
+function openQuickAddLesson() {
+    const catId = document.getElementById('vCategoryId').value;
+    const catName = document.getElementById('vCategoryId').options[document.getElementById('vCategoryId').selectedIndex].text;
+
+    // 1. Tự động chọn chủ đề bên modal Bài học
+    const lessonCatSelect = document.getElementById('lessonCategorySelect');
+    if (lessonCatSelect) {
+        lessonCatSelect.value = catId;
+    }
+
+    // 2. Mở modal Bài học (ẩn modal từ vựng tạm thời hoặc để chồng lên)
+    const lessonModal = new bootstrap.Modal(document.getElementById('lessonModal'));
+    lessonModal.show();
+
+    // Thông báo nhỏ để Admin biết
+    console.log(`Đang tạo bài học cho chủ đề: ${catName}`);
+}
+
+
+
+
+
+
+
+
+// ===== VOCABULARY ===== //
+async function loadVocabWithPagination(page) {
+    const token = localStorage.getItem('token');
+    const search = document.getElementById('vocabSearch')?.value || "";
+    const cateId = document.getElementById('filterCate')?.value || "";
+    const level = document.getElementById('filterLevel')?.value || "";
+    const pageSize = 20;
+
+    try {
+        let url = `/api/admin/vocab/all?page=${page}&size=${pageSize}&search=${encodeURIComponent(search)}&cateId=${cateId}&level=${level}`;
+        const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+        const data = await res.json();
+
+        const tbody = document.getElementById('vocabTableBody');
+
+        const countBadge = document.getElementById('vocabCountBadge');
+        if (countBadge) {
+            countBadge.innerText = `${data.totalElements || 0} từ vựng`;
+        }
+
+        if (!data.content || data.content.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted">Không tìm thấy từ vựng nào</td</tr>`;
+            if (paginationManager['vocabPagination']) {
+                paginationManager['vocabPagination'].reset();
+            }
+            return;
+        }
+
+        tbody.innerHTML = data.content.map((v, index) => {
+            const sttNumber = (page * pageSize) + index + 1;
+            const isActive = v.isActive !== undefined ? v.isActive : true;
+            const rowClass = !isActive ? 'row-hidden' : '';
+            const actionBtn = !isActive
+        ? `<button class="btn-action btn-restore" title="Khôi phục" onclick="deleteVocab(${v.id})">
+            <i class="fas fa-trash-restore"></i>
+           </button>`
+        : `<button class="btn-action btn-trash" title="Ẩn" onclick="deleteVocab(${v.id})">
+            <i class="fas fa-trash"></i>
+           </button>`;
+
+            return `
+    <tr class="${rowClass}">
+        ${bulkModeActive ?
+            `<td class="checkbox-cell" style="text-align: center;">
+                <input type="checkbox" class="select-checkbox row-select-vocab" value="${v.id}"
+                       onchange="updateVocabSelection(this)">
+              </td>
+             <td class="stt-cell" style="display: none; text-align: center;">${sttNumber}</td>` :
+            `<td style="text-align: center;">${sttNumber}</td>`
+        }
+        <td style="text-align:center;"><span class="id-badge">#${v.id}</span></td>
+        <td><strong style="font-size: 18px; color: var(--text-dark);">${v.expression}</strong></td>
+        <td><span style="color: var(--teal); font-weight: 600;">${v.kana}</span></td>
+        <td><small style="font-size: 15px;">${v.romaji}</small></td>
+        <td>${v.meaning}</td>
+        <td style="text-align:center;">
+            <button class="btn-action btn-edit me-1" title="Sửa" onclick="editVocab(${v.id})">
+                <i class="fas fa-edit"></i>
+            </button>
+            ${actionBtn}
+        </td>
+    </tr>`;
+        }).join('');
+
+        if (paginationManager['vocabPagination']) {
+            paginationManager['vocabPagination'].render(data.totalPages, data.number);
+        }
+    } catch (e) {
+        console.error(e);
+        document.getElementById('vocabTableBody').innerHTML = `<tr><td colspan="8" class="text-center text-danger">Lỗi nạp dữ liệu</td</tr>`;
+    }
+}
+
+// Đổi tên hàm cho rõ nghĩa hơn (hoặc giữ tên cũ)
+async function deleteVocab(id) {
+    const result = await Swal.fire({
+        title: 'Xác nhận thay đổi?',
+        text: "Hành động này sẽ thay đổi trạng thái hiển thị của từ vựng đối với người dùng.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#06BBCC',
+        cancelButtonColor: '#ef4444',
+        confirmButtonText: 'Đồng ý',
+        cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
+        const token = localStorage.getItem('token');
+        try {
+            // Dùng PATCH hoặc DELETE tùy backend
+            const res = await fetch(`/api/admin/vocab/${id}/toggle-status`, {
+                method: 'PATCH',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (res.ok) {
+                const message = await res.text();
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: message,
+                    timer: 1000,
+                    showConfirmButton: false
+                });
+                const currentPage = paginationManager['vocabPagination']?.currentPage || 0;
+                loadVocabWithPagination(currentPage);
+            } else {
+                const error = await res.text();
+                Swal.fire('Lỗi', error, 'error');
+            }
+        } catch (e) { console.error(e); }
+    }
+}
+
+async function updateCategoryFilter() {
+    const token = localStorage.getItem('token');
+    const level = document.getElementById('filterLevel').value;
+    const cateSelect = document.getElementById('filterCate');
+
+    if (!level) {
+        cateSelect.innerHTML = '<option value="">Tất cả chủ đề</option>';
+        loadVocabWithPagination(0);
+        return;
+    }
+    try {
+        // Gọi API lấy Cate theo Level (Bạn cần có endpoint này ở Backend)
+        const res = await fetch(`/api/admin/categories/filter?level=${level}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (res.ok) {
+            const categories = await res.json();
+            let options = '<option value="">Tất cả chủ đề</option>';
+            options += categories.map(c => `<option value="${c.id}">${c.categoryName}</option>`).join('');
+            cateSelect.innerHTML = options;
+        }
+    } catch (e) { console.error(e); }
+    loadVocabWithPagination(0);
+}
+
+async function openAddVocabModal() {
+    const token = localStorage.getItem('token');
+    document.getElementById('vocabForm').reset();
+    document.getElementById('quickAddLessonContainer').style.display = 'none';
+
+    try {
+        // 1. Load danh sách Chủ đề
+        const res = await fetch('/api/admin/categories', { headers: { 'Authorization': 'Bearer ' + token } });
+        const categories = await res.json();
+
+        const catSelect = document.getElementById('vCategoryId');
+        catSelect.innerHTML = '<option value="">-- Chọn chủ đề --</option>' +
+            categories.map(c => `<option value="${c.id}">${c.categoryName}</option>`).join('');
+
+        // 2. Reset ô bài học
+        document.getElementById('vLessonId').innerHTML = '<option value="">-- Vui lòng chọn chủ đề trước --</option>';
+
+        new bootstrap.Modal(document.getElementById('vocabModal')).show();
+    } catch (e) {
+        Swal.fire('Lỗi', 'Không thể khởi tạo modal', 'error');
+    }
+}
+
+async function submitVocab() {
+    const token = localStorage.getItem('token');
+    const data = {
+        expression: document.getElementById('vExpression').value,
+        kana: document.getElementById('vKana').value,
+        romaji: document.getElementById('vRomaji').value,
+        meaning: document.getElementById('vMeaning').value,
+        wordType: document.getElementById('vWordType').value,
+        example: document.getElementById('vExample').value,
+        exampleVi: document.getElementById('vExampleVi').value,
+        imageUrl: document.getElementById('vImageUrl').value,
+        audioUrl: document.getElementById('vAudioUrl').value,
+        lessonId: document.getElementById('vLessonId').value // Quan trọng để map bài học
+    };
+
+    if (!data.expression || !data.meaning || !data.lessonId) {
+        return Swal.fire('Chú ý', 'Vui lòng điền các trường bắt buộc!', 'warning');
+    }
+
+    try {
+        const res = await fetch('/api/admin/vocab/add', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('vocabModal')).hide();
+            Swal.fire('Thành công', 'Đã thêm từ vựng mới!', 'success');
+            loadVocabWithPagination(0); // Reload lại bảng
+        } else {
+            Swal.fire('Lỗi', 'Không thể lưu từ vựng', 'error');
+        }
+    } catch (e) { console.error(e); }
+}
+
+async function onVocabCategoryChange() {
+    const catId = document.getElementById('vCategoryId').value;
+    const lessonSelect = document.getElementById('vLessonId');
+    const quickAddContainer = document.getElementById('quickAddLessonContainer');
+    const token = localStorage.getItem('token');
+
+    if (!catId) {
+        lessonSelect.innerHTML = '<option value="">-- Vui lòng chọn chủ đề trước --</option>';
+        quickAddContainer.style.display = 'none';
+        return;
+    }
+
+    try {
+        // Gọi API lấy bài học theo chủ đề
+        // Lưu ý: Tận dụng endpoint bạn đã làm cho phần filter
+        const res = await fetch(`/api/admin/lessons/by-category/${catId}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const lessons = await res.json();
+
+        if (lessons && lessons.length > 0) {
+            lessonSelect.innerHTML = lessons.map(l => `<option value="${l.id}">${l.lessonName}</option>`).join('');
+            quickAddContainer.style.display = 'none';
+            lessonSelect.disabled = false;
+        } else {
+            lessonSelect.innerHTML = '<option value="">(Trống)</option>';
+            lessonSelect.disabled = true;
+            quickAddContainer.style.display = 'block'; // Hiện nút tạo nhanh
+        }
+    } catch (e) { console.error(e); }
+}
+
 </script>
+
 </body>
 
 </html>

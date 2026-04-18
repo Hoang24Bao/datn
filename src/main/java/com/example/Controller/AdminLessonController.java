@@ -61,6 +61,8 @@ public class AdminLessonController {
             item.put("categoryId", row[2]);
             item.put("categoryName", row[3] != null ? row[3] : "Chưa phân loại");
             item.put("totalVocab", row[4] != null ? row[4] : 0L);
+            // THÊM DÒNG NÀY - lấy isActive từ cột thứ 6 (index 5)
+            item.put("isActive", row[5] != null ? (Boolean) row[5] : true);
             return item;
         }).collect(Collectors.toList());
 
@@ -88,18 +90,20 @@ public class AdminLessonController {
         }
     }
 
-    // 3. Xóa bài học (Bổ sung để khớp với giao diện)
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteLesson(@PathVariable Integer id) {
-        try {
-            if (!lessonRepository.existsById(id)) {
-                return ResponseEntity.notFound().build();
-            }
-            lessonRepository.deleteById(id);
-            return ResponseEntity.ok("Xóa bài học thành công!");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Không thể xóa bài học vì có dữ liệu liên quan!");
-        }
+    // 3. SOFT DELETE - Ẩn/hiện bài học (toggle isActive)
+    @PatchMapping("/{id}/toggle-status")
+    @Transactional
+    public ResponseEntity<?> toggleLessonStatus(@PathVariable Integer id) {
+        return lessonRepository.findById(id)
+                .map(lesson -> {
+                    boolean newStatus = !lesson.getIsActive();
+                    lesson.setIsActive(newStatus);
+                    lessonRepository.save(lesson);
+
+                    String message = newStatus ? "Đã khôi phục bài học" : "Đã ẩn bài học";
+                    return ResponseEntity.ok().body(message);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
     // 4. Lọc bài học theo level (giữ nguyên)
@@ -123,9 +127,18 @@ public class AdminLessonController {
         return ResponseEntity.ok(response);
     }
 
-    // 5. Lấy bài học theo category (giữ nguyên)
+    // 5. Lấy bài học theo category (có kèm trạng thái)
     @GetMapping("/by-category/{catId}")
-    public ResponseEntity<List<Lessons>> getByCate(@PathVariable Integer catId) {
-        return ResponseEntity.ok(lessonRepository.findByCategoryId(catId));
+    public ResponseEntity<List<Map<String, Object>>> getByCate(@PathVariable Integer catId) {
+        List<Object[]> rows = lessonRepository.findLessonsByCategoryIdWithStats(catId);
+        List<Map<String, Object>> response = rows.stream().map(row -> {
+            Map<String, Object> item = new HashMap<>();
+            item.put("id", row[0]);
+            item.put("lessonName", row[1]);
+            item.put("isActive", row[2]);
+            item.put("totalVocab", row[3] != null ? row[3] : 0);
+            return item;
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 }

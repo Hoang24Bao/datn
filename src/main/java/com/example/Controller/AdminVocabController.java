@@ -39,13 +39,19 @@ public class AdminVocabController {
         return ResponseEntity.ok(result);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteVocab(@PathVariable Integer id) {
-        if (!vocabularyRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        vocabularyRepository.deleteById(id);
-        return ResponseEntity.ok("Xóa từ vựng thành công!");
+    @PatchMapping("/{id}/toggle-status")
+    @Transactional
+    public ResponseEntity<?> toggleVocabStatus(@PathVariable Integer id) {
+        return vocabularyRepository.findById(id)
+                .map(vocab -> {
+                    boolean newStatus = !vocab.getIsActive();
+                    vocab.setIsActive(newStatus);
+                    vocabularyRepository.save(vocab);
+
+                    String message = newStatus ? "Đã khôi phục từ vựng" : "Đã ẩn từ vựng";
+                    return ResponseEntity.ok().body(message);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
 

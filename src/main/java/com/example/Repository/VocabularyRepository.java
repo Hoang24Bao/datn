@@ -18,9 +18,10 @@ public interface VocabularyRepository extends JpaRepository<Vocabulary, Integer>
     Page<Vocabulary> findByExpressionContainingOrMeaningContaining(String expression, String meaning, Pageable pageable);
 
     // Lấy danh sách từ vựng theo ID của bài học (Lesson)
-    @Query(value = "SELECT v.* FROM Vocabulary v " +
-            "JOIN Lesson_Vocab lv ON v.id = lv.vocab_id " +
-            "WHERE lv.lesson_id = :lessonId", nativeQuery = true)
+    @Query("SELECT v FROM Vocabulary v " +
+            "JOIN LessonVocab lv ON v.id = lv.vocabId " +
+            "WHERE lv.lessonId = :lessonId AND v.isActive = true " +
+            "ORDER BY lv.displayOrder ASC")
     List<Vocabulary> findByLessonId(@Param("lessonId") Integer lessonId);
 
     // Lọc từ vựng theo Level (Đi xuyên qua bảng Lessons và Categories)

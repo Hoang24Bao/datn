@@ -30,7 +30,8 @@ public interface LessonsRepository extends JpaRepository<Lessons, Integer> {
 
     // API phân trang KÈM SỐ LƯỢNG TỪ VỰNG - DÙNG NATIVE QUERY
     @Query(value = "SELECT l.id, l.lesson_name, l.category_id, c.category_name, " +
-            "COALESCE((SELECT COUNT(*) FROM lesson_vocab lv WHERE lv.lesson_id = l.id), 0) as total_vocab " +
+            "COALESCE((SELECT COUNT(*) FROM lesson_vocab lv WHERE lv.lesson_id = l.id), 0) as total_vocab, " +
+            "l.is_active " +
             "FROM lessons l " +
             "LEFT JOIN categories c ON l.category_id = c.id " +
             "WHERE (:search IS NULL OR :search = '' OR " +
@@ -52,4 +53,13 @@ public interface LessonsRepository extends JpaRepository<Lessons, Integer> {
             @Param("categoryId") Integer categoryId,
             @Param("level") String level,
             Pageable pageable);
+
+
+    // Thêm query này
+    @Query(value = "SELECT l.id, l.lesson_name, l.is_active, " +
+            "COALESCE((SELECT COUNT(*) FROM lesson_vocab lv WHERE lv.lesson_id = l.id), 0) as total_vocab " +
+            "FROM lessons l " +
+            "WHERE l.category_id = :categoryId " +
+            "ORDER BY l.id ASC", nativeQuery = true)
+    List<Object[]> findLessonsByCategoryIdWithStats(@Param("categoryId") Integer categoryId);
 }

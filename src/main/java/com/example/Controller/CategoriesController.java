@@ -16,9 +16,9 @@ public class CategoriesController {
 
     @GetMapping("/categories")
     public String listCategories(Model model) {
-        model.addAttribute("categories", categoryRepository.findAll());
+        model.addAttribute("categories", categoryRepository.findByIsActiveTrue());
         model.addAttribute("currentPage", "categories");
-        return "study/categories"; // Tìm file trong templates/study/categories.html
+        return "study/categories";
     }
 
 
