@@ -20,4 +20,6 @@ public class Categories {
     private String jlptLevel;
     @Column(name = "is_active")
     private Boolean isActive = true;
+    @Column(name = "thumbnail_url")
+    private String thumbnailUrl;
 }

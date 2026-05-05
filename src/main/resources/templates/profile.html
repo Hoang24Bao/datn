@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: html_head(title='Hồ sơ cá nhân')}"></head>
+<link th:href="@{/css/profile.css}" rel="stylesheet">
+
+<body>
+<div th:replace="~{layout :: navbar}"></div>
+
+<!-- ===== PROFILE CONTENT ===== -->
+<div class="profile-wrap">
+
+    <!-- Breadcrumb -->
+    <div class="profile-breadcrumb">
+        <a href="/" class="chip">
+            <i class="fas fa-home" style="margin-right:4px; font-size:11px;"></i> Trang chủ
+        </a>
+        <span class="sep"><i class="fas fa-chevron-right" style="font-size:10px;"></i></span>
+        <span class="chip active">Hồ sơ cá nhân</span>
+    </div>
+
+    <div class="profile-grid">
+
+        <!-- ── Avatar Card ── -->
+        <div class="avatar-card">
+            <div class="avatar-ring">
+                <img id="avatarImg"
+                     th:src="${user.avatarUrl != null ? user.avatarUrl : 'https://ui-avatars.com/api/?name=' + user.fullname + '&background=06BBCC&color=fff'}"
+                     alt="Avatar">
+                <button class="camera-btn" title="Đổi ảnh đại diện"
+                        onclick="document.getElementById('avatarInput').click()">
+                    <i class="fas fa-camera"></i>
+                </button>
+            </div>
+            <input type="file" id="avatarInput" style="display:none;" accept="image/*"
+                   onchange="previewAvatar(this)">
+
+            <div class="profile-username" th:text="${user.fullname}">User Name</div>
+
+            <div class="profile-level-badge">
+                <i class="fas fa-star" style="font-size:11px; margin-right:5px;"></i>
+                <span th:text="${levelName}">N5</span>
+            </div>
+
+            <!-- Stats -->
+            <div class="profile-stat-row">
+                <div class="profile-stat-box">
+                    <div class="profile-stat-num" th:text="${user.totalPoints != null ? user.totalPoints : 0}">0</div>
+                    <div class="profile-stat-lbl">Tổng điểm</div>
+                </div>
+                <div class="profile-stat-box">
+                    <div class="profile-stat-num" th:text="${lessonCount != null ? lessonCount : 0}">0</div>
+                    <div class="profile-stat-lbl">Bài đã học</div>
+                </div>
+            </div>
+
+            <!-- Progress -->
+            <div class="profile-progress-section">
+                <div class="profile-progress-label">
+                    <span>Tiến độ lên cấp tiếp theo</span>
+                    <span th:text="${levelProgress != null ? levelProgress + '%' : '0%'}">0%</span>
+                </div>
+                <div class="profile-progress-bar">
+                    <div class="profile-progress-fill"
+                         th:style="'width: ' + (${levelProgress != null ? levelProgress : 0}) + '%'">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── Form Card ── -->
+        <div class="form-card">
+
+            <!-- Header -->
+            <div class="form-card-header">
+                <div>
+                    <h5>Thông tin tài khoản</h5>
+                    <p>Cập nhật thông tin cá nhân và bảo mật</p>
+                </div>
+                <div class="profile-level-badge">
+                    <i class="fas fa-shield-alt" style="font-size:11px; margin-right:5px;"></i>
+                    Tài khoản đang hoạt động
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="profile-tab-row">
+                <button class="profile-tab-btn active" onclick="switchTab('info', this)">
+                    <i class="fas fa-id-card"></i> Thông tin cá nhân
+                </button>
+                <button class="profile-tab-btn" onclick="switchTab('security', this)">
+                    <i class="fas fa-lock"></i> Bảo mật
+                </button>
+            </div>
+
+            <!-- ── Tab: Thông tin cá nhân ── -->
+            <div id="tab-info" class="profile-tab-body">
+
+                <div class="pf-form-row">
+                    <div>
+                        <label class="pf-label">Họ và tên</label>
+                        <input class="pf-input" type="text" id="fullname"
+                               th:value="${user.fullname}"
+                               placeholder="Nhập họ và tên" required>
+                    </div>
+                    <div>
+                        <label class="pf-label">Tên đăng nhập</label>
+                        <input class="pf-input" type="text" id="username"
+                               th:value="${user.userName}" disabled>
+                    </div>
+                </div>
+
+                <div class="pf-form-row">
+                    <div>
+                        <label class="pf-label">Email</label>
+                        <input class="pf-input" type="email" id="email"
+                               th:value="${user.email}"
+                               placeholder="Nhập email" required>
+                    </div>
+                    <div>
+                        <label class="pf-label">Ngày tạo tài khoản</label>
+                        <input class="pf-input" type="text"
+                               th:value="${#temporals.format(user.created, 'dd/MM/yyyy HH:mm')}"
+                               disabled>
+                    </div>
+                </div>
+
+                <div class="pf-btn-row">
+                    <button class="pf-btn-cancel" onclick="resetForm()">
+                        <i class="fas fa-undo"></i> Hủy
+                    </button>
+                    <button class="pf-btn-save" onclick="saveProfile()">
+                        <i class="fas fa-save"></i> Lưu thay đổi
+                    </button>
+                </div>
+            </div>
+
+            <!-- ── Tab: Bảo mật ── -->
+            <div id="tab-security" class="profile-tab-body" style="display:none;">
+
+                <div class="pf-section-sub">Đổi mật khẩu</div>
+
+                <div class="pf-form-row">
+                    <div>
+                        <label class="pf-label">Mật khẩu hiện tại</label>
+                        <input class="pf-input" type="password" id="currentPassword"
+                               placeholder="Nhập mật khẩu hiện tại">
+                    </div>
+                    <div>
+                        <label class="pf-label">Mật khẩu mới</label>
+                        <input class="pf-input" type="password" id="newPassword"
+                               placeholder="Ít nhất 6 ký tự">
+                    </div>
+                </div>
+
+                <div class="pf-form-row full">
+                    <div>
+                        <label class="pf-label">Xác nhận mật khẩu mới</label>
+                        <input class="pf-input" type="password" id="confirmPassword"
+                               placeholder="Nhập lại mật khẩu mới">
+                    </div>
+                </div>
+
+                <div style="background:rgba(6,187,204,0.06); border:1px solid rgba(6,187,204,0.2); border-radius:10px; padding:12px 16px; font-size:15px; color:var(--text-muted);">
+                    <i class="fas fa-info-circle" style="color:var(--teal); margin-right:6px;"></i>
+                    Mật khẩu mạnh nên có ít nhất 8 ký tự, bao gồm chữ hoa, số và ký tự đặc biệt.
+                </div>
+
+                <div class="pf-btn-row">
+                    <button class="btn-custom pf-btn-cancel" onclick="clearPasswordFields()">
+                        <i class="fas fa-undo"></i> Hủy
+                    </button>
+                    <button class="btn-custom pf-btn-save" onclick="saveProfile()">
+                        <i class="fas fa-save"></i> Lưu thay đổi
+                    </button>
+                </div>
+            </div>
+
+        </div>
+        <!-- end form-card -->
+
+    </div>
+    <!-- end profile-grid -->
+
+</div>
+<!-- ===== END PROFILE CONTENT ===== -->
+
+<div th:replace="~{layout :: footer}"></div>
+
+<!-- ================= SCRIPTS ================= -->
+<script>
+    let selectedAvatarFile = null;
+
+    /* ── Tab switching ── */
+    function switchTab(tabName, btn) {
+        document.querySelectorAll('.profile-tab-body').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.profile-tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + tabName).style.display = 'block';
+        btn.classList.add('active');
+    }
+
+    /* ── Avatar preview ── */
+    function previewAvatar(input) {
+        if (input.files && input.files[0]) {
+            selectedAvatarFile = input.files[0];
+            const reader = new FileReader();
+            reader.onload = e => {
+                document.getElementById('avatarImg').src = e.target.result;
+            };
+            reader.readAsDataURL(selectedAvatarFile);
+        }
+    }
+
+    /* ── Save profile ── */
+    async function saveProfile() {
+        const fullname        = document.getElementById('fullname')?.value.trim();
+        const email           = document.getElementById('email')?.value.trim();
+        const levelId         = document.getElementById('levelId')?.value;
+        const currentPassword = document.getElementById('currentPassword')?.value || '';
+        const newPassword     = document.getElementById('newPassword')?.value || '';
+        const confirmPassword = document.getElementById('confirmPassword')?.value || '';
+
+        if (fullname !== undefined && !fullname) {
+            return Swal.fire('Lỗi', 'Họ và tên không được để trống!', 'error');
+        }
+        if (email !== undefined && !email) {
+            return Swal.fire('Lỗi', 'Email không được để trống!', 'error');
+        }
+        if (newPassword || confirmPassword) {
+            if (!currentPassword) return Swal.fire('Lỗi', 'Vui lòng nhập mật khẩu hiện tại!', 'error');
+            if (newPassword !== confirmPassword) return Swal.fire('Lỗi', 'Mật khẩu xác nhận không khớp!', 'error');
+            if (newPassword.length < 6) return Swal.fire('Lỗi', 'Mật khẩu mới phải có ít nhất 6 ký tự!', 'error');
+        }
+
+        Swal.fire({
+            title: 'Đang xử lý...',
+            text: 'Vui lòng chờ trong giây lát',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        try {
+            let avatarUrl = null;
+            if (selectedAvatarFile) {
+                const formData = new FormData();
+                formData.append('file', selectedAvatarFile);
+                const uploadRes = await fetch('/api/user/upload-avatar', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+                    body: formData
+                });
+                if (uploadRes.ok) {
+                    const data = await uploadRes.json();
+                    avatarUrl = data.avatarUrl;
+                } else {
+                    throw new Error('Upload ảnh thất bại');
+                }
+            }
+
+            const updateData = {
+                fullname:  fullname  || undefined,
+                email:     email     || undefined,
+                levelId:   levelId   ? parseInt(levelId) : undefined,
+                avatarUrl: avatarUrl || undefined
+            };
+            if (newPassword) {
+                updateData.currentPassword = currentPassword;
+                updateData.newPassword     = newPassword;
+            }
+
+            const updateRes = await fetch('/api/user/profile', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updateData)
+            });
+
+            const result = await updateRes.json();
+
+            if (updateRes.ok) {
+                if (fullname)  localStorage.setItem('fullname',  fullname);
+                if (avatarUrl) localStorage.setItem('avatarUrl', avatarUrl);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công!',
+                    text: result.message || 'Đã cập nhật thông tin!',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => window.location.reload());
+            } else {
+                Swal.fire('Lỗi', result.error || 'Cập nhật thất bại!', 'error');
+            }
+        } catch (error) {
+            console.error(error);
+            Swal.fire('Lỗi', error.message || 'Không thể kết nối server!', 'error');
+        }
+    }
+
+    /* ── Reset helpers ── */
+    function resetForm() {
+        document.getElementById('fullname').value = document.getElementById('fullname').defaultValue;
+        document.getElementById('email').value    = document.getElementById('email').defaultValue;
+        selectedAvatarFile = null;
+        location.reload();
+    }
+
+    function clearPasswordFields() {
+        ['currentPassword', 'newPassword', 'confirmPassword'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+    }
+</script>
+</body>
+</html>

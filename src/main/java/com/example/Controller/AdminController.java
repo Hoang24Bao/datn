@@ -115,7 +115,7 @@ public class AdminController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String timeFilter,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "20") int size) {
 
         java.time.LocalDateTime dateLimit = null;
         java.time.LocalDateTime now = java.time.LocalDateTime.now();

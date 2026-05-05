@@ -35,4 +35,6 @@ public class InteractiveScene {
     // Liên kết với các điểm chạm thuộc cảnh này
     @OneToMany(mappedBy = "scene", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<InteractivePoint> points;
+
+    
 }

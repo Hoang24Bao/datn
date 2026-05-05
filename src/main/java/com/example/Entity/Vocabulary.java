@@ -33,12 +33,10 @@ public class Vocabulary {
     private String example;
 
     @ManyToMany
-    @JoinTable(
-            name = "Lesson_Vocab", // Tên bảng trong SQL
+    @JoinTable(name = "Lesson_Vocab",
             joinColumns = @JoinColumn(name = "vocab_id"),
-            inverseJoinColumns = @JoinColumn(name = "lesson_id")
-    )
-    @JsonIgnoreProperties({"vocabularies", "hibernateLazyInitializer", "handler"})
+            inverseJoinColumns = @JoinColumn(name = "lesson_id"))
+    @JsonIgnore  // THÊM DÒNG NÀY
     private List<Lessons> lessons;
 
     @Column(name = "is_active")

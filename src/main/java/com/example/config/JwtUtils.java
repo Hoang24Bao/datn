@@ -5,6 +5,7 @@ import com.example.Entity.Users; // Đảm bảo import đúng Entity Users củ
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
+
 import java.security.Key;
 import java.util.Date;
 
@@ -18,9 +19,8 @@ public class JwtUtils {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
-    // ĐỔI THAM SỐ: Truyền vào cả đối tượng Users thay vì mỗi username
+   
     public String generateTokenFromUsername(Users user) {
-        // Lấy tên role đầu tiên (hoặc nối chuỗi nếu user có nhiều role)
         String roleName = user.getRoles().stream()
                 .findFirst()
                 .map(Roles::getName)
@@ -28,7 +28,7 @@ public class JwtUtils {
 
         return Jwts.builder()
                 .setSubject(user.getUserName())
-                .claim("role", roleName) // Lưu dưới dạng String "ROLE_ADMIN"
+                .claim("role", roleName)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key(), SignatureAlgorithm.HS256)

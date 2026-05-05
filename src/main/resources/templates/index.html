@@ -287,344 +287,59 @@
             <h6 class="section-title bg-white text-center px-3">Quan tâm</h6>
             <h1 class="mb-5" style="color: #fb873f;">Từ vựng theo chủ đề</h1>
         </div>
-        <div class="row g-4 py-2">
-            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+
+        <!-- Kiểm tra nếu có dữ liệu -->
+        <div th:if="${categories == null or categories.isEmpty()}" class="alert alert-info text-center">
+            Đang cập nhật dữ liệu...
+        </div>
+
+        <div class="row g-4 py-2" th:unless="${categories == null or categories.isEmpty()}">
+            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s"
+                 th:each="cat : ${categories}">
                 <div class="course-item shadow">
                     <div class="position-relative overflow-hidden text-light image">
-                        <img class="img-fluid" th:src="@{img/course-1.jpg}" alt="">
+                        <!-- DÙNG iconUrl cho trang chủ -->
+                        <img class="img-fluid"
+                             th:src="@{${cat.iconUrl != null ? cat.iconUrl : 'img/default-course.jpg'}}"
+                             th:alt="${cat.categoryName}">
                         <div style="position:absolute;top: 15px;left: 16px; font-size:12px; border-radius:3px; background-color:#0ed44c;"
-                             class="px-2 py-1 fw-bold text-uppercase">N5</div>
-
+                             class="px-2 py-1 fw-bold text-uppercase"
+                             th:text="${cat.jlptLevel}">N5</div>
                     </div>
                     <div class="p-2 pb-0">
-
-                        <h5 class="mb-1"><a href="single.html" class="text-dark">Tiếng Nhật - 日本語 </a></h5>
+                        <h5 class="mb-1">
+                            <a th:href="@{/study/lessons(id=${cat.id})}"
+                               class="text-dark"
+                               th:text="${cat.categoryName}">Tên chủ đề</a>
+                        </h5>
                     </div>
                     <div class="d-flex">
-                        <small class="flex-fill text-center py-1 px-2"><i class="fa fa-star text-warning me-2"></i>
-                            4.55</small>
-                        <small class="flex-fill text-center py-1 px-2"><i class="fa fa-user-graduate me-2"></i>5200+
+                        <small class="flex-fill text-center py-1 px-2">
+                            <i class="fa fa-star text-warning me-2"></i> 4.55
                         </small>
-                        <small class="flex-fill text-center py-1 px-2"><i
-                                class="fa fa-user me-2"></i>N5</small>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-left p-2 px-2"><i class="fa fa-clock me-2"></i>2 giờ</small>
-                        <small class="py-1 px-2 fw-bold fs-6 text-center" style="font-size: 14px !important;"></small>
-                        <small class=" text-primary py-1 px-2 fw-bold fs-6" ><a href="#">Học ngay</a><i class="fa fa-chevron-right me-2 fs-10"></i></small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                <div class="course-item shadow">
-                    <div class="position-relative overflow-hidden text-light image">
-                        <img class="img-fluid" th:src="@{img/course-2.jpg}" alt="">
-                        <div style="position:absolute;top: 15px;left: 16px; font-size:12px; border-radius:3px; background-color:#0ed44c;"
-                             class="px-2 py-1 fw-bold text-uppercase">N5</div>
-
-                    </div>
-                    <div class="p-2 pb-0">
-                        <h5 class="mb-1">Bản thân - Gia đình
-                        </h5>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-center py-1 px-2"><i class="fa fa-star text-warning me-2"></i>
-                            4.55</small>
-                        <small class="flex-fill text-center py-1 px-2"><i class="fa fa-user-graduate me-2"></i>5300+
+                        <small class="flex-fill text-center py-1 px-2">
+                            <i class="fa fa-user-graduate me-2"></i>
+                            <span th:text="${cat.totalLessons != null ? cat.totalLessons : 0}">0</span>+ bài học
                         </small>
-                        <small class="flex-fill text-center py-1 px-2"><i
-                                class="fa fa-user me-2"></i>N5</small>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-left p-2 px-2"><i class="fa fa-clock me-2"></i>2 giờ</small>
-                        <small class="py-1 px-2 fw-bold fs-6 text-center"></small>
-                        <small class=" text-primary py-1 px-2 fw-bold fs-6" style="float:right;"><a href="#">Học ngay</a><i class="fa fa-chevron-right me-2 fs-10"></i></small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                <div class="course-item shadow">
-                    <div class="position-relative overflow-hidden text-light image">
-                        <img class="img-fluid" th:src="@{img/course-3.jpg}" alt="">
-                        <div style="position:absolute;top: 15px;left: 16px; font-size:12px; border-radius:3px; background-color:#0ed44c;"
-                             class="px-2 py-1 fw-bold text-uppercase">N5</div>
-
-                    </div>
-                    <div class="p-2 pb-0">
-
-                        <h5 class="mb-1">Đồ ăn
-                        </h5>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-center py-1 px-2"><i class="fa fa-star text-warning me-2"></i>
-                            4.46</small>
-                        <small class="flex-fill text-center py-1 px-2"><i class="fa fa-user-graduate me-2"></i>76L+</small>
-                        <small class="flex-fill text-center py-1 px-2"><i
-                                class="fa fa-user me-2"></i>N5</small>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-left p-2 px-2"><i class="fa fa-clock me-2"></i>2 giờ</small>
-                        <small class="py-1 px-2 fw-bold fs-6 text-center"></small>
-                        <small class=" text-primary py-1 px-2 fw-bold fs-6" style="float:right;"><a href="#">Học ngay</a><i class="fa fa-chevron-right me-2 fs-10"></i></small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                <div class="course-item shadow">
-                    <div class="position-relative overflow-hidden text-light image">
-                        <img class="img-fluid" th:src="@{img/course-4.jpg}" alt="">
-                        <div style="position:absolute;top: 15px;left: 16px; font-size:12px; border-radius:3px; background-color:#0ed44c;"
-                             class="px-2 py-1 fw-bold text-uppercase">N5</div>
-
-                    </div>
-                    <div class="p-2 pb-0">
-
-                        <h5 class="mb-1">Nhà cửa
-                        </h5>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-center py-1 px-2"><i class="fa fa-star text-warning me-2"></i>
-                            3.54</small>
-                        <small class="flex-fill text-center py-1 px-2"><i class="fa fa-user-graduate me-2"></i>4700+
+                        <small class="flex-fill text-center py-1 px-2">
+                            <i class="fa fa-user me-2"></i>
+                            <span th:text="${cat.jlptLevel}">N5</span>
                         </small>
-                        <small class="flex-fill text-center py-1 px-2"><i
-                                class="fa fa-user me-2"></i>N5</small>
                     </div>
                     <div class="d-flex">
                         <small class="flex-fill text-left p-2 px-2"><i class="fa fa-clock me-2"></i>2 giờ</small>
-                        <small class="py-1 px-2 fw-bold fs-6 text-center"></small>
-                        <small class=" text-primary py-1 px-2 fw-bold fs-6" style="float:right;"><a href="#">Học ngay</a><i class="fa fa-chevron-right me-2 fs-10"></i></small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                <div class="course-item shadow">
-                    <div class="position-relative overflow-hidden text-light image">
-                        <img class="img-fluid" th:src="@{img/course-5.jpg}" alt="">
-                        <div style="position:absolute;top: 15px;left: 16px; font-size:12px; border-radius:3px; background-color:#0ed44c;"
-                             class="px-2 py-1 fw-bold text-uppercase">N5</div>
-
-                    </div>
-                    <div class="p-2 pb-0">
-
-                        <h5 class="mb-1">Hoạt động đời sống
-                        </h5>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-center py-1 px-1"><i class="fa fa-star text-warning me-2"></i>
-                            4.54</small>
-                        <small class="flex-fill text-center py-1 px-1"><i class="fa fa-user-graduate me-2"></i>3100+
+                        <small class="text-primary py-1 px-2 fw-bold fs-6">
+                            <a th:href="@{/study/lessons(id=${cat.id})}" class="text-decoration-none">Học ngay</a>
+                            <i class="fa fa-chevron-right me-2 fs-10"></i>
                         </small>
-                        <small class="flex-fill text-center py-1 px-1"><i
-                                class="fa fa-user me-2"></i>N5</small>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-left p-2 px-2"><i class="fa fa-clock me-2"></i>2 giờ</small>
-                        <small class="py-1 px-2 fw-bold fs-6 text-center"></small>
-                        <small class=" text-primary py-1 px-2 fw-bold fs-6" style="float:right;"><a href="#">Học ngay</a><i class="fa fa-chevron-right me-2 fs-10"></i></small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                <div class="course-item shadow">
-                    <div class="position-relative overflow-hidden text-light image">
-                        <img class="img-fluid" th:src="@{img/course-6.jpg}" alt="">
-                        <div style="position:absolute;top: 15px;left: 16px; font-size:12px; border-radius:3px; background-color:#0ed44c;"
-                             class="px-2 py-1 fw-bold text-uppercase">N5</div>
-
-                    </div>
-                    <div class="p-2 pb-0">
-
-                        <h5 class="mb-1">Ngày nghỉ
-                        </h5>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-center py-1 px-2"><i class="fa fa-star text-warning me-2"></i>
-                            3.55</small>
-                        <small class="flex-fill text-center py-1 px-2"><i class="fa fa-user-graduate me-2"></i>3800+</small>
-                        <small class="flex-fill text-center py-1 px-2"><i
-                                class="fa fa-user me-2"></i>N5</small>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-left p-2 px-2"><i class="fa fa-clock me-2"></i>2 giờ</small>
-                        <small class="py-1 px-2 fw-bold fs-6 text-center"></small>
-                        <small class=" text-primary py-1 px-2 fw-bold fs-6" style="float:right;"><a href="#">Học ngay</a><i class="fa fa-chevron-right me-2 fs-10"></i></small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                <div class="course-item shadow">
-                    <div class="position-relative overflow-hidden text-light image">
-                        <img class="img-fluid" th:src="@{img/course-7.jpg}" alt="">
-                        <div style="position:absolute;top: 15px;left: 16px; font-size:12px; border-radius:3px; background-color:#0ed44c;"
-                             class="px-2 py-1 fw-bold text-uppercase">N5</div>
-
-                    </div>
-                    <div class="p-2 pb-0">
-
-                        <h5 class="mb-1">Thành phố
-                        </h5>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-center py-1 px-2"><i class="fa fa-star text-warning me-2"></i>
-                            4.53</small>
-                        <small class="flex-fill text-center py-1 px-2"><i class="fa fa-user-graduate me-2"></i>2100+</small>
-                        <small class="flex-fill text-center py-1 px-2"><i
-                                class="fa fa-user me-2"></i>N5</small>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-left p-2 px-2"><i class="fa fa-clock me-2"></i>2 giờ</small>
-                        <small class="py-1 px-2 fw-bold fs-6 text-center"></small>
-                        <small class=" text-primary py-1 px-2 fw-bold fs-6" style="float:right;"><a href="#">Học ngay</a><i class="fa fa-chevron-right me-2 fs-10"></i></small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                <div class="course-item shadow">
-                    <div class="position-relative overflow-hidden text-light image">
-                        <img class="img-fluid" th:src="@{img/course-8.jpg}" alt="">
-                        <div style="position:absolute;top: 15px;left: 16px; font-size:12px; border-radius:3px; background-color:#0ed44c;"
-                             class="px-2 py-1 fw-bold text-uppercase">N5</div>
-
-                    </div>
-                    <div class="p-2 pb-0">
-
-                        <h5 class="mb-1">Mua sắm
-                        </h5>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-center py-1 px-1"><i class="fa fa-star text-warning me-2"></i>
-                            4.64</small>
-                        <small class="flex-fill text-center py-1 px-1"><i class="fa fa-user-graduate me-2"></i>4100+</small>
-                        <small class="flex-fill text-center py-1 px-1"><i
-                                class="fa fa-user me-2"></i>N5</small>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-left p-2 px-2"><i class="fa fa-clock me-2"></i>2 giờ</small>
-                        <small class="py-1 px-2 fw-bold fs-6 text-center"></small>
-                        <small class=" text-primary py-1 px-2 fw-bold fs-6" style="float:right;"><a href="#">Học ngay</a><i class="fa fa-chevron-right me-2 fs-10"></i></small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                <div class="course-item shadow">
-                    <div class="position-relative overflow-hidden text-light image">
-                        <img class="img-fluid" th:src="@{img/course-9.jpg}" alt="">
-                        <div style="position:absolute;top: 15px;left: 16px; font-size:12px; border-radius:3px; background-color:#0ed44c;"
-                             class="px-2 py-1 fw-bold text-uppercase">N5</div>
-
-                    </div>
-                    <div class="p-2 pb-0">
-
-                        <h5 class="mb-1">Introduction to MS Excel</h5>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-center py-1 px-2"><i class="fa fa-star text-warning me-2"></i>
-                            4.6</small>
-                        <small class="flex-fill text-center py-1 px-2"><i class="fa fa-user-graduate me-2"></i>2000+
-                        </small>
-                        <small class="flex-fill text-center py-1 px-2"><i
-                                class="fa fa-user me-2"></i>N5</small>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-left p-2 px-2"><i class="fa fa-clock me-2"></i>2 giờ</small>
-                        <small class="py-1 px-2 fw-bold fs-6 text-center"></small>
-                        <small class=" text-primary py-1 px-2 fw-bold fs-6" style="float:right;"><a href="#">Học ngay</a><i class="fa fa-chevron-right me-2 fs-10"></i></small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                <div class="course-item shadow">
-                    <div class="position-relative overflow-hidden text-light image">
-                        <img class="img-fluid" th:src="@{img/course-10.jpg}" alt="">
-                        <div style="position:absolute;top: 15px;left: 16px; font-size:12px; border-radius:3px; background-color:#0ed44c;"
-                             class="px-2 py-1 fw-bold text-uppercase">N5</div>
-
-                    </div>
-                    <div class="p-2 pb-0">
-
-                        <h5 class="mb-1">Data Science
-
-
-                        </h5>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-center py-1 px-1"><i class="fa fa-star text-warning me-2"></i>
-                            4.55</small>
-                        <small class="flex-fill text-center py-1 px-1"><i class="fa fa-user-graduate me-2"></i>1400+
-                        </small>
-                        <small class="flex-fill text-center py-1 px-1"><i
-                                class="fa fa-user me-2"></i>N5</small>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-left p-2 px-2"><i class="fa fa-clock me-2"></i>2 giờ</small>
-                        <small class="py-1 px-2 fw-bold fs-6 text-center"></small>
-                        <small class=" text-primary py-1 px-2 fw-bold fs-6" style="float:right;"><a href="#">Học ngay</a><i class="fa fa-chevron-right me-2 fs-10"></i></small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                <div class="course-item shadow">
-                    <div class="position-relative overflow-hidden text-light image">
-                        <img class="img-fluid" th:src="@{img/course-11.jpg}" alt="">
-                        <div style="position:absolute;top: 15px;left: 16px; font-size:12px; border-radius:3px; background-color:#0ed44c;"
-                             class="px-2 py-1 fw-bold text-uppercase">N5</div>
-
-                    </div>
-                    <div class="p-2 pb-0">
-
-                        <h5 class="mb-1">Java Programming
-                        </h5>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-center py-1 px-2"><i class="fa fa-star text-warning me-2"></i>
-                            4.45</small>
-                        <small class="flex-fill text-center py-1 px-2"><i class="fa fa-user-graduate me-2"></i>1300+
-                        </small>
-                        <small class="flex-fill text-center py-1 px-2"><i
-                                class="fa fa-user me-2"></i>N5</small>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-left p-2 px-2"><i class="fa fa-clock me-2"></i>2 giờ</small>
-                        <small class="py-1 px-2 fw-bold fs-6 text-center"></small>
-                        <small class=" text-primary py-1 px-2 fw-bold fs-6" style="float:right;"><a href="#">Học ngay</a><i class="fa fa-chevron-right me-2 fs-10"></i></small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                <div class="course-item shadow">
-                    <div class="position-relative overflow-hidden text-light image">
-                        <img class="img-fluid" th:src="@{img/course-12.png}" alt="">
-                        <div style="position:absolute;top: 15px;left: 16px; font-size:12px; border-radius:3px; background-color:#0ed44c;"
-                             class="px-2 py-1 fw-bold text-uppercase">N5</div>
-
-                    </div>
-                    <div class="p-2 pb-0">
-
-                        <h5 class="mb-1">C for N5s
-                        </h5>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-center py-1 px-2"><i class="fa fa-star text-warning me-2"></i>
-                            4.5</small>
-                        <small class="flex-fill text-center py-1 px-2"><i class="fa fa-user-graduate me-2"></i>800+
-                        </small>
-                        <small class="flex-fill text-center py-1 px-2"><i
-                                class="fa fa-user me-2"></i>N5</small>
-                    </div>
-                    <div class="d-flex">
-                        <small class="flex-fill text-left p-2 px-2"><i class="fa fa-clock me-2"></i>2 giờ</small>
-                        <small class="py-1 px-2 fw-bold fs-6 text-center"></small>
-                        <small class=" text-primary py-1 px-2 fw-bold fs-6" style="float:right;"><a href="#">Học ngay</a><i class="fa fa-chevron-right me-2 fs-10"></i></small>
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 <div class="container text-center">
-    <a class="btn text-light py-3 px-5 mt-2 mb-5" href="courses.html">Tất cả khóa học</a>
+    <a class="btn text-light py-3 px-5 mt-2 mb-5" th:href="@{/study/categories}">Tất cả khóa học</a>
 </div>
 <!-- Courses End -->
 

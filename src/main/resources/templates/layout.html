@@ -64,15 +64,18 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarCollapse">
         <div class="navbar-nav ms-auto p-4 p-lg-0">
-            <a th:href="@{/}"        th:classappend="${currentPage == 'home'}        ? 'active' : ''" class="nav-item nav-link">Trang chủ</a>
-            <a th:href="@{/about}"   th:classappend="${currentPage == 'about'}       ? 'active' : ''" class="nav-item nav-link">Giới thiệu</a>
+            <a th:href="@{/}" th:classappend="${currentPage == 'home'} ? 'active' : ''"
+               class="nav-item nav-link">Trang chủ</a>
+            <a th:href="@{/about}" th:classappend="${currentPage == 'about'} ? 'active' : ''"
+               class="nav-item nav-link">Giới thiệu</a>
             <div class="nav-item dropdown">
                 <a href="#" class="nav-link dropdown-toggle"
                    th:classappend="${currentPage == 'categories' || currentPage == 'instructor' || currentPage == 'team'} ? 'active' : ''"
                    data-bs-toggle="dropdown">Học tập</a>
                 <div class="dropdown-menu fade-down m-0">
-                    <a th:href="@{/study/categories}"  th:classappend="${currentPage == 'categories'}   ? 'active' : ''"   class="dropdown-item">Từ vựng</a>
-                    <a th:href="@{/instructor}" class="dropdown-item">Kanji</a>
+                    <a th:href="@{/study/categories}" th:classappend="${currentPage == 'categories'} ? 'active' : ''"
+                       class="dropdown-item">Từ vựng</a>
+                    <a th:href="@{/study/kanji}" class="dropdown-item">Kanji</a>
                     <a th:href="@{/team}" class="dropdown-item">Bảng chữ cái</a>
                 </div>
             </div>
@@ -83,10 +86,10 @@
                 <div class="dropdown-menu fade-down m-0">
                     <a th:href="@{/team}" class="dropdown-item">Quiz</a>
                     <a th:href="@{testimonial}" class="dropdown-item">Test</a>
-
                 </div>
             </div>
-            <a th:href="@{/contact}" th:classappend="${currentPage == 'contact'}     ? 'active' : ''" class="nav-item nav-link">Liên hệ</a>
+            <a th:href="@{/contact}" th:classappend="${currentPage == 'contact'} ? 'active' : ''"
+               class="nav-item nav-link">Liên hệ</a>
             <div id="user-menu-section" class="nav-item">
                 <a th:href="@{/login}" id="login-link" class="nav-item nav-link">
                     <i class="fa fa-user"></i>
@@ -123,9 +126,11 @@
                 </div>
                 <div class="col-lg-4 col-md-6">
                     <h4 class="text-white mb-3">Đăng ký nhận tài liệu</h4>
-                    <p>Nhận ngay bộ tài liệu lộ trình chinh phục JLPT và thông báo về các khóa học mới nhất từ Ganbatte!</p>
+                    <p>Nhận ngay bộ tài liệu lộ trình chinh phục JLPT và thông báo về các khóa học mới nhất từ
+                        Ganbatte!</p>
                     <div class="position-relative mx-auto" style="max-width: 400px;">
-                        <input class="form-control border-0 w-100 py-3 ps-4 pe-5" type="email" placeholder="Email của bạn">
+                        <input class="form-control border-0 w-100 py-3 ps-4 pe-5" type="email"
+                               placeholder="Email của bạn">
                         <button type="button" class="btn btn-primary py-2 position-absolute top-0 end-0 mt-2 me-2">
                             Đăng ký
                         </button>
@@ -158,52 +163,76 @@
     <script th:src="@{/js/main.js}"></script>
 
     <script>
+        (function() {
+            // ===== INTERCEPTOR CHO TẤT CẢ CÁC REQUEST FETCH =====
+            const originalFetch = window.fetch;
+            window.fetch = function(...args) {
+                const token = localStorage.getItem('token');
+                if (token && args[1]) {
+                    args[1].headers = {
+                        ...args[1].headers,
+                        'Authorization': 'Bearer ' + token
+                    };
+                }
+                return originalFetch.apply(this, args);
+            };
+
+            // ===== KIỂM TRA VÀ REDIRECT KHI CHƯA ĐĂNG NHẬP =====
+            // Các trang yêu cầu đăng nhập
+            const protectedPaths = ['/profile', '/study/categories', '/study/history', '/settings'];
+            const currentPath = window.location.pathname;
+
+            // Kiểm tra nếu đang ở trang cần đăng nhập mà chưa có token
+            const isProtected = protectedPaths.some(path => currentPath.startsWith(path));
+            const token = localStorage.getItem('token');
+
+            if (isProtected && !token) {
+                // Chưa đăng nhập, chuyển về login
+                window.location.href = '/login';
+            }
+        })();
+
+        // ===== HIỂN THỊ MENU USER KHI ĐÃ ĐĂNG NHẬP =====
         document.addEventListener("DOMContentLoaded", function() {
-    const token = localStorage.getItem('token');
-    const username = localStorage.getItem('username');
-    const fullname = localStorage.getItem('fullname');
-    const userSection = document.getElementById('user-menu-section');
+            const token = localStorage.getItem('token');
+            const username = localStorage.getItem('username');
+            const fullname = localStorage.getItem('fullname');
+            const userSection = document.getElementById('user-menu-section');
 
-    if (token && username) {
-        const avatarUrl = localStorage.getItem('avatarUrl');
-        const avatarPath = avatarUrl ? `img/avatar/${avatarUrl}` : `img/avatar/men.jpg`;
-        // Nếu đã login thành công
-        userSection.innerHTML = `
-    <div class="nav-item dropdown h-100 d-flex align-items-center">
-        <a href="javascript:void(0);" class="nav-link dropdown-toggle d-flex align-items-center py-0" style="height: 100%;">
-            <div class="d-flex align-items-center">
-                <img src="${avatarPath}"
-                     class="rounded-circle"
-                     width="36" height="36"
-                     style="object-fit: cover;
-                            border: 2px solid #fff;
-                            box-shadow: 0 0 0 1px #ddd;
-                            background-color: #fff;
-                            padding: 1px;"
-                     onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(fullname)}&background=06BBCC&color=fff'">
-            </div>
-            <span class="fw-bold text-dark ms-2" style="font-size: 18px; white-space: nowrap;">${fullname}</span>
-        </a>
-        <div class="dropdown-menu dropdown-menu-end fade-down m-0 shadow-sm border-0">
-            <a href="/profile" class="dropdown-item"><i class="fa fa-id-card me-2"></i>Hồ sơ</a>
-            <a href="/study/history" class="dropdown-item"><i class="fa fa-history me-2"></i>Lịch sử học</a>
-            <li><a class="dropdown-item py-2" href="/settings"><i class="fa fa-cog me-2 text-secondary"></i>Cài đặt</a></li>
-            <div class="dropdown-divider"></div>
-            <a href="#" id="btnLogout" class="dropdown-item text-danger">
-                <i class="fa fa-sign-out-alt me-2"></i>Đăng xuất
-            </a>
-        </div>
-    </div>
-`;
+            if (token && username && fullname) {
+                const avatarUrl = localStorage.getItem('avatarUrl');
+                const avatarPath = avatarUrl ? avatarUrl : `https://ui-avatars.com/api/?name=${encodeURIComponent(fullname)}&background=06BBCC&color=fff`;
 
+                userSection.innerHTML = `
+                    <div class="nav-item dropdown h-100 d-flex align-items-center">
+                        <a href="javascript:void(0);" class="nav-link dropdown-toggle d-flex align-items-center py-0"
+                           data-bs-toggle="dropdown" style="height: 100%;">
+                            <div class="d-flex align-items-center">
+                                <img src="${avatarPath}"
+                                     class="rounded-circle"
+                                     width="36" height="36"
+                                     style="object-fit: cover; border: 2px solid #fff; box-shadow: 0 0 0 1px #ddd; background-color: #fff;"
+                                     onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(fullname)}&background=06BBCC&color=fff'">
+                            </div>
+                            <span class="fw-bold text-dark ms-2" style="font-size: 18px;">${fullname}</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end fade-down m-0 shadow-sm border-0">
+                            <a href="/profile" class="dropdown-item"><i class="fa fa-id-card me-2"></i>Hồ sơ</a>
+                            <a href="/study/history" class="dropdown-item"><i class="fa fa-history me-2"></i>Lịch sử học</a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" id="btnLogout" class="dropdown-item text-danger">
+                                <i class="fa fa-sign-out-alt me-2"></i>Đăng xuất
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }
+        });
 
-
-
-        // Xử lý sự kiện Đăng xuất trong layout.html
-    document.addEventListener('click', function(e) {
+        // ===== XỬ LÝ ĐĂNG XUẤT =====
+document.addEventListener('click', function(e) {
     if (e.target && (e.target.id === 'btnLogout' || e.target.closest('#btnLogout'))) {
         e.preventDefault();
-
         Swal.fire({
             title: 'Bạn muốn đăng xuất?',
             text: "Hẹn gặp lại bạn tại Ganbatte nhé!",
@@ -215,20 +244,23 @@
             cancelButtonText: 'Hủy'
         }).then((result) => {
             if (result.isConfirmed) {
+                // Xóa localStorage
                 localStorage.clear();
-                // Hiển thị thông báo thành công ngắn trước khi chuyển hướng
-                Swal.fire({
-                    title: 'Đăng xuất thành công!',
-                    icon: 'success',
-                    showConfirmButton: false,
-                    timer: 1000
-                }).then(() => {
-                    location.href = '/';
-                });
+
+                // Xóa cookie JWT phía client (gọi API logout để server xóa cookie)
+                fetch('/api/auth/logout', { method: 'POST' })
+                    .finally(() => {
+                        Swal.fire({
+                            title: 'Đăng xuất thành công!',
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timer: 1000
+                        }).then(() => {
+                            window.location.href = '/';
+                        });
+                    });
             }
         });
-    }
-});
     }
 });
     </script>

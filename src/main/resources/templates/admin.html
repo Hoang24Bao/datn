@@ -154,6 +154,33 @@
                             <option value="N1">N1 (Cao cấp)</option>
                         </select>
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 14px;">
+                            Thumbnail bài học
+                            <span style="font-weight:400; color:#888; font-size:12px;"> (ảnh dùng chung cho tất cả bài học trong chủ đề này)</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text" style="border-radius: 10px 0 0 10px; background: #f8f9fa;">
+                                <i class="fas fa-image"></i>
+                            </span>
+                            <input type="text" id="catThumbnailUrl" class="form-control"
+                                   placeholder="Chưa chọn ảnh thumbnail..."
+                                   readonly style="cursor: default; padding: 12px; border: 1px solid #ddd;">
+                            <button class="btn btn-orange" type="button"
+                                    onclick="document.getElementById('thumbnailFileInput').click()"
+                                    style="border-radius: 0 10px 10px 0; color: white; font-weight: 600;">
+                                <i class="fas fa-upload me-1"></i> Chọn ảnh
+                            </button>
+                            <input type="file" id="thumbnailFileInput" style="display: none;" accept="image/*"
+                                   onchange="handleThumbnailSelect(this)">
+                        </div>
+                        <div id="thumbnailPreview" class="mt-2 text-center" style="display:none;">
+                            <img src="" id="thumbnailPreviewImg"
+                                 style="width: 200px; height: 120px; object-fit: cover; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                        </div>
+                    </div>
+
                 </form>
             </div>
             <div class="modal-footer" style="border-top: none; padding: 0 25px 25px;">
@@ -179,37 +206,115 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" style="padding: 25px;">
-                <form id="lessonForm">
-                    <div class="mb-4">
-                        <label class="form-label" style="font-weight: 600; font-size: 14px;">Tên bài học</label>
-                        <input type="text" id="lessonName" class="form-control" placeholder="Ví dụ: Bài 1: Chào hỏi"
-                               style="border-radius: 10px; padding: 12px; border: 1px solid #ddd;" required>
+                <div class="mb-3">
+                    <label class="form-label" style="font-weight: 600; font-size: 14px;">
+                        Tên bài học <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="newLessonName" class="form-control"
+                           placeholder="Ví dụ: Chào hỏi cơ bản, Gia đình..."
+                           style="border-radius: 10px; padding: 12px; border: 1px solid #ddd;">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" style="font-weight: 600; font-size: 14px;">
+                        Cấp độ JLPT <span class="text-danger">*</span>
+                    </label>
+                    <select id="newLessonLevel" class="form-select"
+                            style="border-radius: 10px; padding: 12px; border: 1px solid #ddd;"
+                            onchange="onLessonLevelChange()">
+                        <option value="">-- Chọn cấp độ --</option>
+                        <option value="N5">N5 (Cơ bản)</option>
+                        <option value="N4">N4 (Sơ cấp)</option>
+                        <option value="N3">N3 (Trung cấp)</option>
+                        <option value="N2">N2 (Thượng cấp)</option>
+                        <option value="N1">N1 (Cao cấp)</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" style="font-weight: 600; font-size: 14px;">
+                        Chủ đề <span class="text-danger">*</span>
+                    </label>
+                    <select id="newLessonCategoryId" class="form-select"
+                            style="border-radius: 10px; padding: 12px; border: 1px solid #ddd;"
+                            disabled>
+                        <option value="">-- Vui lòng chọn cấp độ trước --</option>
+                    </select>
+                    <div id="newLessonCategoryLoading"
+                         style="display:none; font-size:13px; color:#888; margin-top:4px;">
+                        <i class="fas fa-spinner fa-spin me-1"></i>Đang tải danh sách chủ đề...
                     </div>
-                    <div class="mb-2">
-                        <label class="form-label" style="font-weight: 600; font-size: 14px;">Chủ đề</label>
-                        <select id="lessonCategorySelect" class="form-select"
-                                style="border-radius: 10px; padding: 12px; border: 1px solid #ddd;">
-                        </select>
+                    <div id="newLessonNoCateMsg" style="display:none; font-size:13px; color:#ef4444; margin-top:4px;">
+                        <i class="fas fa-exclamation-circle me-1"></i>Không có chủ đề nào đang hoạt động ở cấp độ này.
                     </div>
-                </form>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label" style="font-weight: 600; font-size: 14px;">Trạng thái</label>
+                    <select id="newLessonStatus" class="form-select"
+                            style="border-radius: 10px; padding: 12px; border: 1px solid #ddd;">
+                        <option value="true">Hiển thị</option>
+                        <option value="false">Ẩn</option>
+                    </select>
+                </div>
             </div>
             <div class="modal-footer" style="border-top: none; padding: 0 25px 25px;">
-                <button type="button" class="btn-custom btn-red" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn-custom btn-teal" onclick="submitLesson()">
-                    <i class="fas fa-save me-2"></i>Lưu bài học
+                <button type="button" class="btn-custom btn-red" data-bs-dismiss="modal"
+                        style="font-weight: 600; color: #fff;">Hủy
+                </button>
+                <button type="button" class="btn-custom btn-teal" onclick="submitNewLesson()">
+                    <i class="fas fa-save me-2"></i>Thêm bài học
                 </button>
             </div>
         </div>
     </div>
 </div>
 
+<div class="modal fade" id="addLessonInCateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content"
+             style="border-radius: 20px; border: none; box-shadow: 0 15px 50px rgba(0,0,0,0.2);">
+            <div class="modal-header" style="border-bottom: 1px solid #eee; padding: 20px 25px;">
+                <h5 class="modal-title" style="font-weight: 700; color: var(--text-dark);">
+                    <i class="fas fa-plus-circle me-2" style="color: #06BBCC;"></i>Thêm bài học vào chủ đề
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 25px;">
+                <div class="mb-3">
+                    <label class="form-label" style="font-weight: 600; font-size: 14px;">
+                        Tên bài học <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="inCateLessonName" class="form-control"
+                           placeholder="Ví dụ: Chào hỏi cơ bản..."
+                           style="border-radius: 10px; padding: 12px; border: 1px solid #ddd;">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label" style="font-weight: 600; font-size: 14px;">Trạng thái</label>
+                    <select id="inCateLessonStatus" class="form-select"
+                            style="border-radius: 10px; padding: 12px; border: 1px solid #ddd;">
+                        <option value="true">Hiển thị</option>
+                        <option value="false">Ẩn</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: none; padding: 0 25px 25px;">
+                <button type="button" class="btn-custom btn-red" data-bs-dismiss="modal"
+                        style="font-weight: 600; color: #fff;">Hủy
+                </button>
+                <button type="button" class="btn-custom btn-teal" onclick="submitLessonInCate()">
+                    <i class="fas fa-save me-2"></i>Thêm bài học
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="vocabModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content" style="border-radius: 20px;">
             <div class="modal-header">
-                <h5 class="modal-title fw-bold"><i class="fas fa-spell-check me-2"
-                                                   style="color: var(--teal);"></i>Thêm
+                <h5 class="modal-title fw-bold"><i class="fas fa-spell-check me-2" style="color: var(--teal);"></i>Thêm
                     từ vựng mới</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -218,55 +323,30 @@
                     <div class="row">
                         <div class="col-md-6 border-end">
                             <div class="mb-3">
-                                <label class="form-label fw-600">Từ vựng (Kanji/Gốc)</label>
+                                <label class="form-label fw-600">Từ vựng (Kanji/Gốc) <span class="text-danger">*</span></label>
                                 <input type="text" id="vExpression" class="form-control" placeholder="VD: 食べる"
                                        required>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label fw-600">Cách đọc (Kana)</label>
-                                <input type="text" id="vKana" class="form-control" placeholder="VD: たべる" required>
+                                <input type="text" id="vKana" class="form-control" placeholder="VD: たべる">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label fw-600">Romaji</label>
                                 <input type="text" id="vRomaji" class="form-control" placeholder="VD: taberu">
                             </div>
                             <div class="mb-3">
-                                <label class="form-label fw-600">Ý nghĩa (Tiếng Việt)</label>
+                                <label class="form-label fw-600">Ý nghĩa (Tiếng Việt) <span class="text-danger">*</span></label>
                                 <input type="text" id="vMeaning" class="form-control" placeholder="VD: Ăn" required>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label fw-600">Loại từ</label>
                                 <select id="vWordType" class="form-select">
-                                    <option value="Danh từ">Danh từ</option>
-                                    <option value="Động từ">Động từ</option>
-                                    <option value="Tính từ">Tính từ</option>
-                                    <option value="Trạng từ">Trạng từ</option>
+                                    <option value="N">Danh từ</option>
+                                    <option value="V">Động từ</option>
+                                    <option value="A">Tính từ</option>
+                                    <option value="Adv">Trạng từ</option>
                                 </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-600">Chọn Chủ đề</label>
-                                <select id="vCategoryId" class="form-select" onchange="onVocabCategoryChange()">
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-600">Chọn Bài học</label>
-                                <div id="lessonSelectContainer">
-                                    <select id="vLessonId" class="form-select" required
-                                            style="border: 2px solid var(--teal);">
-                                        <option value="">-- Chọn bài học --</option>
-                                    </select>
-                                </div>
-                                <div id="quickAddLessonContainer" class="mt-2" style="display: none;">
-                                    <p class="text-danger small mb-1"><i class="fas fa-exclamation-circle"></i> Chủ
-                                        đề
-                                        này chưa có bài học!</p>
-                                    <button type="button" class="btn btn-sm btn-outline-primary w-100"
-                                            onclick="openQuickAddLesson()">
-                                        <i class="fas fa-plus"></i> Tạo bài học mới cho chủ đề này
-                                    </button>
-                                </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label fw-600">Câu ví dụ (Nhật)</label>
@@ -276,10 +356,67 @@
                                 <label class="form-label fw-600">Dịch ví dụ (Việt)</label>
                                 <textarea id="vExampleVi" class="form-control" rows="2"></textarea>
                             </div>
+                        </div>
+                        <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label fw-600">URL Ảnh / Audio (Tùy chọn)</label>
-                                <input type="text" id="vImageUrl" class="form-control mb-2" placeholder="Link ảnh">
-                                <input type="text" id="vAudioUrl" class="form-control" placeholder="Link audio">
+                                <label class="form-label fw-600">Chọn Chủ đề <small class="text-muted">(tùy
+                                    chọn)</small></label>
+                                <select id="vCategoryId" class="form-select" onchange="onVocabCategoryChange()">
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-600">Chọn Bài học <small class="text-muted">(tùy
+                                    chọn)</small></label>
+                                <div id="lessonSelectContainer">
+                                    <select id="vLessonId" class="form-select" required>
+                                        <option value="">-- Vui lòng chọn chủ đề trước --</option>
+                                    </select>
+                                </div>
+                                <div id="quickAddLessonContainer" class="mt-2" style="display: none;">
+                                    <p class="text-danger small mb-1"><i class="fas fa-exclamation-circle"></i> Chủ đề
+                                        này chưa có bài học!</p>
+                                    <button type="button" class="btn btn-sm btn-outline-primary w-100"
+                                            onclick="openQuickAddLesson()">
+                                        <i class="fas fa-plus"></i> Tạo bài học mới cho chủ đề này
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Upload ảnh - Preview ngay khi chọn, upload khi lưu -->
+                            <div class="mb-3">
+                                <label class="form-label fw-600">Hình ảnh từ vựng</label>
+                                <input type="file" id="vocabImageFile" class="form-control" accept="image/*">
+                                <input type="hidden" id="vImageUrl">
+                                <div id="imagePreviewContainer" style="display: none; margin-top: 10px;">
+                                    <img id="imagePreview"
+                                         style="max-width: 150px; border-radius: 8px; border: 1px solid #ddd;">
+                                    <button type="button" class="btn btn-sm btn-danger mt-1"
+                                            onclick="clearVocabImage()">
+                                        <i class="fas fa-times"></i> Xóa ảnh
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Sinh audio -->
+                            <div class="mb-3">
+                                <label class="form-label fw-600">Audio phát âm</label>
+                                <div class="input-group mb-2">
+                                    <input type="text" id="vAudioUrl" class="form-control"
+                                           placeholder="URL audio sẽ tự động điền" readonly>
+                                    <button type="button" class="btn btn-primary" onclick="generateVocabAudio()">
+                                        <i class="fas fa-music"></i> Tự sinh audio
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="previewAudio()">
+                                        <i class="fas fa-play"></i> Preview
+                                    </button>
+                                </div>
+                                <audio id="audioPreview" controls style="display: none; margin-top: 10px; width: 100%;">
+                                    <source id="audioSource" src="">
+                                </audio>
+                                <button type="button" class="btn btn-sm btn-outline-danger mt-1"
+                                        onclick="clearVocabAudio()" style="display: none;" id="clearAudioBtn">
+                                    <i class="fas fa-trash"></i> Xóa audio
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -287,12 +424,13 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-custom btn-red" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn-custom btn-teal" onclick="submitVocab()">Lưu từ vựng</button>
+                <button type="button" class="btn-custom btn-teal" onclick="submitVocab()">
+                    <i class="fas fa-save me-2"></i>Lưu từ vựng
+                </button>
             </div>
         </div>
     </div>
 </div>
-
 
 <div class="modal fade" id="userViewModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -369,11 +507,31 @@
 <script th:inline="javascript">
     // ===== NHÓM CHUNG ===== //
 
+
+
 function getAvatarPath(url, fullname) {
     const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullname)}&background=06BBCC&color=fff`;
     if (!url) return defaultAvatar;
     let path = (url.startsWith('img/') || url.startsWith('http')) ? url : `img/avatar/${url}`;
     return `${path}?v=${new Date().getTime()}`;
+}
+
+// Thêm timestamp vào URL ảnh để tránh cache
+function addTimestampToUrl(url) {
+    if (!url) return url;
+    // Nếu URL đã có query parameter, thêm &v=, nếu không thì thêm ?v=
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}v=${Date.now()}`;
+}
+
+// Hàm hiển thị ảnh có timestamp
+function displayImageWithCacheBust(imgElement, imageUrl) {
+    if (!imgElement) return;
+    if (imageUrl) {
+        imgElement.src = addTimestampToUrl(imageUrl);
+    } else {
+        imgElement.src = 'https://placehold.co/100x100?text=No+Image';
+    }
 }
 
 function toggleSidebar() {
@@ -588,7 +746,7 @@ function loadSection(section, element, event) {
             <div class="table-header-right">
                 <span class="status-pill count-pill" style="font-size: 16px; gap:0px;" id="categoryCountBadge">Đang tải...</span>
             </div>
-            <button class="btn-home" style="font-size:15px;" onclick="openAddCategoryModal()">
+            <button class="btn-home" onclick="openAddCategoryModal()">
                 <i class="fas fa-plus" style="margin-right:5px"></i> Thêm chủ đề
             </button>
         </div>
@@ -633,7 +791,7 @@ function loadSection(section, element, event) {
         <div class="table-header">
             <div class="table-header-left">
                 <div class="search-box" style="display:flex; gap:10px; flex-wrap: wrap;">
-                    <select id="lessonFilterLevel" class="form-select" style="width:120px; border-radius:10px;" onchange="onLessonLevelChange()">
+                    <select id="lessonFilterLevel" class="form-select" style="width:120px; border-radius:10px;" onchange="onLessonFilterLevelChange()">
                         <option value="">Cấp độ</option>
                         <option value="N5">N5</option>
                         <option value="N4">N4</option>
@@ -653,7 +811,7 @@ function loadSection(section, element, event) {
             <div class="table-header-right">
                 <span class="status-pill count-pill" style="font-size: 16px; gap:0px;" id="lessonCountBadge">Đang tải...</span>
             </div>
-            <button class="btn-home" style="font-size:15px;" onclick="openAddLessonModal()">
+            <button class="btn-home" onclick="openAddLessonModal()">
                 <i class="fas fa-plus" style="margin-right:5px"></i> Thêm bài học
             </button>
         </div>
@@ -715,7 +873,7 @@ function loadSection(section, element, event) {
                     <i class="fas fa-check-square"></i> Chọn nhiều
                 </button>
                 <span class="status-pill count-pill" style="font-size: 16px; gap:0px;" id="vocabCountBadge">Đang tải...</span>
-                <button class="btn-home" style="font-size:15px;" onclick="openAddVocabModal()">
+                <button class="btn-home" onclick="openAddVocabModal()">
                     <i class="fas fa-plus" style="margin-right:5px"></i> Thêm từ vựng
                 </button>
             </div>
@@ -936,7 +1094,7 @@ function initPaginationManagers() {
         infoContainerId: 'paginationInfo',
         parentSelector: '.table-users',
         loadFunction: (page) => loadAllUsersWithFilter(page),
-        pageSize: 5
+        pageSize: 20
     });
 
     // Pagination cho Categories
@@ -945,7 +1103,7 @@ function initPaginationManagers() {
         infoContainerId: 'categoryPaginationInfo',
         parentSelector: '.table-categories',
         loadFunction: (page) => loadAllCategoriesWithPagination(page),
-        pageSize: 5
+        pageSize: 20
     });
 
     // Pagination cho Lessons
@@ -954,7 +1112,7 @@ function initPaginationManagers() {
         infoContainerId: 'lessonPaginationInfo',
         parentSelector: '.table-lessons',
         loadFunction: (page) => loadAllLessonsWithPagination(page),
-        pageSize: 10
+        pageSize: 30
     });
 
     // Pagination cho Vocabulary
@@ -963,7 +1121,7 @@ function initPaginationManagers() {
         infoContainerId: 'paginationInfo',
         parentSelector: '.table-vocab',
         loadFunction: (page) => loadVocabWithPagination(page),
-        pageSize: 20
+        pageSize: 50
     });
 
 }
@@ -1126,21 +1284,1092 @@ async function bulkDeleteVocab() {
     }
 }
 
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
 
 // ==================== HÀM XỬ LÝ BÀI HỌC DÙNG CHUNG ====================
 
 // ===== LESSON ===== //
+// Refresh trang chi tiết bài học hiện tại
+function refreshLessonDetail() {
+    const lessonContainer = document.querySelector('.lesson-detail-container');
+    const lessonId = lessonContainer?.getAttribute('data-lesson-id');
+
+    if (lessonId) {
+        editLesson(parseInt(lessonId));
+    }
+}
 
 // 1. Chỉnh sửa bài học (dùng chung)
+// Hiển thị trang chi tiết và chỉnh sửa bài học
 async function editLesson(id) {
-    Swal.fire({
-        icon: 'info',
-        title: 'Thông báo',
-        text: `Chức năng sửa bài học ID: ${id} đang phát triển`,
-        timer: 1500,
-        showConfirmButton: false
+    const token = localStorage.getItem('token');
+    const mainContent = document.getElementById('main-content');
+    const mainTitle = document.getElementById('page-main-title');
+
+    try {
+        const res = await fetch(`/api/admin/lessons/${id}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (!res.ok) throw new Error('Không thể tải thông tin bài học');
+
+        const lesson = await res.json();
+
+        // Lấy danh sách từ vựng thuộc bài học
+        const vocabRes = await fetch(`/api/admin/vocab/by-lesson/${id}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        let vocabularies = [];
+        if (vocabRes.ok) {
+            vocabularies = await vocabRes.json();
+        }
+
+        // ===== QUAN TRỌNG: Khai báo scenes trước khi dùng =====
+        let scenes = [];
+        try {
+            const scenesRes = await fetch(`/api/admin/lessons/${id}/scenes`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (scenesRes.ok) {
+                scenes = await scenesRes.json();
+            }
+        } catch (sceneError) {
+            console.error('Lỗi tải scenes:', sceneError);
+            scenes = [];
+        }
+
+        // Lấy danh sách categories để chọn
+        const cateRes = await fetch('/api/admin/categories', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        let categories = [];
+        if (cateRes.ok) {
+            categories = await cateRes.json();
+        }
+
+        mainTitle.innerText = `Chỉnh sửa Bài học: ${lesson.lessonName}`;
+
+        mainContent.innerHTML = `
+            <div class="lesson-detail-container" data-lesson-id="${id}">
+                <button class="back-to-list" onclick="goBackToLessons()">
+                    <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                </button>
+
+                <div class="lesson-detail-header">
+                    <div class="lesson-detail-title" style="flex: 1;">
+                        <input type="text" id="editLessonName" class="form-control form-control-lg"
+                               value="${escapeHtml(lesson.lessonName)}"
+                               style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">
+                    </div>
+                </div>
+
+                <form id="editLessonForm">
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <h4><i class="fas fa-folder"></i> Chủ đề</h4>
+                            <select id="editLessonCategory" class="form-select">
+                                ${categories.map(c => `
+                                    <option value="${c.id}" ${lesson.categoryId === c.id ? 'selected' : ''}>
+                                        ${escapeHtml(c.categoryName)} (${c.jlptLevel || 'N5'})
+                                    </option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        <div class="info-card">
+                            <h4><i class="fas fa-toggle-on"></i> Trạng thái</h4>
+                            <select id="editIsActive" class="form-select">
+                                <option value="true" ${lesson.isActive ? 'selected' : ''}>Đang hiển thị</option>
+                                <option value="false" ${!lesson.isActive ? 'selected' : ''}>Đã ẩn</option>
+                            </select>
+                        </div>
+                        <div class="info-card">
+                            <h4><i class="fas fa-chart-simple"></i> Tổng số từ vựng</h4>
+                            <div class="info-value">${vocabularies.length} <small>từ</small></div>
+                        </div>
+                        <div class="info-card">
+                            <h4><i class="fas fa-image"></i> Số cảnh tương tác</h4>
+                            <div class="info-value">${scenes.length} <small>cảnh</small></div>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="d-flex gap-2 mb-4">
+                    <button class="btn-custom btn-teal" onclick="saveLessonChanges(${id})">
+                        <i class="fas fa-save me-1"></i> Lưu thay đổi
+                    </button>
+                </div>
+
+                <!-- Tab Navigation -->
+                <div class="tab-navigation-wrapper mb-4">
+                    <ul class="nav nav-tabs nav-justified" id="lessonTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="vocab-tab" data-bs-toggle="tab" data-bs-target="#vocab" type="button" role="tab">
+                                <i class="fas fa-spell-check"></i> Từ vựng
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="scenes-tab" data-bs-toggle="tab" data-bs-target="#scenes" type="button" role="tab">
+                                <i class="fas fa-image"></i> Cảnh tương tác
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="lessonTabContent">
+                    <!-- Tab Từ vựng -->
+                    <div class="tab-pane fade show active" id="vocab" role="tabpanel">
+                        <div class="vocab-list">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h3 style="margin: 0;"><i class="fas fa-spell-check"></i> Danh sách từ vựng</h3>
+                                <button class="btn-home" onclick="openAddVocabModalFromLesson(${id})">
+                                    <i class="fas fa-plus" style="margin-right:5px"></i> Thêm từ vựng
+                                </button>
+                            </div>
+                            ${vocabularies.length === 0 ?
+                                '<p class="text-muted text-center py-4">Chưa có từ vựng nào trong bài học này</p>' :
+                                `<table class="vocab-table">
+                                    <thead>
+                                        <tr>
+                                            <th>STT</th>
+                                            <th>ID</th>
+                                            <th style="width: 16%;">Từ vựng</th>
+                                            <th style="width: 18%;">Kana</th>
+                                            <th style="width: 12%;">Romaji</th>
+                                            <th>Ý nghĩa</th>
+                                            <th style="width: 120px; text-align: center;">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${vocabularies.map((vocab, idx) => {
+                                            const isHidden = vocab.isActive === false;
+                                            const rowClass = isHidden ? 'row-hidden' : '';
+                                            const actionBtn = `<button class="btn-action btn-trash" title="Xóa khỏi bài học" onclick="removeVocabFromLesson(${vocab.id}, ${id})">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>`;
+
+                                            return `
+                                            <tr class="${rowClass}" data-vocab-id="${vocab.id}">
+                                                <td style="text-align: center;">${idx + 1}</td>
+                                                <td style="text-align: center;"><span class="id-badge">#${vocab.id}</span></td>
+                                                <td><strong style="font-size: 18px;">${escapeHtml(vocab.expression)}</strong></td>
+                                                <td><span style="color: var(--teal);font-weight: 600;">${escapeHtml(vocab.kana)}</span></td>
+                                                <td><small style="font-size: 15px;">${escapeHtml(vocab.romaji || '')}</small></td>
+                                                <td>${escapeHtml(vocab.meaning)}</td>
+                                                <td style="text-align: center;">
+                                                    <button class="btn-action btn-edit me-1" title="Sửa" onclick="editVocab(${vocab.id})">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    ${actionBtn}
+                                                </td>
+                                            </tr>
+                                            `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>`
+                            }
+                        </div>
+                    </div>
+
+
+
+<!-- Tab Cảnh tương tác -->
+<div class="tab-pane fade" id="scenes" role="tabpanel">
+    <div class="scenes-list">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0;"><i class="fas fa-image me-2" style="color: var(--teal);"></i>Danh sách cảnh tương tác</h3>
+            <button class="btn-home" onclick="openCreateSceneModal()">
+                <i class="fas fa-plus" style="margin-right:5px"></i> Thêm cảnh
+            </button>
+        </div>
+
+        <div id="scenesListContainer">
+            <!-- Danh sách cảnh sẽ hiển thị ở đây -->
+            <div class="text-center py-5 text-muted">
+                <i class="fas fa-image fa-3x mb-3 opacity-25"></i>
+                <p>Đang tải dữ liệu...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal tạo cảnh tương tác (THÊM MỚI) -->
+<div class="modal fade" id="createSceneModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px;">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-image me-2" style="color: var(--teal);"></i>Tạo cảnh tương tác
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <!-- Bước 1: Upload ảnh -->
+                <div id="step1Container">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Mô tả cảnh</label>
+                            <input type="text" id="sceneDesc" class="form-control" placeholder="VD: Phòng khách, Văn phòng...">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Chọn ảnh</label>
+                            <input type="file" id="sceneImage" class="form-control" accept="image/*" onchange="previewSceneImage()">
+                        </div>
+                    </div>
+                    <div id="imagePreviewArea" class="text-center mt-3" style="display: none;">
+                        <img id="imagePreview" style="max-width: 100%; max-height: 300px; border-radius: 12px;">
+                    </div>
+                    <div class="mt-4">
+                        <button class="btn btn-primary" onclick="uploadSceneImage()" id="uploadSceneBtn" disabled>Tiếp theo: Thiết lập tương tác</button>
+                    </div>
+                </div>
+
+                <!-- Bước 2: Kéo vùng và gán từ vựng -->
+                <div id="step2Container" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div id="sceneWrapper" style="position: relative;">
+                                <img id="sceneDisplay" class="img-fluid rounded" style="width: 100%;">
+                                <div id="hotspotsContainer"></div>
+                            </div>
+                            <p class="text-muted mt-2 small">
+                                <i class="fas fa-info-circle"></i> Hướng dẫn: Chọn từ vựng bên phải, sau đó kéo chuột trên ảnh để tạo vùng tương tác
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Danh sách từ vựng trong bài học</label>
+                            <div id="vocabListContainer" style="max-height: 280px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px;">
+                                <div class="text-center p-3">Đang tải...</div>
+                            </div>
+
+                            <label class="form-label fw-bold mt-3">Các vùng đã tạo</label>
+                            <div id="hotspotListContainer" style="max-height: 180px; overflow-y: auto;">
+                                <div class="text-muted text-center p-3">Chưa có vùng nào</div>
+                            </div>
+
+                            <div class="mt-3 d-flex gap-2">
+                                <button class="btn btn-secondary flex-grow-1" onclick="cancelCreateScene()">Hủy</button>
+                                <button class="btn btn-success flex-grow-1" onclick="saveScene()">Hoàn thành</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal sửa cảnh tương tác -->
+<div class="modal fade" id="editSceneModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px;">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-edit me-2" style="color: var(--teal);"></i>Sửa cảnh tương tác
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Mô tả cảnh</label>
+                            <input type="text" id="editSceneDesc" class="form-control">
+                        </div>
+                        <div id="editSceneWrapper" style="position: relative;">
+                            <img id="editSceneDisplay" class="img-fluid rounded" style="width: 100%;">
+                            <div id="editHotspotsContainer"></div>
+                        </div>
+                        <p class="text-muted mt-2 small">
+                            <i class="fas fa-info-circle"></i> Hướng dẫn: Click chọn từ vựng bên phải, sau đó kéo chuột trên ảnh để tạo vùng mới. Click vào vùng đã có để xóa.
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Danh sách từ vựng trong bài học</label>
+                        <div id="editVocabListContainer" style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px;">
+                            <div class="text-center p-3">Đang tải...</div>
+                        </div>
+
+                        <label class="form-label fw-bold mt-3">Các vùng tương tác</label>
+                        <div id="editHotspotListContainer" style="max-height: 200px; overflow-y: auto;">
+                            <div class="text-muted text-center p-3">Chưa có vùng nào</div>
+                        </div>
+
+                        <div class="mt-3 d-flex gap-2">
+                            <button class="btn btn-secondary flex-grow-1" onclick="closeEditSceneModal()">Hủy</button>
+                            <button class="btn btn-primary flex-grow-1" onclick="updateScene()">Cập nhật</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+                </div>
+            </div>
+        `;
+
+        localStorage.setItem('activeAdminTab', 'lessons');
+        currentSceneLessonId = id;
+loadScenesList();
+
+    } catch (e) {
+        console.error(e);
+        Swal.fire('Lỗi', 'Không thể tải thông tin chi tiết', 'error');
+    }
+}
+
+async function openAddVocabModalFromLesson(lessonId) {
+    const token = localStorage.getItem('token');
+
+    try {
+        const res = await fetch(`/api/admin/lessons/${lessonId}/available-vocab`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (!res.ok) throw new Error('Không thể tải danh sách từ vựng');
+
+        const availableVocab = await res.json();
+
+        if (availableVocab.length === 0) {
+            Swal.fire('Thông báo', 'Không còn từ vựng nào để thêm vào bài học này!', 'info');
+            return;
+        }
+
+        const oldModal = document.getElementById('addVocabToLessonModal');
+        if (oldModal) oldModal.remove();
+
+        // Build danh sách items
+        const itemsHtml = availableVocab.map(v => `
+            <label class="vocab-modal-item d-flex align-items-center gap-3 p-2 border-bottom"
+                   style="cursor:pointer; margin:0; transition: background 0.15s;"
+                   data-id="${v.id}"
+                   data-expression="${escapeHtml(v.expression || '')}"
+                   data-kana="${escapeHtml(v.kana || '')}"
+                   data-romaji="${escapeHtml(v.romaji || '')}"
+                   data-meaning="${escapeHtml(v.meaning || '')}">
+                <input type="checkbox" class="vocab-modal-cb"
+                       value="${v.id}"
+                       style="width:16px; height:16px; flex-shrink:0;"
+                       onchange="updateVocabModalCount()">
+                <div style="flex:1; min-width:0;">
+                    <strong style="font-size:17px;">${escapeHtml(v.expression || '')}</strong>
+                    <span style="color:var(--teal); margin-left:8px; font-size:14px;">${escapeHtml(v.kana || '')}</span>
+                    <span style="color:#adb5bd; margin-left:6px; font-size:13px; font-style:italic;">${escapeHtml(v.romaji || '')}</span>
+                    <div style="font-size:13px; color:#6c757d; margin-top:2px;">${escapeHtml(v.meaning || '')}</div>
+                </div>
+            </label>
+        `).join('');
+
+        const modalHtml = `
+            <div class="modal fade" id="addVocabToLessonModal" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content" style="border-radius:20px;">
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-bold">
+                                <i class="fas fa-plus-circle me-2" style="color:var(--teal);"></i>
+                                Thêm từ vựng vào bài học
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body" style="padding:20px;">
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <input type="text" id="vocabSearchInModal" class="form-control"
+                                       placeholder="Tìm theo từ, kana, romaji, nghĩa..."
+                                       style="border-radius:10px;" autocomplete="off">
+                                <span style="white-space:nowrap; font-size:13px; color:#6c757d;">
+                                    Đã chọn: <strong id="selectedCountNum">0</strong>
+                                </span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mb-2 ps-1">
+                                <input type="checkbox" id="selectAllVocabModal"
+                                       style="width:16px; height:16px; cursor:pointer;"
+                                       onchange="toggleSelectAllVocabModal()">
+                                <label for="selectAllVocabModal"
+                                       style="font-size:13px; font-weight:600; cursor:pointer; margin:0;">
+                                    Chọn tất cả
+                                </label>
+                            </div>
+                            <div id="vocabListModal"
+                                 style="max-height:400px; overflow-y:auto; border:1px solid #eee; border-radius:10px;">
+                                ${itemsHtml}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn-custom btn-red" data-bs-dismiss="modal">Hủy</button>
+                            <button type="button" class="btn-custom btn-teal"
+                                    onclick="confirmAddVocabToLesson(${lessonId})">
+                                <i class="fas fa-save me-2"></i>Thêm vào bài học
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        // Gắn sự kiện tìm kiếm realtime
+        const searchInput = document.getElementById('vocabSearchInModal');
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                filterVocabModalRealTime(e.target.value);
+            });
+        }
+
+        new bootstrap.Modal(document.getElementById('addVocabToLessonModal')).show();
+
+        // Focus sau khi modal hiện
+        document.getElementById('addVocabToLessonModal').addEventListener('shown.bs.modal', () => {
+            searchInput.focus();
+        }, { once: true });
+
+    } catch (error) {
+        console.error(error);
+        Swal.fire('Lỗi', 'Không thể tải danh sách từ vựng', 'error');
+    }
+}
+
+// Hàm filter realtime - SỬ DỤNG CLASS THAY VÌ STYLE TRỰC TIẾP
+function filterVocabModalRealTime(keyword) {
+    keyword = keyword.toLowerCase().trim();
+    const items = document.querySelectorAll('#addVocabToLessonModal .vocab-modal-item');
+
+    items.forEach(item => {
+        const expression = (item.getAttribute('data-expression') || '').toLowerCase();
+        const kana = (item.getAttribute('data-kana') || '').toLowerCase();
+        const romaji = (item.getAttribute('data-romaji') || '').toLowerCase();
+        const meaning = (item.getAttribute('data-meaning') || '').toLowerCase();
+
+        const matches = !keyword ||
+                       expression.includes(keyword) ||
+                       kana.includes(keyword) ||
+                       romaji.includes(keyword) ||
+                       meaning.includes(keyword);
+
+        // DÙNG CLASS THAY VÌ STYLE TRỰC TIẾP
+        if (matches) {
+            item.classList.remove('vocab-filtered-hidden');
+        } else {
+            item.classList.add('vocab-filtered-hidden');
+        }
+    });
+
+    syncSelectAllVocabModal();
+}
+
+// Cập nhật hàm toggleSelectAllVocabModal để chỉ chọn các item đang hiển thị
+function toggleSelectAllVocabModal() {
+    const checked = document.getElementById('selectAllVocabModal').checked;
+    const visibleItems = document.querySelectorAll('#addVocabToLessonModal .vocab-modal-item');
+
+    visibleItems.forEach(item => {
+        if (item.style.display !== 'none') {
+            const checkbox = item.querySelector('.vocab-modal-cb');
+            if (checkbox) checkbox.checked = checked;
+        }
+    });
+
+    updateVocabModalCount();
+}
+
+// Cập nhật hàm syncSelectAllVocabModal
+function syncSelectAllVocabModal() {
+    const visibleItems = Array.from(document.querySelectorAll('#addVocabToLessonModal .vocab-modal-item'))
+        .filter(item => item.style.display !== 'none');
+    const checkedVisible = visibleItems.filter(item => item.querySelector('.vocab-modal-cb').checked);
+    const selectAll = document.getElementById('selectAllVocabModal');
+
+    if (!selectAll) return;
+
+    if (visibleItems.length === 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+    } else {
+        selectAll.checked = checkedVisible.length === visibleItems.length;
+        selectAll.indeterminate = checkedVisible.length > 0 && checkedVisible.length < visibleItems.length;
+    }
+}
+
+// Cập nhật hàm updateVocabModalCount để chỉ đếm các item đang hiển thị
+function updateVocabModalCount() {
+    const visibleItems = Array.from(document.querySelectorAll('#addVocabToLessonModal .vocab-modal-item'))
+        .filter(item => item.style.display !== 'none');
+    const checked = visibleItems.filter(item => item.querySelector('.vocab-modal-cb').checked).length;
+    const countSpan = document.getElementById('selectedCountNum');
+    if (countSpan) countSpan.innerText = checked;
+    syncSelectAllVocabModal();
+}
+
+async function confirmAddVocabToLesson(lessonId) {
+    const checkedBoxes = document.querySelectorAll('.vocab-modal-cb:checked');
+    if (checkedBoxes.length === 0) {
+        Swal.fire('Chú ý', 'Vui lòng chọn ít nhất một từ vựng!', 'warning');
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+    const vocabIds = [...checkedBoxes].map(cb => parseInt(cb.value));
+
+    Swal.fire({ title: `Đang thêm ${vocabIds.length} từ vựng...`, didOpen: () => Swal.showLoading() });
+
+    let successCount = 0;
+    for (const vocabId of vocabIds) {
+        try {
+            const res = await fetch(
+                `/api/admin/lessons/lesson-vocab?lessonId=${lessonId}&vocabId=${vocabId}&displayOrder=0`,
+                { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }
+            );
+            if (res.ok) successCount++;
+        } catch (e) { console.error(e); }
+    }
+
+    const modal = bootstrap.Modal.getInstance(document.getElementById('addVocabToLessonModal'));
+    if (modal) modal.hide();
+
+    Swal.fire('Thành công', `Đã thêm ${successCount}/${vocabIds.length} từ vựng vào bài học`, 'success');
+    refreshLessonDetail();
+}
+
+// Xóa từ vựng khỏi bài học - có kiểm tra ràng buộc với InteractivePoint
+async function removeVocabFromLesson(vocabId, lessonId) {
+    const token = localStorage.getItem('token');
+
+    try {
+        // Lấy thông tin từ vựng để hiển thị tên
+        const vocabRes = await fetch(`/api/admin/vocab/${vocabId}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        let vocabName = '';
+        if (vocabRes.ok) {
+            const vocab = await vocabRes.json();
+            vocabName = vocab.expression;
+        }
+
+        // Kiểm tra xem từ vựng có đang được dùng trong InteractivePoint của bài học này không
+        const checkRes = await fetch(`/api/admin/vocab/${vocabId}/check-usage-in-lesson?lessonId=${lessonId}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (checkRes.ok) {
+            const usageData = await checkRes.json();
+
+            // Nếu có điểm tương tác trong bài học này
+            if (usageData.hasInteractivePoints) {
+                Swal.fire({
+                    title: 'Không thể xóa!',
+                    html: `
+                        <div style="text-align: left;">
+                            <p>Từ vựng <strong>${escapeHtml(vocabName)}</strong> đang được sử dụng trong
+                            <strong>${usageData.pointCount}</strong> điểm tương tác của bài học này.</p>
+                            <p class="text-danger mt-2" style="color: #dc2626;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Vui lòng xóa các điểm tương tác này trong mục "Cảnh tương tác" trước khi xóa từ vựng khỏi bài học.
+                            </p>
+                        </div>
+                    `,
+                    icon: 'warning',
+                    confirmButtonText: 'Đến trang Cảnh tương tác',
+                    showCancelButton: true,
+                    cancelButtonText: 'Hủy'
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        // Chuyển đến tab Scenes của bài học hiện tại
+                        const scenesTab = document.querySelector('#scenes-tab');
+                        if (scenesTab) {
+                            const tab = new bootstrap.Tab(scenesTab);
+                            tab.show();
+                        }
+                    }
+                });
+                return;
+            }
+        }
+
+        // Không có ràng buộc, hiển thị dialog xác nhận
+        const result = await Swal.fire({
+            title: 'Xác nhận xóa?',
+            text: `Từ vựng "${vocabName}" sẽ bị xóa khỏi bài học hiện tại!`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#06BBCC',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy',
+            timer: 5000,
+            timerProgressBar: true
+        });
+
+        if (result.isConfirmed) {
+            const res = await fetch(`/api/admin/lessons/lesson-vocab?lessonId=${lessonId}&vocabId=${vocabId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (res.ok) {
+                Swal.fire({
+                    title: 'Thành công!',
+                    text: 'Đã xóa từ vựng khỏi bài học',
+                    icon: 'success',
+                    timer: 1000,
+                    showConfirmButton: false,
+                    timerProgressBar: true
+                });
+                refreshLessonDetail();
+            } else {
+                const error = await res.text();
+                Swal.fire({
+                    title: 'Lỗi!',
+                    text: error,
+                    icon: 'error',
+                    timer: 1000,
+                    showConfirmButton: false,
+                    timerProgressBar: true
+                });
+            }
+        }
+    } catch (e) {
+        console.error(e);
+        Swal.fire({
+            title: 'Lỗi!',
+            text: 'Không thể kiểm tra ràng buộc',
+            icon: 'error',
+            timer: 1000,
+            showConfirmButton: false,
+            timerProgressBar: true
+        });
+    }
+}
+
+
+// ========== SỬA CẢNH TƯƠNG TÁC ==========
+
+let currentEditSceneId = null;
+let editSceneHotspots = [];
+let editIsDrawing = false;
+let editStartX, editStartY;
+let editSelectionBox = null;
+let editSelectedVocabId = null;
+let editSceneVocabList = [];
+
+// Mở modal sửa cảnh
+async function editScene(sceneId) {
+    currentEditSceneId = sceneId;
+    editSceneHotspots = [];
+    editSelectedVocabId = null;
+
+    const token = localStorage.getItem('token');
+
+    Swal.fire({ title: 'Đang tải dữ liệu...', didOpen: () => Swal.showLoading() });
+
+    try {
+        // Lấy thông tin scene và points
+        const res = await fetch(`/api/admin/interactive/scene/${sceneId}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            document.getElementById('editSceneDesc').value = data.description || '';
+            document.getElementById('editSceneDisplay').src = data.imageUrl;
+
+            // Load danh sách từ vựng của bài học
+            await loadEditVocabList();
+
+            // Load các hotspots hiện có
+            if (data.points && data.points.length > 0) {
+                editSceneHotspots = data.points.map(point => ({
+                    id: point.id,
+                    vocabId: point.vocabId,
+                    vocabName: point.vocab?.expression,
+                    coordX: point.coordX,
+                    coordY: point.coordY,
+                    width: point.width,
+                    height: point.height,
+                    isExisting: true
+                }));
+                renderEditHotspots();
+                updateEditHotspotList();
+            }
+
+            Swal.close();
+            new bootstrap.Modal(document.getElementById('editSceneModal')).show();
+
+            // Khởi tạo sự kiện kéo chuột sau khi modal hiển thị
+            setTimeout(() => {
+                initEditDrawingEvents();
+            }, 500);
+        } else {
+            Swal.fire('Lỗi', data.error || 'Không thể tải dữ liệu', 'error');
+        }
+    } catch(e) {
+        console.error(e);
+        Swal.fire('Lỗi', 'Không thể tải dữ liệu', 'error');
+    }
+}
+
+// Load danh sách từ vựng cho modal sửa
+async function loadEditVocabList() {
+    const token = localStorage.getItem('token');
+    const lessonId = document.querySelector('.lesson-detail-container')?.getAttribute('data-lesson-id');
+
+    try {
+        const res = await fetch(`/api/admin/vocab/by-lesson/${lessonId}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        editSceneVocabList = await res.json();
+
+        const container = document.getElementById('editVocabListContainer');
+        if (editSceneVocabList.length === 0) {
+            container.innerHTML = '<div class="alert alert-warning m-2">Chưa có từ vựng nào. Hãy thêm từ vựng vào bài học trước!</div>';
+        } else {
+            container.innerHTML = editSceneVocabList.map(v => `
+                <div class="vocab-item p-2 border-bottom" data-vocab-id="${v.id}"
+                     onclick="selectEditVocab(${v.id})" style="cursor: pointer;">
+                    <strong>${v.expression}</strong>
+                    <div class="small text-muted">${v.meaning}</div>
+                </div>
+            `).join('');
+        }
+    } catch(e) { console.error(e); }
+}
+
+function selectEditVocab(vocabId) {
+    editSelectedVocabId = vocabId;
+    document.querySelectorAll('#editVocabListContainer .vocab-item').forEach(item => {
+        if (item.dataset.vocabId == vocabId) {
+            item.classList.add('selected');
+        } else {
+            item.classList.remove('selected');
+        }
     });
 }
+
+// Khởi tạo sự kiện kéo chuột cho modal sửa
+function initEditDrawingEvents() {
+    const wrapper = document.getElementById('editSceneWrapper');
+    if (!wrapper) return;
+
+    wrapper.removeEventListener('mousedown', startEditDraw);
+    window.removeEventListener('mousemove', onEditDraw);
+    window.removeEventListener('mouseup', endEditDraw);
+
+    wrapper.addEventListener('mousedown', startEditDraw);
+    window.addEventListener('mousemove', onEditDraw);
+    window.addEventListener('mouseup', endEditDraw);
+}
+
+function startEditDraw(e) {
+    const wrapper = document.getElementById('editSceneWrapper');
+    if (!wrapper.contains(e.target)) return;
+    if (!editSelectedVocabId) {
+        Swal.fire('Chú ý', 'Hãy chọn một từ vựng từ danh sách bên phải trước khi kéo vùng!', 'warning');
+        return;
+    }
+    if (e.button !== 0) return;
+
+    e.preventDefault();
+
+    const img = document.getElementById('editSceneDisplay');
+    const rect = img.getBoundingClientRect();
+
+    editIsDrawing = true;
+    editStartX = e.clientX - rect.left;
+    editStartY = e.clientY - rect.top;
+
+    if (editSelectionBox) editSelectionBox.remove();
+    editSelectionBox = document.createElement('div');
+    editSelectionBox.className = 'selection-box';
+    editSelectionBox.style.cssText = `
+        position: absolute;
+        border: 2px dashed #fb873f;
+        background: rgba(251, 135, 63, 0.2);
+        pointer-events: none;
+        border-radius: 4px;
+        left: ${editStartX}px;
+        top: ${editStartY}px;
+        width: 0px;
+        height: 0px;
+    `;
+    document.getElementById('editSceneWrapper').appendChild(editSelectionBox);
+}
+
+function onEditDraw(e) {
+    if (!editIsDrawing || !editSelectionBox) return;
+
+    const img = document.getElementById('editSceneDisplay');
+    const rect = img.getBoundingClientRect();
+
+    let currentX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    let currentY = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+
+    editSelectionBox.style.width = Math.abs(currentX - editStartX) + 'px';
+    editSelectionBox.style.height = Math.abs(currentY - editStartY) + 'px';
+    editSelectionBox.style.left = Math.min(currentX, editStartX) + 'px';
+    editSelectionBox.style.top = Math.min(currentY, editStartY) + 'px';
+}
+
+function endEditDraw(e) {
+    if (!editIsDrawing || !editSelectionBox) return;
+    editIsDrawing = false;
+
+    const img = document.getElementById('editSceneDisplay');
+    const rect = img.getBoundingClientRect();
+
+    const width = parseFloat(editSelectionBox.style.width);
+    const height = parseFloat(editSelectionBox.style.height);
+    const left = parseFloat(editSelectionBox.style.left);
+    const top = parseFloat(editSelectionBox.style.top);
+
+    if (width > 10 && height > 10) {
+        const xPercent = ((left + width/2) / rect.width * 100).toFixed(2);
+        const yPercent = ((top + height/2) / rect.height * 100).toFixed(2);
+        const wPercent = (width / rect.width * 100).toFixed(2);
+        const hPercent = (height / rect.height * 100).toFixed(2);
+
+        addEditHotspot(xPercent, yPercent, wPercent, hPercent);
+    }
+
+    editSelectionBox.remove();
+    editSelectionBox = null;
+}
+
+function addEditHotspot(x, y, w, h) {
+    const vocab = editSceneVocabList.find(v => v.id === editSelectedVocabId);
+    const hotspot = {
+        id: Date.now(),
+        vocabId: editSelectedVocabId,
+        vocabName: vocab?.expression,
+        coordX: x,
+        coordY: y,
+        width: w,
+        height: h,
+        isExisting: false
+    };
+    editSceneHotspots.push(hotspot);
+
+    renderEditHotspots();
+    updateEditHotspotList();
+}
+
+function renderEditHotspots() {
+    const container = document.getElementById('editHotspotsContainer');
+    container.innerHTML = '';
+
+    editSceneHotspots.forEach(h => {
+        const hotspotDiv = document.createElement('div');
+        hotspotDiv.className = 'hotspot-editor';
+        hotspotDiv.style.left = `${h.coordX}%`;
+        hotspotDiv.style.top = `${h.coordY}%`;
+        hotspotDiv.style.width = `${h.width}%`;
+        hotspotDiv.style.height = `${h.height}%`;
+        hotspotDiv.style.transform = 'translate(-50%, -50%)';
+        hotspotDiv.style.position = 'absolute';
+        hotspotDiv.style.border = '2px solid #fb873f';
+        hotspotDiv.style.backgroundColor = 'rgba(251, 135, 63, 0.3)';
+        hotspotDiv.style.cursor = 'pointer';
+        hotspotDiv.style.borderRadius = '4px';
+        hotspotDiv.id = `edit-hotspot-${h.id}`;
+        container.appendChild(hotspotDiv);
+    });
+}
+
+function updateEditHotspotList() {
+    const container = document.getElementById('editHotspotListContainer');
+    if (editSceneHotspots.length === 0) {
+        container.innerHTML = '<div class="text-muted text-center p-3">Chưa có vùng nào</div>';
+        return;
+    }
+
+    container.innerHTML = editSceneHotspots.map((h, idx) => `
+        <div class="d-flex justify-content-between align-items-center p-2 mb-2 border rounded">
+            <span>
+                <strong>${h.vocabName}</strong>
+                <br><small class="text-muted">${h.coordX}%, ${h.coordY}%</small>
+            </span>
+            <button class="btn btn-sm btn-danger" onclick="removeEditHotspot(${idx})">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+function removeEditHotspot(index) {
+    editSceneHotspots.splice(index, 1);
+    renderEditHotspots();
+    updateEditHotspotList();
+}
+
+async function updateScene() {
+    const token = localStorage.getItem('token');
+    const description = document.getElementById('editSceneDesc').value;
+
+    Swal.fire({ title: 'Đang cập nhật...', didOpen: () => Swal.showLoading() });
+
+    try {
+        // 1. Cập nhật mô tả scene
+        await fetch('/api/admin/interactive/scene/update', {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                sceneId: currentEditSceneId,
+                description: description
+            })
+        });
+
+        // 2. Xóa tất cả points cũ
+        await fetch(`/api/admin/interactive/scene/${currentEditSceneId}/points`, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        // 3. Thêm các points mới
+        for (const point of editSceneHotspots) {
+            await fetch('/api/admin/interactive/point', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sceneId: currentEditSceneId,
+                    vocabId: point.vocabId,
+                    coordX: parseFloat(point.coordX),
+                    coordY: parseFloat(point.coordY),
+                    width: parseFloat(point.width),
+                    height: parseFloat(point.height)
+                })
+            });
+        }
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('editSceneModal'));
+        if (modal) modal.hide();
+
+        Swal.fire('Thành công', 'Đã cập nhật cảnh tương tác!', 'success');
+
+        // Reload danh sách cảnh
+        await loadScenesList();
+
+    } catch(e) {
+        console.error(e);
+        Swal.fire('Lỗi', e.message || 'Không thể cập nhật', 'error');
+    }
+}
+
+function closeEditSceneModal() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('editSceneModal'));
+    if (modal) modal.hide();
+}
+
+// Xóa cảnh tương tác
+async function deleteScene(sceneId) {
+    const result = await Swal.fire({
+        title: 'Xác nhận xóa?',
+        text: "Bạn có chắc muốn xóa cảnh tương tác này?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#06BBCC',
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
+        const token = localStorage.getItem('token');
+        const lessonId = document.querySelector('.lesson-detail-container')?.getAttribute('data-lesson-id');
+
+        try {
+            // Gọi API xóa scene
+            const res = await fetch(`/api/admin/scenes/${sceneId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (res.ok) {
+                Swal.fire('Thành công', 'Đã xóa cảnh tương tác', 'success');
+                // Reload trang chi tiết bài học
+                if (lessonId) {
+                    editLesson(parseInt(lessonId));
+                }
+            } else {
+                const error = await res.text();
+                Swal.fire('Lỗi', error, 'error');
+            }
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Lỗi', 'Không thể xóa cảnh tương tác', 'error');
+        }
+    }
+}
+
+// Lưu thay đổi bài học
+async function saveLessonChanges(id) {
+    const token = localStorage.getItem('token');
+
+    const updatedData = {
+        lessonName: document.getElementById('editLessonName').value,
+        categoryId: parseInt(document.getElementById('editLessonCategory').value),
+        isActive: document.getElementById('editIsActive').value === 'true'
+    };
+
+    if (!updatedData.lessonName) {
+        Swal.fire('Lỗi', 'Tên bài học không được để trống', 'error');
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/admin/lessons/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedData)
+        });
+
+        if (res.ok) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công',
+                text: 'Đã cập nhật bài học',
+                timer: 1000,
+                showConfirmButton: false
+            });
+            goBackToLessons();
+        } else {
+            const error = await res.text();
+            Swal.fire('Lỗi', error, 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        Swal.fire('Lỗi', 'Không thể cập nhật', 'error');
+    }
+}
+
+// Quay lại danh sách bài học
+function goBackToLessons() {
+    const navItems = document.querySelectorAll('.nav-item');
+    for (let item of navItems) {
+        if (item.innerText.trim() === 'Bài học') {
+            loadSection('lessons', item, new Event('click'));
+            break;
+        }
+    }
+}
+
 
 // 2. Xóa/Ẩn bài học (toggle isActive) - GIỐNG deleteCategory
 async function deleteLesson(id) {
@@ -1275,7 +2504,7 @@ async function loadAllUsersWithFilter(page = 0) {
     const levelId = document.getElementById('userFilterLevel')?.value || "";
     const active = document.getElementById('userFilterStatus')?.value || "";
     const timeFilter = document.getElementById('userFilterTime')?.value || "";
-    const pageSize = 5;
+    const pageSize = paginationManager['userPagination'].pageSize;
 
     try {
         let url = `/api/admin/users/all-paging?page=${page}&size=${pageSize}&search=${encodeURIComponent(search)}&levelId=${levelId}&active=${active}&timeFilter=${timeFilter}`;
@@ -1433,7 +2662,7 @@ async function loadAllCategoriesWithPagination(page = 0) {
     const search = document.getElementById('categorySearch')?.value || "";
     const level = document.getElementById('categoryFilterLevel')?.value || "";
     const isActive = document.getElementById('categoryFilterStatus')?.value || "";
-    const pageSize = 5;
+    const pageSize = paginationManager['categoryPagination'].pageSize;
 
     try {
         let url = `/api/admin/categories/paging?page=${page}&size=${pageSize}`;
@@ -1467,6 +2696,7 @@ async function loadAllCategoriesWithPagination(page = 0) {
             const isHidden = cat.isActive === false;
             const rowClass = isHidden ? 'row-hidden' : '';
             const statusBadge = isHidden ? '<span class="status-badge badge-hidden">Đã ẩn</span>' : '';
+            const iconUrlWithTimestamp = cat.iconUrl ? addTimestampToUrl(cat.iconUrl) : '';
             const actionBtn = isHidden
                 ? `<button class="btn-action btn-restore me-1" title="Khôi phục" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash-restore"></i></button>`
                 : `<button class="btn-action btn-trash me-1" title="Ẩn" onclick="deleteCategory(${cat.id})"><i class="fas fa-trash"></i></button>`;
@@ -1576,22 +2806,31 @@ document.getElementById('catIconUrl')?.addEventListener('input', function (e) {
 });
 
 let selectedFile = null;
+let selectedThumbnailFile = null;
+
 function handleFileSelect(input) {
     if (input.files && input.files[0]) {
         selectedFile = input.files[0];
-
         const reader = new FileReader();
         reader.onload = function (e) {
-            const previewImg = document.getElementById('previewImg');
-            const previewDiv = document.getElementById('iconPreview');
-
-            previewImg.src = e.target.result;
-            previewDiv.style.display = 'block'; // Hiện khung ảnh to
-
-            // Hiển thị tên file vào ô input
+            document.getElementById('previewImg').src = e.target.result;
+            document.getElementById('iconPreview').style.display = 'block';
             document.getElementById('catIconUrl').value = selectedFile.name;
         };
         reader.readAsDataURL(selectedFile);
+    }
+}
+
+function handleThumbnailSelect(input) {
+    if (input.files && input.files[0]) {
+        selectedThumbnailFile = input.files[0];
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            document.getElementById('thumbnailPreviewImg').src = e.target.result;
+            document.getElementById('thumbnailPreview').style.display = 'block';
+            document.getElementById('catThumbnailUrl').value = selectedThumbnailFile.name;
+        };
+        reader.readAsDataURL(selectedThumbnailFile);
     }
 }
 
@@ -1602,16 +2841,19 @@ async function submitCategory() {
 
     if (!name) return Swal.fire('Lỗi', 'Vui lòng nhập tên chủ đề!', 'error');
 
-    // Dùng FormData để gửi cả file và text
     const formData = new FormData();
     formData.append("categoryName", name);
     formData.append("jlptLevel", level);
 
-    // Nếu có chọn file thì gửi file, nếu không thì gửi link nhập tay (nếu có)
     if (selectedFile) {
         formData.append("file", selectedFile);
     } else {
         formData.append("iconUrl", document.getElementById('catIconUrl').value);
+    }
+
+    // Gửi kèm thumbnail file nếu có chọn
+    if (selectedThumbnailFile) {
+        formData.append("thumbnailFile", selectedThumbnailFile);
     }
 
     try {
@@ -1620,22 +2862,26 @@ async function submitCategory() {
         const response = await fetch('/api/admin/categories/add-with-file', {
             method: 'POST',
             headers: { 'Authorization': 'Bearer ' + token },
-            body: formData // Không set Content-Type, trình duyệt tự xử lý Multipart
+            body: formData
         });
 
         if (response.ok) {
             bootstrap.Modal.getInstance(document.getElementById('categoryModal')).hide();
             await Swal.fire('Thành công', 'Chủ đề và ảnh đã được lưu!', 'success');
-            selectedFile = null; // Reset biến tạm
+            selectedFile = null;
+            selectedThumbnailFile = null;
+            // Reset preview thumbnail
+            document.getElementById('thumbnailPreview').style.display = 'none';
+            document.getElementById('catThumbnailUrl').value = '';
             loadAllCategoriesWithPagination(0);
         } else {
-            Swal.fire('Lỗi', 'Không thể lưu chủ đề', 'error');
+            const err = await response.text();
+            Swal.fire('Lỗi', err || 'Không thể lưu chủ đề', 'error');
         }
     } catch (e) { console.error(e); }
 }
 
 async function deleteCategory(id) {
-    // Tìm trong danh sách hiện tại để biết nó đang ẩn hay hiện (nâng cao)
     // Hoặc đơn giản là dùng thông báo chung:
     const result = await Swal.fire({
         title: 'Xác nhận ẩn?',
@@ -1673,6 +2919,8 @@ async function deleteCategory(id) {
 }
 
 async function editCategory(id) {
+    pendingIconFile = null;
+    pendingThumbnailFile = null;
     const token = localStorage.getItem('token');
     const mainContent = document.getElementById('main-content');
     const mainTitle = document.getElementById('page-main-title');
@@ -1704,14 +2952,14 @@ async function editCategory(id) {
                 </button>
 
                 <div class="category-detail-header">
-                    <img src="${category.iconUrl || 'https://placehold.co/100x100?text=No+Image'}"
-                         alt="${category.categoryName}"
-                         class="category-detail-avatar"
-                         id="detailAvatar"
-                         onerror="this.src='https://placehold.co/100x100?text=No+Image'">
+                    <img src="${category.iconUrl ? addTimestampToUrl(category.iconUrl) : 'https://placehold.co/100x100?text=No+Image'}"
+                 alt="${category.categoryName}"
+                 class="category-detail-avatar"
+                 id="detailAvatar"
+                 onerror="this.src='https://placehold.co/100x100?text=No+Image'">
                     <div class="category-detail-title" style="flex: 1;">
                         <input type="text" id="editCategoryName" class="form-control form-control-lg"
-                               value="${category.categoryName}"
+                               value="${escapeHtml(category.categoryName)}"
                                style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">
                         <p><i class="fas fa-tag"></i> Slug: <span id="slugPreview">${category.slug || ''}</span></p>
                     </div>
@@ -1730,7 +2978,7 @@ async function editCategory(id) {
                             </select>
                         </div>
                         <div class="info-card">
-                            <h4><i class="fas fa-image"></i> URL Ảnh đại diện</h4>
+                            <h4><i class="fas fa-image"></i> URL Ảnh đại diện (Icon)</h4>
                             <div class="input-group">
                                 <input type="text" id="editIconUrl" class="form-control" value="${category.iconUrl || ''}"
                                        placeholder="Nhập URL ảnh" onchange="updateAvatarPreview()">
@@ -1739,6 +2987,24 @@ async function editCategory(id) {
                                 </button>
                             </div>
                             <input type="file" id="editFileInput" style="display: none;" accept="image/*" onchange="handleEditFileSelect(this, ${id})">
+                            <small class="text-muted">Ảnh hiển thị ở trang chủ và danh sách chủ đề</small>
+                        </div>
+                        <div class="info-card">
+                            <h4><i class="fas fa-image"></i> URL Ảnh Thumbnail (Banner)</h4>
+                            <div class="input-group">
+                                <input type="text" id="editThumbnailUrl" class="form-control" value="${category.thumbnailUrl || ''}"
+                                       placeholder="Nhập URL ảnh thumbnail" onchange="updateThumbnailPreview()">
+                                <button class="btn btn-orange" type="button" onclick="document.getElementById('editThumbnailFileInput').click()">
+                                    <i class="fas fa-upload"></i> Upload
+                                </button>
+                            </div>
+                            <input type="file" id="editThumbnailFileInput" style="display: none;" accept="image/*" onchange="handleEditThumbnailSelect(this, ${id})">
+                            <div id="thumbnailPreviewContainer" class="mt-2 ${category.thumbnailUrl ? '' : 'd-none'}">
+            <img id="detailThumbnail" src="${category.thumbnailUrl ? addTimestampToUrl(category.thumbnailUrl) : ''}"
+                 style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 10px;"
+                 onerror="this.src='https://placehold.co/400x150?text=No+Thumbnail'">
+                                <small class="text-muted d-block mt-1">Ảnh banner hiển thị ở đầu trang bài học</small>
+                            </div>
                         </div>
                         <div class="info-card">
                             <h4><i class="fas fa-toggle-on"></i> Trạng thái</h4>
@@ -1757,10 +3023,15 @@ async function editCategory(id) {
                 </div>
 
                 <div class="lessons-list">
-                    <h3><i class="fas fa-list"></i> Danh sách bài học</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0;"><i class="fas fa-book-reader"></i> Danh sách bài học</h3>
+                        <button class="btn-home" onclick="openAddLessonInCateModal(${id})">
+                            <i class="fas fa-plus" style="margin-right:5px"></i> Thêm bài học
+                        </button>
+                    </div>
                     ${lessons.length === 0 ?
-                '<p class="text-muted text-center py-4">Chưa có bài học nào trong chủ đề này</p>' :
-                `<table class="lessons-table">
+                        '<p class="text-muted text-center py-4">Chưa có bài học nào trong chủ đề này</p>' :
+                        `<table class="lessons-table">
                             <thead>
                                 <tr>
                                     <th>STT</th>
@@ -1772,33 +3043,33 @@ async function editCategory(id) {
                             </thead>
                             <tbody>
                                 ${lessons.map((lesson, idx) => {
-                    const isHidden = lesson.isActive === false;
-                    const rowClass = isHidden ? 'row-hidden' : '';
-                    const actionBtn = isHidden
-                        ? `<button class="btn-action btn-restore" title="Khôi phục" onclick="deleteLesson(${lesson.id})">
-                            <i class="fas fa-trash-restore"></i>
-                           </button>`
-                        : `<button class="btn-action btn-trash" title="Ẩn bài học" onclick="deleteLesson(${lesson.id})">
-                            <i class="fas fa-trash"></i>
-                           </button>`;
+                                    const isHidden = lesson.isActive === false;
+                                    const rowClass = isHidden ? 'row-hidden' : '';
+                                    const actionBtn = isHidden
+                                        ? `<button class="btn-action btn-restore" title="Khôi phục" onclick="deleteLesson(${lesson.id})">
+                                            <i class="fas fa-trash-restore"></i>
+                                           </button>`
+                                        : `<button class="btn-action btn-trash" title="Ẩn bài học" onclick="deleteLesson(${lesson.id})">
+                                            <i class="fas fa-trash"></i>
+                                           </button>`;
 
-                    return `
-                    <tr class="${rowClass}" data-lesson-id="${lesson.id}">
-                        <td>${idx + 1}</td>
-                        <td><span class="id-badge">#${lesson.id}</span></td>
-                        <td style="padding-left: 30px;"><strong>${lesson.lessonName}</strong></td>
-                        <td style="text-align: center;"><span class="level-badge">${lesson.totalVocab || 0} từ</span></td>
-                        <td style="text-align: center;">
-                            <button class="btn-action btn-view me-1" title="Xem & Sửa" onclick="editLesson(${lesson.id})">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            ${actionBtn}
-                        </td>
-                    </tr>`;
-                }).join('')}
+                                    return `
+                                    <tr class="${rowClass}" data-lesson-id="${lesson.id}">
+                                        <td>${idx + 1}</td>
+                                        <td><span class="id-badge">#${lesson.id}</span></td>
+                                        <td style="padding-left: 30px;"><strong>${escapeHtml(lesson.lessonName)}</strong></td>
+                                        <td style="text-align: center;"><span class="level-badge">${lesson.totalVocab || 0} từ</span></td>
+                                        <td style="text-align: center;">
+                                            <button class="btn-action btn-view me-1" title="Xem & Sửa" onclick="editLesson(${lesson.id})">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            ${actionBtn}
+                                        </td>
+                                    </tr>`;
+                                }).join('')}
                             </tbody>
-                        </table>`
-            }
+                         </table>`
+                    }
                 </div>
             </div>
         `;
@@ -1811,6 +3082,220 @@ async function editCategory(id) {
     }
 }
 
+// Mở modal thêm bài học mới từ trang chi tiết Category
+function openAddLessonModal() {
+    document.getElementById('newLessonName').value = '';
+    document.getElementById('newLessonLevel').value = '';
+    document.getElementById('newLessonCategoryId').innerHTML = '<option value="">-- Vui lòng chọn cấp độ trước --</option>';
+    document.getElementById('newLessonCategoryId').disabled = true;
+    document.getElementById('newLessonStatus').value = 'true';
+    document.getElementById('newLessonNoCateMsg').style.display = 'none';
+    new bootstrap.Modal(document.getElementById('lessonModal')).show();
+}
+
+// Khi chọn cấp độ → load danh sách chủ đề đang active
+async function onLessonLevelChange() {
+    const level = document.getElementById('newLessonLevel').value;
+    const catSelect = document.getElementById('newLessonCategoryId');
+    const loadingEl = document.getElementById('newLessonCategoryLoading');
+    const noCateMsg = document.getElementById('newLessonNoCateMsg');
+    const token = localStorage.getItem('token');
+
+    noCateMsg.style.display = 'none';
+    catSelect.disabled = true;
+    catSelect.innerHTML = '<option value="">-- Vui lòng chọn cấp độ trước --</option>';
+
+    if (!level) return;
+
+    loadingEl.style.display = 'block';
+    try {
+        // Lấy danh sách chủ đề đang active theo cấp độ
+        // Dùng endpoint /filter chỉ trả về isActive = true
+        const res = await fetch(`/api/admin/categories/filter?level=${level}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const categories = await res.json();
+        loadingEl.style.display = 'none';
+
+        if (categories && categories.length > 0) {
+            catSelect.innerHTML = '<option value="">-- Chọn chủ đề --</option>' +
+                categories.map(c => `<option value="${c.id}">${c.categoryName}</option>`).join('');
+            catSelect.disabled = false;
+        } else {
+            catSelect.innerHTML = '<option value="">-- Không có chủ đề --</option>';
+            noCateMsg.style.display = 'block';
+        }
+    } catch (e) {
+        loadingEl.style.display = 'none';
+        console.error(e);
+    }
+}
+
+// Submit thêm bài học mới (trang Lessons)
+async function submitNewLesson() {
+    const token = localStorage.getItem('token');
+    const name = document.getElementById('newLessonName').value.trim();
+    const categoryId = document.getElementById('newLessonCategoryId').value;
+    const isActive = document.getElementById('newLessonStatus').value;
+
+    if (!name) {
+        return Swal.fire('Chú ý', 'Vui lòng nhập tên bài học!', 'warning');
+    }
+    if (!categoryId) {
+        return Swal.fire('Chú ý', 'Vui lòng chọn chủ đề!', 'warning');
+    }
+
+    try {
+        const res = await fetch('/api/admin/lessons', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ lessonName: name, categoryId: categoryId, isActive: isActive })
+        });
+
+        if (res.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('lessonModal')).hide();
+            await Swal.fire({
+                icon: 'success', title: 'Thành công',
+                text: 'Đã thêm bài học mới!', timer: 1200, showConfirmButton: false
+            });
+            // Reload lại bảng lessons (gọi hàm hiện có trong trang)
+            if (typeof loadAllLessonsWithPagination === 'function') loadAllLessonsWithPagination(0);
+        } else {
+            const err = await res.text();
+            // Giữ nguyên modal, chỉ báo lỗi để người dùng sửa lại
+            Swal.fire({ icon: 'warning', title: 'Không thể thêm', text: err, confirmButtonColor: '#06BBCC' });
+        }
+    } catch (e) {
+        console.error(e);
+        Swal.fire('Lỗi', 'Không thể kết nối server', 'error');
+    }
+}
+
+// Submit thêm bài học từ Category
+async function submitAddLessonFromCategory(categoryId) {
+    const lessonName = document.getElementById('lessonName').value.trim();
+    const lessonSlug = document.getElementById('lessonSlug').value.trim();
+    const isActive = document.getElementById('lessonIsActive').value === 'true';
+
+    // Validate
+    if (!lessonName) {
+        document.getElementById('lessonName').classList.add('is-invalid');
+        Swal.fire('Lỗi', 'Vui lòng nhập tên bài học', 'warning');
+        return;
+    }
+    document.getElementById('lessonName').classList.remove('is-invalid');
+
+    const token = localStorage.getItem('token');
+
+    // Hiển thị loading
+    Swal.fire({
+        title: 'Đang xử lý...',
+        text: 'Vui lòng chờ',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    try {
+        const response = await fetch('/api/admin/lessons', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({
+                lessonName: lessonName,
+                slug: lessonSlug,
+                categoryId: categoryId,
+                isActive: isActive
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Không thể thêm bài học');
+        }
+
+        const newLesson = await response.json();
+
+        // Đóng modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addLessonFromCategoryModal'));
+        modal.hide();
+
+        // Thông báo thành công
+        Swal.fire({
+            title: 'Thành công!',
+            text: `Đã thêm bài học "${lessonName}"`,
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
+        });
+
+        // Reload lại trang chi tiết category để hiển thị bài học mới
+        await editCategory(categoryId);
+
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            title: 'Lỗi!',
+            text: error.message || 'Không thể thêm bài học',
+            icon: 'error'
+        });
+    }
+}
+
+// Cập nhật preview thumbnail
+function updateThumbnailPreview() {
+    const url = document.getElementById('editThumbnailUrl').value;
+    const thumbnailImg = document.getElementById('detailThumbnail');
+    const container = document.getElementById('thumbnailPreviewContainer');
+
+    if (url && url.trim() !== "") {
+        // THÊM TIMESTAMP KHI NHẬP URL THỦ CÔNG
+        const timestamp = new Date().getTime();
+        thumbnailImg.src = url + '?v=' + timestamp;
+        container.classList.remove('d-none');
+    } else {
+        container.classList.add('d-none');
+    }
+}
+
+async function handleEditThumbnailSelect(input, categoryId) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const formData = new FormData();
+        formData.append("thumbnailFile", file);
+        formData.append("categoryId", categoryId);
+
+        Swal.fire({ title: 'Đang upload thumbnail...', didOpen: () => Swal.showLoading() });
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/api/admin/categories/upload-thumbnail', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token },
+                body: formData
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('editThumbnailUrl').value = data.thumbnailUrl;
+                document.getElementById('detailThumbnail').src = data.thumbnailUrl;
+                document.getElementById('thumbnailPreviewContainer').classList.remove('d-none');
+                Swal.fire('Thành công', 'Đã upload ảnh thumbnail mới', 'success');
+            } else {
+                Swal.fire('Lỗi', 'Không thể upload thumbnail', 'error');
+            }
+        } catch (e) {
+            Swal.fire('Lỗi', 'Không thể upload thumbnail', 'error');
+        }
+    }
+}
+
 // Cập nhật preview ảnh
 function updateAvatarPreview() {
     const url = document.getElementById('editIconUrl').value;
@@ -1820,18 +3305,56 @@ function updateAvatarPreview() {
     }
 }
 
-// Xử lý upload file khi edit
-async function handleEditFileSelect(input, categoryId) {
+let pendingIconFile = null;
+let pendingThumbnailFile = null;
+// Xử lý chọn icon - CHỈ PREVIEW, không upload
+function handleEditFileSelect(input, categoryId) {
     if (input.files && input.files[0]) {
-        const file = input.files[0];
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("categoryId", categoryId);
+        pendingIconFile = input.files[0];
+        const reader = new FileReader();
+        reader.onload = function (e) {
 
-        Swal.fire({ title: 'Đang upload...', didOpen: () => Swal.showLoading() });
+            document.getElementById('detailAvatar').src = e.target.result;
+            document.getElementById('editIconUrl').value = data.iconUrl;
+        };
+        reader.readAsDataURL(pendingIconFile);
+    }
+}
 
-        try {
-            const token = localStorage.getItem('token');
+// Xử lý chọn thumbnail - CHỈ PREVIEW, không upload
+function handleEditThumbnailSelect(input, categoryId) {
+    if (input.files && input.files[0]) {
+        pendingThumbnailFile = input.files[0];
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            document.getElementById('detailThumbnail').src = e.target.result;
+            document.getElementById('thumbnailPreviewContainer').classList.remove('d-none');
+            document.getElementById('editThumbnailUrl').value = data.thumbnailUrl;
+            document.getElementById('thumbnailPreviewContainer').classList.remove('d-none');
+        };
+        reader.readAsDataURL(pendingThumbnailFile);
+    }
+}
+
+// Lưu thay đổi - upload ảnh nếu có, rồi mới lưu
+async function saveCategoryChanges(id) {
+    const token = localStorage.getItem('token');
+
+    Swal.fire({ title: 'Đang xử lý...', didOpen: () => Swal.showLoading() });
+
+    let iconUrl = document.getElementById('editIconUrl').value;
+    let thumbnailUrl = document.getElementById('editThumbnailUrl').value;
+
+    const hasNewIcon = pendingIconFile instanceof File;
+    const hasNewThumbnail = pendingThumbnailFile instanceof File;
+
+    try {
+        // Upload icon nếu có file mới
+        if (hasNewIcon) {
+            const formData = new FormData();
+            formData.append("file", pendingIconFile);
+            formData.append("categoryId", id);
+
             const res = await fetch('/api/admin/categories/upload-icon', {
                 method: 'POST',
                 headers: { 'Authorization': 'Bearer ' + token },
@@ -1840,36 +3363,50 @@ async function handleEditFileSelect(input, categoryId) {
 
             if (res.ok) {
                 const data = await res.json();
-                document.getElementById('editIconUrl').value = data.iconUrl;
-                document.getElementById('detailAvatar').src = data.iconUrl;
-                Swal.fire('Thành công', 'Đã upload ảnh mới', 'success');
+                iconUrl = data.iconUrl;
+                pendingIconFile = null;
             } else {
-                Swal.fire('Lỗi', 'Không thể upload ảnh', 'error');
+                Swal.fire('Lỗi', 'Không thể upload icon', 'error');
+                return;
             }
-        } catch (e) {
-            Swal.fire('Lỗi', 'Không thể upload ảnh', 'error');
         }
-    }
-}
 
-// Lưu thay đổi category - KHÔNG cần tạo slug ở đây, backend tự tạo
-async function saveCategoryChanges(id) {
-    const token = localStorage.getItem('token');
+        // Upload thumbnail nếu có file mới
+        if (hasNewThumbnail) {
+            const formData = new FormData();
+            formData.append("thumbnailFile", pendingThumbnailFile);
+            formData.append("categoryId", id);
 
-    const updatedData = {
-        categoryName: document.getElementById('editCategoryName').value,
-        jlptLevel: document.getElementById('editJlptLevel').value,
-        iconUrl: document.getElementById('editIconUrl').value,
-        isActive: document.getElementById('editIsActive').value === 'true'
-        // KHÔNG gửi slug, backend sẽ tự tạo từ categoryName
-    };
+            const res = await fetch('/api/admin/categories/upload-thumbnail', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token },
+                body: formData
+            });
 
-    if (!updatedData.categoryName) {
-        Swal.fire('Lỗi', 'Tên chủ đề không được để trống', 'error');
-        return;
-    }
+            if (res.ok) {
+                const data = await res.json();
+                thumbnailUrl = data.thumbnailUrl;
+                pendingThumbnailFile = null;
+            } else {
+                Swal.fire('Lỗi', 'Không thể upload thumbnail', 'error');
+                return;
+            }
+        }
 
-    try {
+        // Lưu các thay đổi khác
+        const updatedData = {
+            categoryName: document.getElementById('editCategoryName').value,
+            jlptLevel: document.getElementById('editJlptLevel').value,
+            iconUrl: iconUrl,
+            thumbnailUrl: thumbnailUrl,
+            isActive: document.getElementById('editIsActive').value === 'true'
+        };
+
+        if (!updatedData.categoryName) {
+            Swal.fire('Lỗi', 'Tên chủ đề không được để trống', 'error');
+            return;
+        }
+
         const res = await fetch(`/api/admin/categories/${id}`, {
             method: 'PUT',
             headers: {
@@ -1880,14 +3417,24 @@ async function saveCategoryChanges(id) {
         });
 
         if (res.ok) {
+            // Reset UI
+            document.getElementById('editIconUrl').style.backgroundColor = '';
+            document.getElementById('editIconUrl').style.borderColor = '';
+            document.getElementById('editThumbnailUrl').style.backgroundColor = '';
+            document.getElementById('editThumbnailUrl').style.borderColor = '';
+
             Swal.fire({
                 icon: 'success',
                 title: 'Thành công',
                 text: 'Đã cập nhật chủ đề',
-                timer: 1000,
+                timer: 1500,
                 showConfirmButton: false
             });
-            goBackToCategories();
+
+            // Quay lại danh sách (sẽ reload với cache bust)
+            setTimeout(() => {
+                goBackToCategories();
+            }, 1500);
         } else {
             const error = await res.text();
             Swal.fire('Lỗi', error, 'error');
@@ -1898,12 +3445,72 @@ async function saveCategoryChanges(id) {
     }
 }
 
+// Biến lưu catId đang xem chi tiết
+let _currentCatId = null;
+
+// Gọi hàm này khi mở trang chi tiết category, truyền vào catId
+function openAddLessonInCateModal(catId) {
+    _currentCatId = catId;
+    document.getElementById('inCateLessonName').value = '';
+    document.getElementById('inCateLessonStatus').value = 'true';
+    new bootstrap.Modal(document.getElementById('addLessonInCateModal')).show();
+}
+
+// Submit thêm bài học từ trang chi tiết category
+async function submitLessonInCate() {
+    const token = localStorage.getItem('token');
+    const name = document.getElementById('inCateLessonName').value.trim();
+    const isActive = document.getElementById('inCateLessonStatus').value;
+
+    if (!name) {
+        return Swal.fire('Chú ý', 'Vui lòng nhập tên bài học!', 'warning');
+    }
+    if (!_currentCatId) {
+        return Swal.fire('Lỗi', 'Không xác định được chủ đề!', 'error');
+    }
+
+    try {
+        const res = await fetch(`/api/admin/lessons/in-category/${_currentCatId}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ lessonName: name, isActive: isActive })
+        });
+
+        if (res.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('addLessonInCateModal')).hide();
+            await Swal.fire({
+                icon: 'success', title: 'Thành công',
+                text: 'Đã thêm bài học!', timer: 1200, showConfirmButton: false
+            });
+            // Reload lại trang chi tiết category
+            editCategory(_currentCatId);
+        } else {
+            const err = await res.text();
+            // Giữ nguyên modal, chỉ báo lỗi để người dùng sửa lại
+            Swal.fire({ icon: 'warning', title: 'Không thể thêm', text: err, confirmButtonColor: '#06BBCC' });
+        }
+    } catch (e) {
+        console.error(e);
+        Swal.fire('Lỗi', 'Không thể kết nối server', 'error');
+    }
+}
+
 // Quay lại danh sách chủ đề
 function goBackToCategories() {
+    // Force reload categories list with cache bust
     const navItems = document.querySelectorAll('.nav-item');
     for (let item of navItems) {
         if (item.innerText.trim() === 'Chủ đề') {
+            // Clear cache của trang categories trước khi load
+            const currentPage = paginationManager['categoryPagination']?.currentPage || 0;
             loadSection('categories', item, new Event('click'));
+            // Force reload data
+            setTimeout(() => {
+                loadAllCategoriesWithPagination(currentPage);
+            }, 100);
             break;
         }
     }
@@ -1917,7 +3524,7 @@ async function loadAllLessonsWithPagination(page = 0) {
     const search = document.getElementById('lessonSearch')?.value || "";
     const categoryId = document.getElementById('lessonFilterCategory')?.value || "";
     const level = document.getElementById('lessonFilterLevel')?.value || "";
-    const pageSize = 10;
+    const pageSize = paginationManager['lessonPagination'].pageSize;
 
     try {
         let url = `/api/admin/lessons/paging?page=${page}&size=${pageSize}`;
@@ -2011,7 +3618,7 @@ async function loadLessonCategoryFilter() {
     }
 }
 
-async function onLessonLevelChange() {
+async function onLessonFilterLevelChange() {
     const token = localStorage.getItem('token');
     const level = document.getElementById('lessonFilterLevel').value;
     const categorySelect = document.getElementById('lessonFilterCategory');
@@ -2080,57 +3687,12 @@ async function loadAllLessonsClientSide(page, pageSize) {
     }
 }
 
-async function openAddLessonModal() {
-    const token = localStorage.getItem('token');
-    document.getElementById('lessonForm').reset();
-    try {
-        const res = await fetch('/api/admin/categories', { headers: { 'Authorization': 'Bearer ' + token } });
-        const categories = await res.json();
-        const select = document.getElementById('lessonCategorySelect');
-        select.innerHTML = categories.map(c => `<option value="${c.id}">${c.categoryName} (${c.jlptLevel})</option>`).join('');
-        new bootstrap.Modal(document.getElementById('lessonModal')).show();
-    } catch (e) { Swal.fire('Lỗi', 'Không thể tải chủ đề', 'error'); }
-}
 
-async function submitLesson() {
-    const name = document.getElementById('lessonName').value.trim();
-    const catId = document.getElementById('lessonCategorySelect').value;
-    const token = localStorage.getItem('token');
-    if (!name) return Swal.fire('Lỗi', 'Tên không được trống', 'error');
-    try {
-        const res = await fetch('/api/admin/lessons', {
-            method: 'POST',
-            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ lessonName: name, categoryId: catId })
-        });
-        if (res.ok) {
-            bootstrap.Modal.getInstance(document.getElementById('lessonModal')).hide();
-            Swal.fire('Thành công', 'Đã thêm bài học!', 'success');
-            loadAllLessonsWithPagination(0); // Sửa: gọi hàm mới
-            loadLessonCategoryFilter(); // Refresh filter dropdown
-        } else {
-            const error = await res.text();
-            Swal.fire('Lỗi', error, 'error');
-        }
-    } catch (e) { console.error(e); }
-}
 
 function openQuickAddLesson() {
     const catId = document.getElementById('vCategoryId').value;
-    const catName = document.getElementById('vCategoryId').options[document.getElementById('vCategoryId').selectedIndex].text;
-
-    // 1. Tự động chọn chủ đề bên modal Bài học
-    const lessonCatSelect = document.getElementById('lessonCategorySelect');
-    if (lessonCatSelect) {
-        lessonCatSelect.value = catId;
-    }
-
-    // 2. Mở modal Bài học (ẩn modal từ vựng tạm thời hoặc để chồng lên)
-    const lessonModal = new bootstrap.Modal(document.getElementById('lessonModal'));
-    lessonModal.show();
-
-    // Thông báo nhỏ để Admin biết
-    console.log(`Đang tạo bài học cho chủ đề: ${catName}`);
+    // Mở modal thêm bài học mới (flow mới: chọn level → category)
+    openAddLessonModal();
 }
 
 
@@ -2146,7 +3708,7 @@ async function loadVocabWithPagination(page) {
     const search = document.getElementById('vocabSearch')?.value || "";
     const cateId = document.getElementById('filterCate')?.value || "";
     const level = document.getElementById('filterLevel')?.value || "";
-    const pageSize = 20;
+    const pageSize = paginationManager['vocabPagination'].pageSize;
 
     try {
         let url = `/api/admin/vocab/all?page=${page}&size=${pageSize}&search=${encodeURIComponent(search)}&cateId=${cateId}&level=${level}`;
@@ -2213,23 +3775,74 @@ async function loadVocabWithPagination(page) {
     }
 }
 
-// Đổi tên hàm cho rõ nghĩa hơn (hoặc giữ tên cũ)
+// Ẩn/Hiện từ vựng (toggle isActive) - có kiểm tra ràng buộc với InteractivePoint
 async function deleteVocab(id) {
-    const result = await Swal.fire({
-        title: 'Xác nhận thay đổi?',
-        text: "Hành động này sẽ thay đổi trạng thái hiển thị của từ vựng đối với người dùng.",
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#06BBCC',
-        cancelButtonColor: '#ef4444',
-        confirmButtonText: 'Đồng ý',
-        cancelButtonText: 'Hủy'
-    });
+    const token = localStorage.getItem('token');
 
-    if (result.isConfirmed) {
-        const token = localStorage.getItem('token');
-        try {
-            // Dùng PATCH hoặc DELETE tùy backend
+    try {
+        // Kiểm tra xem từ vựng có đang được dùng trong InteractivePoint không
+        const checkRes = await fetch(`/api/admin/vocab/${id}/check-usage`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (checkRes.ok) {
+            const usageData = await checkRes.json();
+
+            // Nếu có điểm tương tác đang dùng từ này
+            if (usageData.hasInteractivePoints) {
+                // Tạo danh sách các scene đang dùng
+                const scenesList = usageData.scenes.map(s =>
+                    `<li><strong>${escapeHtml(s.sceneName)}</strong> - Bài học: ${escapeHtml(s.lessonName)}</li>`
+                ).join('');
+
+                const result = await Swal.fire({
+                    title: 'Không thể ẩn từ vựng này!',
+                    html: `
+                        <div style="text-align: left;">
+                            <p>Từ vựng <strong>${escapeHtml(usageData.expression)}</strong> đang được sử dụng trong:</p>
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                ${scenesList}
+                            </ul>
+                            <p class="text-danger mt-2" style="color: #dc2626;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Vui lòng xóa hoặc sửa các cảnh tương tác này trước khi ẩn từ vựng.
+                            </p>
+                        </div>
+                    `,
+                    icon: 'warning',
+                    confirmButtonText: 'Đến trang Cảnh tương tác',
+                    showCancelButton: true,
+                    cancelButtonText: 'Hủy'
+                });
+
+                if (result.isConfirmed && usageData.firstLessonId) {
+                    // Chuyển đến trang lesson và mở tab Scenes
+                    editLesson(usageData.firstLessonId);
+                    setTimeout(() => {
+                        const scenesTab = document.querySelector('#scenes-tab');
+                        if (scenesTab) {
+                            const tab = new bootstrap.Tab(scenesTab);
+                            tab.show();
+                        }
+                    }, 500);
+                }
+                return;
+            }
+        }
+
+        // Không có ràng buộc, hiển thị dialog xác nhận
+        const result = await Swal.fire({
+            title: 'Xác nhận thay đổi?',
+            text: "Hành động này sẽ thay đổi trạng thái hiển thị của từ vựng đối với người dùng.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#06BBCC',
+            cancelButtonColor: '#ef4444',
+            confirmButtonText: 'Đồng ý',
+            cancelButtonText: 'Hủy'
+        });
+
+        if (result.isConfirmed) {
             const res = await fetch(`/api/admin/vocab/${id}/toggle-status`, {
                 method: 'PATCH',
                 headers: { 'Authorization': 'Bearer ' + token }
@@ -2250,7 +3863,10 @@ async function deleteVocab(id) {
                 const error = await res.text();
                 Swal.fire('Lỗi', error, 'error');
             }
-        } catch (e) { console.error(e); }
+        }
+    } catch (e) {
+        console.error(e);
+        Swal.fire('Lỗi', 'Không thể kiểm tra ràng buộc', 'error');
     }
 }
 
@@ -2287,7 +3903,7 @@ async function openAddVocabModal() {
 
     try {
         // 1. Load danh sách Chủ đề
-        const res = await fetch('/api/admin/categories', { headers: { 'Authorization': 'Bearer ' + token } });
+        const res = await fetch('/api/admin/categories/active', { headers: { 'Authorization': 'Bearer ' + token } });
         const categories = await res.json();
 
         const catSelect = document.getElementById('vCategoryId');
@@ -2305,24 +3921,70 @@ async function openAddVocabModal() {
 
 async function submitVocab() {
     const token = localStorage.getItem('token');
-    const data = {
-        expression: document.getElementById('vExpression').value,
-        kana: document.getElementById('vKana').value,
-        romaji: document.getElementById('vRomaji').value,
-        meaning: document.getElementById('vMeaning').value,
-        wordType: document.getElementById('vWordType').value,
-        example: document.getElementById('vExample').value,
-        exampleVi: document.getElementById('vExampleVi').value,
-        imageUrl: document.getElementById('vImageUrl').value,
-        audioUrl: document.getElementById('vAudioUrl').value,
-        lessonId: document.getElementById('vLessonId').value // Quan trọng để map bài học
-    };
 
-    if (!data.expression || !data.meaning || !data.lessonId) {
+    const expression = document.getElementById('vExpression').value;
+    const kana = document.getElementById('vKana').value;
+    const romaji = document.getElementById('vRomaji').value;
+    const meaning = document.getElementById('vMeaning').value;
+    const wordType = document.getElementById('vWordType').value;
+    const example = document.getElementById('vExample').value;
+    const exampleVi = document.getElementById('vExampleVi').value;
+    const lessonId = document.getElementById('vLessonId').value;
+
+    if (!expression || !meaning) {
         return Swal.fire('Chú ý', 'Vui lòng điền các trường bắt buộc!', 'warning');
     }
 
+    Swal.fire({
+        title: 'Đang xử lý...',
+        text: 'Vui lòng chờ trong giây lát',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+
     try {
+        let imageUrl = null;
+        const imageFile = document.getElementById('vocabImageFile').files[0];
+
+        // 1. Upload ảnh nếu có
+        if (imageFile && romaji) {
+            const formData = new FormData();
+            formData.append('file', imageFile);
+            formData.append('romaji', romaji);
+
+            const imageResponse = await fetch('/api/admin/upload/image', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token },
+                body: formData
+            });
+
+            const imageData = await imageResponse.json();
+            if (imageResponse.ok) {
+                imageUrl = imageData.imageUrl;
+            } else {
+                throw new Error(imageData.message || 'Upload ảnh thất bại');
+            }
+        }
+
+        // 2. Lấy audio URL từ field (đã được sinh trước đó)
+        let audioUrl = document.getElementById('vAudioUrl').value;
+
+        // 3. Lưu từ vựng vào database
+        const data = {
+            expression: expression,
+            kana: kana,
+            romaji: romaji,
+            meaning: meaning,
+            wordType: wordType,
+            example: example,
+            exampleVi: exampleVi,
+            imageUrl: imageUrl,
+            audioUrl: audioUrl,  // Lấy từ field, không sinh lại
+            lessonId: lessonId
+        };
+
+        console.log('Saving vocab with audioUrl:', audioUrl); // Debug
+
         const res = await fetch('/api/admin/vocab/add', {
             method: 'POST',
             headers: {
@@ -2334,12 +3996,24 @@ async function submitVocab() {
 
         if (res.ok) {
             bootstrap.Modal.getInstance(document.getElementById('vocabModal')).hide();
+            // Reset form
+            document.getElementById('vocabForm').reset();
+            document.getElementById('imagePreviewContainer').style.display = 'none';
+            document.getElementById('audioPreview').style.display = 'none';
+            document.getElementById('vImageUrl').value = '';
+            document.getElementById('vAudioUrl').value = '';
+            document.getElementById('clearAudioBtn').style.display = 'none';
+
             Swal.fire('Thành công', 'Đã thêm từ vựng mới!', 'success');
-            loadVocabWithPagination(0); // Reload lại bảng
+            loadVocabWithPagination(0);
         } else {
-            Swal.fire('Lỗi', 'Không thể lưu từ vựng', 'error');
+            const error = await res.text();
+            Swal.fire('Lỗi', error, 'error');
         }
-    } catch (e) { console.error(e); }
+    } catch (e) {
+        console.error(e);
+        Swal.fire('Lỗi', e.message || 'Không thể lưu từ vựng', 'error');
+    }
 }
 
 async function onVocabCategoryChange() {
@@ -2372,6 +4046,921 @@ async function onVocabCategoryChange() {
             quickAddContainer.style.display = 'block'; // Hiện nút tạo nhanh
         }
     } catch (e) { console.error(e); }
+}
+
+// ===== PREVIEW ẢNH NGAY KHI CHỌN FILE =====
+document.getElementById('vocabImageFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        // Kiểm tra loại file
+        if (!file.type.startsWith('image/')) {
+            Swal.fire('Lỗi', 'Chỉ chấp nhận file ảnh!', 'error');
+            this.value = '';
+            return;
+        }
+
+        // Kiểm tra kích thước (tối đa 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            Swal.fire('Lỗi', 'File ảnh không được vượt quá 5MB!', 'error');
+            this.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const previewImg = document.getElementById('imagePreview');
+            const previewContainer = document.getElementById('imagePreviewContainer');
+            previewImg.src = event.target.result;
+            previewContainer.style.display = 'block';
+
+            // Xóa URL cũ (nếu có)
+            document.getElementById('vImageUrl').value = '';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        // Không có file thì ẩn preview
+        document.getElementById('imagePreviewContainer').style.display = 'none';
+        document.getElementById('vImageUrl').value = '';
+    }
+});
+
+// Xóa ảnh đã chọn
+function clearVocabImage() {
+    document.getElementById('vocabImageFile').value = '';
+    document.getElementById('vImageUrl').value = '';
+    document.getElementById('imagePreviewContainer').style.display = 'none';
+    document.getElementById('imagePreview').src = '';
+}
+
+
+// Sinh audio từ Romaji
+async function generateVocabAudio() {
+    const romaji = document.getElementById('vRomaji').value.trim();
+
+    if (!romaji) {
+        Swal.fire('Chú ý', 'Vui lòng nhập Romaji trước khi sinh audio!', 'warning');
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+
+    Swal.fire({
+        title: 'Đang sinh audio...',
+        text: `Đang xử lý: "${romaji}"`,
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+
+    try {
+        const response = await fetch('/api/admin/vocab/generate-audio', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                romaji: romaji,
+                vocabId: 0
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Lưu URL vào field
+            const audioUrl = data.audioUrl;
+            document.getElementById('vAudioUrl').value = audioUrl;
+
+            console.log('Audio generated URL:', audioUrl); // Debug
+
+            // Hiển thị audio player để preview
+            const audioPlayer = document.getElementById('audioPreview');
+            const audioSource = document.getElementById('audioSource');
+            audioSource.src = audioUrl;
+            audioPlayer.load();
+            audioPlayer.style.display = 'block';
+            document.getElementById('clearAudioBtn').style.display = 'inline-block';
+
+            Swal.fire('Thành công', 'Đã sinh audio thành công!', 'success');
+        } else {
+            Swal.fire('Lỗi', data.error || 'Sinh audio thất bại', 'error');
+        }
+    } catch (error) {
+        console.error('Audio generation error:', error);
+        Swal.fire('Lỗi', 'Không thể sinh audio', 'error');
+    }
+}
+
+// Preview audio
+function previewAudio() {
+    const audioUrl = document.getElementById('vAudioUrl').value;
+    if (audioUrl) {
+        const audioPlayer = document.getElementById('audioPreview');
+        const audioSource = document.getElementById('audioSource');
+        audioSource.src = audioUrl;
+        audioPlayer.load();
+        audioPlayer.style.display = 'block';
+    } else {
+        Swal.fire('Chú ý', 'Chưa có audio URL!', 'warning');
+    }
+}
+
+// Xóa audio
+function clearVocabAudio() {
+    document.getElementById('vAudioUrl').value = '';
+    document.getElementById('audioPreview').style.display = 'none';
+    document.getElementById('audioSource').src = '';
+    document.getElementById('clearAudioBtn').style.display = 'none';
+}
+
+
+// ========== CẢNH TƯƠNG TÁC (HOÀN CHỈNH) ==========
+
+let currentSceneLessonId = null;
+    let currentImageUrl = null;
+let currentSceneId = null;
+let sceneVocabList = [];
+let sceneHotspots = [];
+let isDrawing = false;
+let startX, startY;
+let selectionBox = null;
+let selectedVocabIdForScene = null;
+
+// Load danh sách cảnh
+async function loadScenesList() {
+    const lessonId = currentSceneLessonId;
+    const token = localStorage.getItem('token');
+
+    try {
+        const res = await fetch(`/api/admin/interactive/scenes/${lessonId}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const scenes = await res.json();
+
+        const container = document.getElementById('scenesListContainer');
+        if (!scenes || scenes.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-5 text-muted">
+                    <i class="fas fa-image fa-3x mb-3 opacity-25"></i>
+                    <p>Chưa có cảnh tương tác nào</p>
+                    <button class="btn btn-primary" onclick="openCreateSceneModal()">Tạo cảnh đầu tiên</button>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = scenes.map((scene, idx) => `
+    <div class="card mb-3" data-scene-id="${scene.id}">
+        <div class="row g-0">
+            <div class="col-md-3">
+                <img src="${scene.imageUrl}" class="img-fluid rounded-start"
+                     style="height: 150px; width: 100%; object-fit: cover;">
+            </div>
+            <div class="col-md-7">
+                <div class="card-body">
+                    <h6 class="card-title fw-bold">Cảnh ${idx + 1}: ${scene.description || 'Không có mô tả'}</h6>
+                    <div class="mt-2">
+                        ${scene.points?.map(p => `<span class="badge bg-warning me-1">📌 ${p.vocab?.expression || '?'}</span>`).join('') || '<span class="text-muted">Chưa có điểm tương tác</span>'}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 d-flex align-items-center justify-content-end pe-3 gap-2">
+                <button class="btn btn-sm btn-warning" onclick="editScene(${scene.id})" title="Sửa cảnh">
+                    <i class="fas fa-edit"></i> Sửa
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteScene(${scene.id})" title="Xóa cảnh">
+                    <i class="fas fa-trash"></i> Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+`).join('');
+    } catch(e) {
+        console.error(e);
+        document.getElementById('scenesListContainer').innerHTML = `<div class="alert alert-danger">Lỗi tải dữ liệu</div>`;
+    }
+}
+
+// Mở modal tạo cảnh mới
+async function openCreateSceneModal() {
+    currentSceneLessonId = document.querySelector('.lesson-detail-container')?.getAttribute('data-lesson-id');
+    if (!currentSceneLessonId) return;
+
+    sceneHotspots = [];
+    selectedVocabIdForScene = null;
+
+    // Load danh sách từ vựng của bài học
+    await loadSceneVocabList();
+
+    document.getElementById('step1Container').style.display = 'block';
+    document.getElementById('step2Container').style.display = 'none';
+    document.getElementById('sceneDesc').value = '';
+    document.getElementById('sceneImage').value = '';
+    document.getElementById('imagePreviewArea').style.display = 'none';
+    document.getElementById('uploadSceneBtn').disabled = true;
+    document.getElementById('hotspotsContainer').innerHTML = '';
+    document.getElementById('hotspotListContainer').innerHTML = '<div class="text-muted text-center p-3">Chưa có vùng nào</div>';
+
+    new bootstrap.Modal(document.getElementById('createSceneModal')).show();
+}
+
+async function loadSceneVocabList() {
+    const token = localStorage.getItem('token');
+    try {
+        const res = await fetch(`/api/admin/vocab/by-lesson/${currentSceneLessonId}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        sceneVocabList = await res.json();
+
+        const container = document.getElementById('vocabListContainer');
+        if (sceneVocabList.length === 0) {
+            container.innerHTML = '<div class="alert alert-warning m-2">Chưa có từ vựng nào. Hãy thêm từ vựng vào bài học trước!</div>';
+        } else {
+            container.innerHTML = sceneVocabList.map(v => `
+                <div class="vocab-item p-2 border-bottom" data-vocab-id="${v.id}"
+                     onclick="selectVocabForScene(${v.id})" style="cursor: pointer;">
+                    <strong>${v.expression}</strong>
+                    <div class="small text-muted">${v.meaning}</div>
+                </div>
+            `).join('');
+        }
+    } catch(e) { console.error(e); }
+}
+
+function selectVocabForScene(vocabId) {
+    selectedVocabIdForScene = vocabId;
+    document.querySelectorAll('#vocabListContainer .vocab-item').forEach(item => {
+        if (item.dataset.vocabId == vocabId) {
+            item.classList.add('selected');
+        } else {
+            item.classList.remove('selected');
+        }
+    });
+}
+
+function previewSceneImage() {
+    const file = document.getElementById('sceneImage').files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('imagePreview').src = e.target.result;
+            document.getElementById('imagePreviewArea').style.display = 'block';
+            document.getElementById('uploadSceneBtn').disabled = false;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Upload ảnh lên Cloudinary (chỉ upload, chưa tạo scene)
+async function uploadSceneImage() {
+    const file = document.getElementById('sceneImage').files[0];
+    const token = localStorage.getItem('token');
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('romaji', 'scene_' + Date.now());
+
+    Swal.fire({ title: 'Đang upload ảnh...', didOpen: () => Swal.showLoading() });
+
+    try {
+        // Gọi API upload ảnh thông thường (không phải /interactive/scene)
+        const res = await fetch('/api/admin/interactive/upload-scene-image', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token },
+            body: formData
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            currentImageUrl = data.imageUrl;
+            document.getElementById('sceneDisplay').src = currentImageUrl;
+
+            // Chuyển sang bước 2
+            document.getElementById('step1Container').style.display = 'none';
+            document.getElementById('step2Container').style.display = 'block';
+            initDrawingEvents();
+            Swal.close();
+        } else {
+            Swal.fire('Lỗi', data.message || 'Upload thất bại', 'error');
+        }
+    } catch(e) {
+        console.error(e);
+        Swal.fire('Lỗi', 'Không thể upload ảnh', 'error');
+    }
+}
+
+function initDrawingEvents() {
+    const wrapper = document.getElementById('sceneWrapper');
+    if (!wrapper) return;
+
+    wrapper.removeEventListener('mousedown', startDraw);
+    window.removeEventListener('mousemove', onDraw);
+    window.removeEventListener('mouseup', endDraw);
+
+    wrapper.addEventListener('mousedown', startDraw);
+    window.addEventListener('mousemove', onDraw);
+    window.addEventListener('mouseup', endDraw);
+}
+
+function startDraw(e) {
+    // Cho phép kéo khi click vào ảnh HOẶC div overlay hotspotsContainer
+    const wrapper = document.getElementById('sceneWrapper');
+    if (!wrapper.contains(e.target)) return;
+    if (!selectedVocabIdForScene) {
+        Swal.fire('Chú ý', 'Hãy chọn một từ vựng từ danh sách bên phải trước khi kéo vùng!', 'warning');
+        return;
+    }
+    if (e.button !== 0) return;
+
+    e.preventDefault(); // Ngăn text selection khi kéo
+
+    const img = document.getElementById('sceneDisplay');
+    const rect = img.getBoundingClientRect();
+
+    isDrawing = true;
+    startX = e.clientX - rect.left;
+    startY = e.clientY - rect.top;
+
+    if (selectionBox) selectionBox.remove();
+    selectionBox = document.createElement('div');
+    selectionBox.className = 'selection-box';
+    selectionBox.style.cssText = `
+        position: absolute;
+        border: 2px dashed #fb873f;
+        background: rgba(251, 135, 63, 0.2);
+        pointer-events: none;
+        border-radius: 4px;
+        left: ${startX}px;
+        top: ${startY}px;
+        width: 0px;
+        height: 0px;
+    `;
+    wrapper.appendChild(selectionBox);
+}
+
+function onDraw(e) {
+    if (!isDrawing || !selectionBox) return;
+
+    const img = document.getElementById('sceneDisplay');
+    const rect = img.getBoundingClientRect();
+
+    let currentX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    let currentY = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+
+    selectionBox.style.width = Math.abs(currentX - startX) + 'px';
+    selectionBox.style.height = Math.abs(currentY - startY) + 'px';
+    selectionBox.style.left = Math.min(currentX, startX) + 'px';
+    selectionBox.style.top = Math.min(currentY, startY) + 'px';
+}
+
+function endDraw(e) {
+    if (!isDrawing || !selectionBox) return;
+    isDrawing = false;
+
+    const img = document.getElementById('sceneDisplay');
+    const rect = img.getBoundingClientRect();
+
+    const width = parseFloat(selectionBox.style.width);
+    const height = parseFloat(selectionBox.style.height);
+    const left = parseFloat(selectionBox.style.left);
+    const top = parseFloat(selectionBox.style.top);
+
+    if (width > 10 && height > 10) {
+        const xPercent = ((left + width/2) / rect.width * 100).toFixed(2);
+        const yPercent = ((top + height/2) / rect.height * 100).toFixed(2);
+        const wPercent = (width / rect.width * 100).toFixed(2);
+        const hPercent = (height / rect.height * 100).toFixed(2);
+
+        addHotspot(xPercent, yPercent, wPercent, hPercent);
+    }
+
+    selectionBox.remove();
+    selectionBox = null;
+}
+
+function addHotspot(x, y, w, h) {
+    const vocab = sceneVocabList.find(v => v.id === selectedVocabIdForScene);
+    const hotspot = {
+        id: Date.now(),
+        vocabId: selectedVocabIdForScene,
+        vocabName: vocab?.expression,
+        coordX: x,
+        coordY: y,
+        width: w,
+        height: h
+    };
+    sceneHotspots.push(hotspot);
+
+    // Hiển thị khung trên ảnh
+    const container = document.getElementById('hotspotsContainer');
+    const hotspotDiv = document.createElement('div');
+    hotspotDiv.className = 'hotspot-editor';
+    hotspotDiv.style.left = `${x}%`;
+    hotspotDiv.style.top = `${y}%`;
+    hotspotDiv.style.width = `${w}%`;
+    hotspotDiv.style.height = `${h}%`;
+    hotspotDiv.style.transform = 'translate(-50%, -50%)';
+    hotspotDiv.id = `hotspot-${hotspot.id}`;
+    container.appendChild(hotspotDiv);
+
+    updateHotspotList();
+}
+
+function updateHotspotList() {
+    const container = document.getElementById('hotspotListContainer');
+    if (sceneHotspots.length === 0) {
+        container.innerHTML = '<div class="text-muted text-center p-3">Chưa có vùng nào</div>';
+        return;
+    }
+
+    container.innerHTML = sceneHotspots.map((h, idx) => `
+        <div class="d-flex justify-content-between align-items-center p-2 mb-2 border rounded">
+            <span>
+                <strong>${h.vocabName}</strong>
+                <br><small class="text-muted">${h.coordX}%, ${h.coordY}%</small>
+            </span>
+            <button class="btn btn-sm btn-danger" onclick="removeHotspot(${idx})">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+function removeHotspot(index) {
+    const removed = sceneHotspots.splice(index, 1)[0];
+    document.getElementById(`hotspot-${removed.id}`)?.remove();
+    updateHotspotList();
+}
+
+// Lưu scene và points khi hoàn thành
+async function saveScene() {
+    if (sceneHotspots.length === 0) {
+        Swal.fire('Chú ý', 'Hãy tạo ít nhất một vùng tương tác!', 'warning');
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+    const description = document.getElementById('sceneDesc').value;
+
+    Swal.fire({ title: 'Đang lưu...', didOpen: () => Swal.showLoading() });
+
+    try {
+        // 1. Tạo scene từ URL ảnh đã upload
+        const sceneRes = await fetch('/api/admin/interactive/scene-from-url', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                imageUrl: currentImageUrl,
+                lessonId: currentSceneLessonId,
+                description: description
+            })
+        });
+        const sceneData = await sceneRes.json();
+
+        if (!sceneRes.ok) throw new Error(sceneData.error);
+
+        const sceneId = sceneData.sceneId;
+
+        // 2. Tạo các points
+        for (const point of sceneHotspots) {
+            await fetch('/api/admin/interactive/point', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sceneId: sceneId,
+                    vocabId: point.vocabId,
+                    coordX: parseFloat(point.coordX),
+                    coordY: parseFloat(point.coordY),
+                    width: parseFloat(point.width),
+                    height: parseFloat(point.height)
+                })
+            });
+        }
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('createSceneModal'));
+        if (modal) modal.hide();
+
+        Swal.fire('Thành công', 'Đã tạo cảnh tương tác!', 'success');
+
+        // Reset state
+        sceneHotspots = [];
+        currentImageUrl = null;
+        selectedVocabIdForScene = null;
+
+        // Reload danh sách cảnh
+        await loadScenesList();
+
+    } catch(e) {
+        console.error(e);
+        Swal.fire('Lỗi', e.message || 'Không thể lưu', 'error');
+    }
+}
+
+function cancelCreateScene() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('createSceneModal'));
+    if (modal) modal.hide();
+}
+
+// Ghi đè hàm deleteScene cũ
+async function deleteScene(sceneId) {
+    const result = await Swal.fire({
+        title: 'Xác nhận xóa?',
+        text: 'Cảnh này sẽ bị xóa vĩnh viễn cùng tất cả điểm tương tác!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`/api/admin/interactive/scene/${sceneId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (res.ok) {
+                Swal.fire('Thành công', 'Đã xóa cảnh!', 'success');
+                await loadScenesList();
+            } else {
+                Swal.fire('Lỗi', 'Không thể xóa', 'error');
+            }
+        } catch(e) { console.error(e); }
+    }
+}
+
+
+// ===== VOCABULARY DETAIL ===== //
+// Hàm xem/sửa chi tiết từ vựng
+async function editVocab(id) {
+    const token = localStorage.getItem('token');
+    const mainContent = document.getElementById('main-content');
+    const mainTitle = document.getElementById('page-main-title');
+
+    try {
+        // Lấy thông tin từ vựng
+        const res = await fetch(`/api/admin/vocab/${id}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (!res.ok) throw new Error('Không thể tải thông tin từ vựng');
+
+        const vocab = await res.json();
+
+        // Lấy danh sách bài học để chọn (nếu cần)
+        const lessonsRes = await fetch(`/api/admin/lessons`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        let lessons = [];
+        if (lessonsRes.ok) {
+            lessons = await lessonsRes.json();
+        }
+
+        // Lấy danh sách chủ đề
+        const categoriesRes = await fetch(`/api/admin/categories`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        let categories = [];
+        if (categoriesRes.ok) {
+            categories = await categoriesRes.json();
+        }
+
+        mainTitle.innerText = `Chi tiết từ vựng: ${vocab.expression || ''}`;
+
+        mainContent.innerHTML = `
+            <div class="vocab-detail-container">
+                <button class="back-to-list" onclick="goBackToVocabulary()">
+                    <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                </button>
+
+                <div class="vocab-detail-header">
+                    <div class="vocab-detail-title" style="flex: 1;">
+                        <input type="text" id="editVocabExpression" class="form-control form-control-lg"
+                               value="${escapeHtml(vocab.expression || '')}"
+                               style="font-size: 28px; font-weight: 700; margin-bottom: 8px;">
+                        <div class="vocab-sub-info mt-2">
+                            <span class="id-badge">#${vocab.id}</span>
+                            <span class="level-badge ml-2">${vocab.wordType || 'Chưa phân loại'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="editVocabForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <h4><i class="fas fa-language"></i> Thông tin cơ bản</h4>
+                                <div class="mb-3">
+                                    <label class="form-label fw-600">Cách đọc (Kana)</label>
+                                    <input type="text" id="editVocabKana" class="form-control"
+                                           value="${escapeHtml(vocab.kana || '')}" placeholder="VD: たべる">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-600">Romaji</label>
+                                    <input type="text" id="editVocabRomaji" class="form-control"
+                                           value="${escapeHtml(vocab.romaji || '')}" placeholder="VD: taberu">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-600">Ý nghĩa (Tiếng Việt) <span class="text-danger">*</span></label>
+                                    <input type="text" id="editVocabMeaning" class="form-control"
+                                           value="${escapeHtml(vocab.meaning || '')}" placeholder="VD: Ăn" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-600">Loại từ</label>
+                                    <select id="editVocabWordType" class="form-select">
+                                        <option value="N" ${vocab.wordType === 'N' ? 'selected' : ''}>Danh từ</option>
+                                        <option value="V" ${vocab.wordType === 'V' ? 'selected' : ''}>Động từ</option>
+                                        <option value="A" ${vocab.wordType === 'A' ? 'selected' : ''}>Tính từ</option>
+                                        <option value="Adv" ${vocab.wordType === 'Adv' ? 'selected' : ''}>Trạng từ</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="info-card mt-3">
+                                <h4><i class="fas fa-file-alt"></i> Ví dụ</h4>
+                                <div class="mb-3">
+                                    <label class="form-label fw-600">Câu ví dụ (Nhật)</label>
+                                    <textarea id="editVocabExample" class="form-control" rows="3">${escapeHtml(vocab.example || '')}</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-600">Dịch ví dụ (Việt)</label>
+                                    <textarea id="editVocabExampleVi" class="form-control" rows="3">${escapeHtml(vocab.exampleVi || '')}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <h4><i class="fas fa-image"></i> Hình ảnh</h4>
+                                <div class="text-center mb-3">
+                                    ${vocab.imageUrl ?
+                                        `<img src="${vocab.imageUrl}" id="detailVocabImage"
+                                              style="max-width: 100%; max-height: 250px; border-radius: 12px; object-fit: contain; margin-bottom: 10px;">` :
+                                        `<div class="text-muted text-center p-4 border rounded">Chưa có ảnh</div>`
+                                    }
+                                </div>
+                                <div class="input-group">
+                                    <input type="file" id="editVocabImageFile" class="form-control" accept="image/*">
+                                    <input type="hidden" id="editVocabImageUrl" value="${vocab.imageUrl || ''}">
+                                </div>
+                                <small class="text-muted">Chọn ảnh mới để thay đổi (để trống nếu giữ nguyên)</small>
+                            </div>
+
+                            <div class="info-card mt-3">
+                                <h4><i class="fas fa-music"></i> Audio phát âm</h4>
+                                <div class="input-group mb-2">
+                                    <input type="text" id="editVocabAudioUrl" class="form-control"
+                                           value="${escapeHtml(vocab.audioUrl || '')}" placeholder="URL audio">
+                                    <button type="button" class="btn btn-primary" onclick="generateEditVocabAudio()">
+                                        <i class="fas fa-music"></i> Tự sinh
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="previewEditAudio()">
+                                        <i class="fas fa-play"></i> Preview
+                                    </button>
+                                </div>
+                                <audio id="editAudioPreview" controls style="display: none; margin-top: 10px; width: 100%;">
+                                    <source id="editAudioSource" src="">
+                                </audio>
+                            </div>
+
+                            <div class="info-card mt-3">
+                                <h4><i class="fas fa-toggle-on"></i> Trạng thái</h4>
+                                <select id="editVocabIsActive" class="form-select">
+                                    <option value="true" ${vocab.isActive !== false ? 'selected' : ''}>Đang hiển thị</option>
+                                    <option value="false" ${vocab.isActive === false ? 'selected' : ''}>Đã ẩn</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="d-flex gap-2 mt-4 justify-content-end">
+                    <button class="btn-custom btn-red" onclick="goBackToVocabulary()">
+                        <i class="fas fa-times me-1"></i> Hủy
+                    </button>
+                    <button class="btn-custom btn-teal" onclick="saveVocabChanges(${id})">
+                        <i class="fas fa-save me-1"></i> Lưu thay đổi
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Gắn sự kiện preview ảnh khi chọn file
+        document.getElementById('editVocabImageFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    let imgElement = document.getElementById('detailVocabImage');
+                    if (!imgElement) {
+                        const container = document.querySelector('.info-card .text-center');
+                        if (container) {
+                            container.innerHTML = `<img id="detailVocabImage" src="${event.target.result}"
+                                                       style="max-width: 100%; max-height: 250px; border-radius: 12px; object-fit: contain; margin-bottom: 10px;">`;
+                        }
+                    } else {
+                        imgElement.src = event.target.result;
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        localStorage.setItem('activeAdminTab', 'vocabulary');
+
+    } catch (e) {
+        console.error(e);
+        Swal.fire('Lỗi', 'Không thể tải thông tin chi tiết', 'error');
+    }
+}
+
+// Hàm sinh audio khi sửa từ vựng
+async function generateEditVocabAudio() {
+    const romaji = document.getElementById('editVocabRomaji').value.trim();
+
+    if (!romaji) {
+        Swal.fire('Chú ý', 'Vui lòng nhập Romaji trước khi sinh audio!', 'warning');
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+
+    Swal.fire({
+        title: 'Đang sinh audio...',
+        text: `Đang xử lý: "${romaji}"`,
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+
+    try {
+        const response = await fetch('/api/admin/vocab/generate-audio', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                romaji: romaji,
+                vocabId: 0
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            const audioUrl = data.audioUrl;
+            document.getElementById('editVocabAudioUrl').value = audioUrl;
+
+            const audioPlayer = document.getElementById('editAudioPreview');
+            const audioSource = document.getElementById('editAudioSource');
+            audioSource.src = audioUrl;
+            audioPlayer.load();
+            audioPlayer.style.display = 'block';
+
+            Swal.fire({
+                title: 'Thành công',
+                text: 'Đã sinh audio thành công!',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        } else {
+            Swal.fire('Lỗi', data.error || 'Sinh audio thất bại', 'error');
+        }
+    } catch (error) {
+        console.error('Audio generation error:', error);
+        Swal.fire('Lỗi', 'Không thể sinh audio', 'error');
+    }
+}
+
+// Preview audio khi sửa
+function previewEditAudio() {
+    const audioUrl = document.getElementById('editVocabAudioUrl').value;
+    if (audioUrl) {
+        const audioPlayer = document.getElementById('editAudioPreview');
+        const audioSource = document.getElementById('editAudioSource');
+        audioSource.src = audioUrl;
+        audioPlayer.load();
+        audioPlayer.style.display = 'block';
+    } else {
+        Swal.fire('Chú ý', 'Chưa có audio URL!', 'warning');
+    }
+}
+
+// Lưu thay đổi từ vựng
+async function saveVocabChanges(id) {
+    const token = localStorage.getItem('token');
+
+    const expression = document.getElementById('editVocabExpression').value;
+    const kana = document.getElementById('editVocabKana').value;
+    const romaji = document.getElementById('editVocabRomaji').value;
+    const meaning = document.getElementById('editVocabMeaning').value;
+    const wordType = document.getElementById('editVocabWordType').value;
+    const example = document.getElementById('editVocabExample').value;
+    const exampleVi = document.getElementById('editVocabExampleVi').value;
+    const audioUrl = document.getElementById('editVocabAudioUrl').value;
+    const isActive = document.getElementById('editVocabIsActive').value === 'true';
+
+    if (!expression || !meaning) {
+        Swal.fire('Lỗi', 'Từ vựng và ý nghĩa không được để trống!', 'error');
+        return;
+    }
+
+    Swal.fire({
+        title: 'Đang xử lý...',
+        text: 'Vui lòng chờ trong giây lát',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+
+    try {
+        let imageUrl = document.getElementById('editVocabImageUrl').value;
+        const imageFile = document.getElementById('editVocabImageFile').files[0];
+
+        // Upload ảnh mới nếu có
+        if (imageFile) {
+            const formData = new FormData();
+            formData.append('file', imageFile);
+            formData.append('romaji', romaji);
+
+            const imageResponse = await fetch('/api/admin/upload/image', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token },
+                body: formData
+            });
+
+            const imageData = await imageResponse.json();
+            if (imageResponse.ok) {
+                imageUrl = imageData.imageUrl;
+            } else {
+                throw new Error(imageData.message || 'Upload ảnh thất bại');
+            }
+        }
+
+        // Cập nhật từ vựng
+        const data = {
+            id: id,
+            expression: expression,
+            kana: kana,
+            romaji: romaji,
+            meaning: meaning,
+            wordType: wordType,
+            example: example,
+            exampleVi: exampleVi,
+            imageUrl: imageUrl,
+            audioUrl: audioUrl,
+            isActive: isActive
+        };
+
+        const res = await fetch(`/api/admin/vocab/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công',
+                text: 'Đã cập nhật từ vựng!',
+                timer: 1500,
+                showConfirmButton: false
+            });
+
+            // Quay lại danh sách
+            setTimeout(() => {
+                goBackToVocabulary();
+            }, 1500);
+        } else {
+            const error = await res.text();
+            Swal.fire('Lỗi', error, 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        Swal.fire('Lỗi', e.message || 'Không thể cập nhật từ vựng', 'error');
+    }
+}
+
+// Quay lại danh sách từ vựng
+function goBackToVocabulary() {
+    const navItems = document.querySelectorAll('.nav-item');
+    for (let item of navItems) {
+        if (item.innerText.trim() === 'Từ vựng') {
+            loadSection('vocabulary', item, new Event('click'));
+            break;
+        }
+    }
 }
 
 </script>

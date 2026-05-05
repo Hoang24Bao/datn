@@ -2,6 +2,7 @@ package com.example.Controller;
 
 import com.example.Entity.Categories;
 import com.example.Repository.CategoriesRepository;
+import com.example.Repository.LessonsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,6 +32,9 @@ public class AdminCategoriesController {
 
     @Autowired
     private CategoriesRepository categoriesRepository;
+
+    @Autowired
+    private LessonsRepository lessonsRepository;
 
     //1. Lấy danh sách cho bảng Admin
     @GetMapping
@@ -44,7 +49,7 @@ public class AdminCategoriesController {
             @RequestParam(required = false) String level,
             @RequestParam(required = false) Boolean isActive,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "20") int size) {
 
         String cleanSearch = (search != null && search.isEmpty()) ? null : search;
         String cleanLevel = (level != null && level.isEmpty()) ? null : level;
@@ -60,7 +65,8 @@ public class AdminCategoriesController {
             @RequestParam("categoryName") String categoryName,
             @RequestParam("jlptLevel") String jlptLevel,
             @RequestParam(value = "iconUrl", required = false) String iconUrl,
-            @RequestParam(value = "file", required = false) MultipartFile file) {
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "thumbnailFile", required = false) MultipartFile thumbnailFile) {
         try {
             if (categoriesRepository.existsByCategoryName(categoryName)) {
                 return ResponseEntity.badRequest().body("Tên chủ đề đã tồn tại!");
@@ -76,9 +82,11 @@ public class AdminCategoriesController {
 
             Categories savedCategory = categoriesRepository.save(category);
             String finalIconUrl = iconUrl;
+            String finalThumbnailUrl = null;
 
+            // Xử lý upload icon
             if (file != null && !file.isEmpty()) {
-                String uploadDir = "src/main/resources/static/img/categories/";
+                String uploadDir = "src/main/resources/static/img/categories/icon/";  // ← THÊM /icon/
                 File dir = new File(uploadDir);
                 if (!dir.exists()) dir.mkdirs();
 
@@ -90,11 +98,31 @@ public class AdminCategoriesController {
                 String fileName = "category-" + savedCategory.getId() + extension;
                 Path filePath = Paths.get(uploadDir + fileName);
                 Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-                finalIconUrl = "img/categories/" + fileName;
+                finalIconUrl = "img/categories/icon/" + fileName;  // ← THÊM /icon/
+            }
+
+            // Xử lý upload thumbnail
+            if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+                String thumbnailDir = "src/main/resources/static/img/categories/thumbnail/";
+                File thumbnailDirFile = new File(thumbnailDir);
+                if (!thumbnailDirFile.exists()) thumbnailDirFile.mkdirs();
+
+                String originalName = thumbnailFile.getOriginalFilename();
+                String extension = (originalName != null && originalName.contains("."))
+                        ? originalName.substring(originalName.lastIndexOf("."))
+                        : ".jpg";
+
+                String fileName = savedCategory.getId() + extension;
+                Path filePath = Paths.get(thumbnailDir + fileName);
+                Files.copy(thumbnailFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                finalThumbnailUrl = "img/categories/thumbnail/" + fileName;
             }
 
             savedCategory.setIconUrl(finalIconUrl);
-            return ResponseEntity.ok(categoriesRepository.save(savedCategory));
+            savedCategory.setThumbnailUrl(finalThumbnailUrl);
+            categoriesRepository.save(savedCategory);
+
+            return ResponseEntity.ok(savedCategory);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -177,7 +205,7 @@ public class AdminCategoriesController {
             Categories category = categoriesRepository.findById(categoryId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy chủ đề"));
 
-            String uploadDir = "src/main/resources/static/img/categories/";
+            String uploadDir = "src/main/resources/static/img/categories/icon/";  // ← THÊM /icon/
             File dir = new File(uploadDir);
             if (!dir.exists()) dir.mkdirs();
 
@@ -190,7 +218,7 @@ public class AdminCategoriesController {
             Path filePath = Paths.get(uploadDir + fileName);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            String iconUrl = "img/categories/" + fileName;
+            String iconUrl = "img/categories/icon/" + fileName;  // ← THÊM /icon/
             category.setIconUrl(iconUrl);
             categoriesRepository.save(category);
 
@@ -207,15 +235,52 @@ public class AdminCategoriesController {
         }
     }
 
+    @PostMapping("/upload-thumbnail")
+    @Transactional
+    public ResponseEntity<?> uploadCategoryThumbnail(
+            @RequestParam("thumbnailFile") MultipartFile file,
+            @RequestParam("categoryId") Integer categoryId) {
+        try {
+            Categories category = categoriesRepository.findById(categoryId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy chủ đề"));
+
+            String uploadDir = "src/main/resources/static/img/categories/thumbnail/";
+            File dir = new File(uploadDir);
+            if (!dir.exists()) dir.mkdirs();
+
+            String originalName = file.getOriginalFilename();
+            String extension = (originalName != null && originalName.contains("."))
+                    ? originalName.substring(originalName.lastIndexOf("."))
+                    : ".jpg";
+
+            String fileName = categoryId + extension;
+            Path filePath = Paths.get(uploadDir + fileName);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            String thumbnailUrl = "img/categories/thumbnail/" + fileName;
+            category.setThumbnailUrl(thumbnailUrl);
+            categoriesRepository.save(category);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("thumbnailUrl", thumbnailUrl);
+            response.put("message", "Upload thumbnail thành công");
+            return ResponseEntity.ok(response);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Lỗi hệ thống khi upload file: " + e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
+    }
+
 
     // Hàm hỗ trợ tạo Slug từ tên tiếng Việt
     private String generateSlug(String input) {
         if (input == null) return "";
 
-        // Bước 1: Trim khoảng trắng đầu và cuối
         String slug = input.trim().toLowerCase();
 
-        // Bước 2: Thay thế các ký tự có dấu thành không dấu
         slug = slug
                 .replaceAll("[áàảãạăắằẳẵặâấầẩẫậ]", "a")
                 .replaceAll("[éèẻẽẹêếềểễệ]", "e")
@@ -225,18 +290,52 @@ public class AdminCategoriesController {
                 .replaceAll("[ýỳỷỹỵ]", "y")
                 .replaceAll("đ", "d");
 
-        // Bước 3: Thay thế 1 hoặc nhiều khoảng trắng bằng 1 dấu gạch ngang
         slug = slug.replaceAll("\\s+", "-");
-
-        // Bước 4: Loại bỏ các ký tự không phải chữ cái, số, dấu gạch ngang
         slug = slug.replaceAll("[^a-z0-9-]", "");
-
-        // Bước 5: Quan trọng - Loại bỏ dấu gạch ngang ở đầu và cuối
         slug = slug.replaceAll("^-+|-+$", "");
-
-        // Bước 6: Thay thế nhiều dấu gạch ngang liên tiếp bằng 1 dấu
         slug = slug.replaceAll("-+", "-");
-
         return slug;
+    }
+
+
+    // 1. API lấy danh sách categories cho dropdown (chỉ active, chỉ id + name)
+    @GetMapping("/active")
+    public ResponseEntity<List<Map<String, Object>>> getActiveCategoriesForDropdown() {
+        List<Categories> categories = categoriesRepository.findByIsActiveTrue();
+
+        List<Map<String, Object>> result = categories.stream()
+                .map(cat -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", cat.getId());
+                    map.put("categoryName", cat.getCategoryName());
+                    map.put("jlptLevel", cat.getJlptLevel());
+                    return map;
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(result);
+    }
+
+    // 2. API lấy chi tiết category kèm lesson count
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<Map<String, Object>> getCategoryDetail(@PathVariable Integer id) {
+        return categoriesRepository.findById(id)
+                .map(category -> {
+                    Map<String, Object> detail = new HashMap<>();
+                    detail.put("id", category.getId());
+                    detail.put("categoryName", category.getCategoryName());
+                    detail.put("slug", category.getSlug());
+                    detail.put("jlptLevel", category.getJlptLevel());
+                    detail.put("iconUrl", category.getIconUrl());
+                    detail.put("thumbnailUrl", category.getThumbnailUrl());
+                    detail.put("isActive", category.getIsActive());
+
+                    // Dùng method đã có sẵn: countActiveByCategory
+                    int lessonCount = lessonsRepository.countActiveByCategory(id);
+                    detail.put("lessonCount", lessonCount);
+
+                    return ResponseEntity.ok(detail);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 }

@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: html_head(title='Học Kanji - Ganbatte')}"></head>
+<link th:href="@{/css/style.css}" rel="stylesheet">
+
+<style>
+    /* Kanji Page Styles */
+    .kanji-header {
+        background: linear-gradient(135deg, #06BBCC 0%, #fb873f 100%);
+        border-radius: 20px;
+        padding: 40px;
+        margin-bottom: 30px;
+        text-align: center;
+        color: white;
+    }
+
+    .kanji-header h1 {
+        font-size: 32px;
+        font-weight: 800;
+        margin-bottom: 10px;
+    }
+
+    .kanji-header p {
+        font-size: 16px;
+        opacity: 0.9;
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 30px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid var(--border);
+    }
+
+    .filter-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .filter-group label {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .filter-select {
+        padding: 10px 16px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        font-size: 14px;
+        background: white;
+        cursor: pointer;
+    }
+
+    .search-box {
+        display: flex;
+        gap: 10px;
+    }
+
+    .search-box input {
+        padding: 10px 16px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        width: 250px;
+        font-size: 14px;
+    }
+
+    .search-box input:focus {
+        outline: none;
+        border-color: var(--teal);
+    }
+
+    /* Kanji Grid - 5 cột trên desktop */
+    .kanji-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 20px;
+        padding: 0 20px;
+    }
+
+    /* Kanji Card  */
+    .kanji-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 1px solid var(--teal);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .kanji-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        border-color: var(--orange);
+    }
+
+    .kanji-char {
+        font-size: 48px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+        line-height: 1.2;
+    }
+
+    .kanji-sino {
+        font-size: 16px;
+        color: var(--teal);
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    /* Pagination */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-top: 40px;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 8px;
+        list-style: none;
+    }
+
+    .page-item .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: white;
+        color: var(--text-dark);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .page-item.active .page-link {
+        background: var(--teal);
+        border-color: var(--teal);
+        color: white;
+    }
+
+    .page-item .page-link:hover:not(.active) {
+        background: var(--teal-light);
+        border-color: var(--teal);
+    }
+
+    /* Loading */
+    .loading {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 60px;
+    }
+
+    /* Modal Detail */
+    .modal-content {
+        border-radius: 20px;
+        border: none;
+        position: relative;
+    }
+
+    /* Nút điều hướng trong modal */
+    .modal-nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        border: 1px solid var(--border);
+        color: var(--teal);
+        cursor: pointer;
+        transition: all 0.3s;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    .modal-nav-btn:hover {
+        background: var(--teal);
+        color: white;
+        border-color: var(--teal);
+    }
+
+    .modal-nav-prev {
+        left: -20px;
+    }
+
+    .modal-nav-next {
+        right: -20px;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid var(--border);
+        padding: 10px 25px;
+    }
+
+    .modal-body {
+        padding: 25px;
+    }
+
+    .detail-kanji {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .detail-kanji-char {
+        font-size: 90px;
+        font-weight: 800;
+        color: var(--text-dark);
+        line-height: 1;
+        margin-bottom: 10px;
+    }
+
+    .kanji-info-row {
+        font-size: 15px;
+        color: var(--text-muted);
+        margin-top: 8px;
+    }
+
+    .kanji-info-row .kanji-level {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        background: rgba(251, 135, 63, 0.1);
+        color: var(--orange);
+        font-weight: 600;
+    }
+
+    .detail-stroke-count {
+        display: inline-block;
+        margin-left: 5px;
+    }
+
+    .detail-section {
+        margin-bottom: 20px;
+    }
+
+    .detail-section-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-content {
+        font-size: 20px;
+        color: var(--orange);
+        line-height: 1.5;
+        font-weight: 600;
+    }
+
+    /* Example Table - 3 columns */
+    .example-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    .example-table th {
+        background: #f8f9fa;
+        padding: 10px;
+        text-align: left;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        border-bottom: 2px solid var(--border);
+    }
+
+    .example-table td {
+        padding: 10px;
+        border-bottom: 1px solid var(--border);
+        font-size: 18px;
+        vertical-align: middle;
+    }
+
+    .example-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .example-table .example-word {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .example-table .example-reading {
+        color: var(--teal);
+        font-weight: 600;
+    }
+
+    .example-table .example-meaning {
+        color: var(--text-dark);
+        font-weight: 400;
+    }
+
+    /* No data - center screen */
+    .no-data-container {
+        grid-column: 1 / -1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 400px;
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 60px 40px;
+        color: var(--text-dark);
+        background: white;
+        border-radius: 20px;
+        max-width: 500px;
+        width: 100%;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .no-data i {
+        font-size: 64px;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .no-data p {
+        font-size: 18px;
+        font-weight: 500;
+        margin-bottom: 10px;
+    }
+
+    .no-data .small {
+        font-size: 14px;
+        opacity: 0.7;
+    }
+
+    .no-data .btn-custom {
+        margin-top: 20px;
+        background: var(--teal);
+        border: none;
+        padding: 10px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        color: white;
+        cursor: pointer;
+    }
+
+    .no-data .btn-custom:hover {
+        background: var(--orange);
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .kanji-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    @media (max-width: 992px) {
+        .kanji-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .kanji-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .filter-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-box input {
+            width: 100%;
+        }
+
+        .kanji-header {
+            padding: 30px 20px;
+        }
+
+        .kanji-header h1 {
+            font-size: 24px;
+        }
+
+        .modal-nav-prev {
+            left: -10px;
+        }
+
+        .modal-nav-next {
+            right: -10px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .kanji-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<body>
+<div th:replace="~{layout :: navbar}"></div>
+
+<div class="content">
+
+    <!-- Header Start -->
+    <div class="container-fluid bg-primary py-5 mb-5 page-header6">
+        <div class="container py-5 text-center">
+            <h1 style="color: #fff; font-size: 45px;"><i class="fas fa-tree me-3"></i>Học Kanji</h1>
+            <p style="color: #fff; font-size: 23px;">Khám phá và ghi nhớ chữ Hán qua các bài học thú vị</p>
+        </div>
+    </div>
+    <!-- Header End -->
+
+    <!-- Filter Bar -->
+    <div class="filter-bar wow fadeInUp" data-wow-delay="0.2s">
+        <div class="filter-group">
+            <label>Cấp độ JLPT:</label>
+            <select id="levelFilter" class="filter-select" onchange="loadKanjiList(1)">
+                <option value="">Tất cả</option>
+                <option value="N5">N5</option>
+                <option value="N4">N4</option>
+                <option value="N3">N3</option>
+                <option value="N2">N2</option>
+                <option value="N1">N1</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Số trên trang:</label>
+            <select id="pageSize" class="filter-select" onchange="loadKanjiList(1)">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="50">50</option>
+            </select>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Tìm kiếm kanji..." onkeyup="debounceSearch()">
+            <button class="btn-custom btn-orange" onclick="loadKanjiList(1)">
+                <i class="fas fa-search"></i> Tìm
+            </button>
+        </div>
+    </div>
+
+    <!-- Kanji Grid -->
+    <div id="kanjiGrid" class="kanji-grid">
+        <div class="loading">
+            <i class="fas fa-spinner fa-spin fa-2x"></i>
+            <p>Đang tải dữ liệu...</p>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div id="pagination" class="pagination-wrapper"></div>
+</div>
+
+<!-- Modal Chi tiết Kanji -->
+<div class="modal fade" id="kanjiModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <button class="modal-nav-btn modal-nav-prev" id="navPrevBtn" title="Kanji trước (←)">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="modal-nav-btn modal-nav-next" id="navNextBtn" title="Kanji tiếp theo (→)">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Chi tiết Kanji</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="kanjiDetail"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-custom btn-red me-auto" onclick="markAsLearned()">
+                    <i class="fas fa-check-circle me-2"></i>Đánh dấu đã học
+                </button>
+                <button type="button" class="btn-custom btn-teal" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{layout :: footer}"></div>
+
+<script>
+    let currentPage = 1;
+    let totalPages = 1;
+    let searchTimeout;
+
+    // Navigation variables
+    let currentKanjiList = [];
+    let currentKanjiIndex = -1;
+    let currentKanjiId = null;
+    let currentModal = null;
+    let isLoadingMore = false;
+
+    // Debounce search
+    function debounceSearch() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            loadKanjiList(1);
+        }, 500);
+    }
+
+    // Khởi tạo modal một lần duy nhất
+    function getModal() {
+        if (!currentModal) {
+            const modalElement = document.getElementById('kanjiModal');
+            currentModal = new bootstrap.Modal(modalElement, {
+                backdrop: 'static',
+                keyboard: true
+            });
+        }
+        return currentModal;
+    }
+
+    // Đóng modal sạch sẽ
+    function closeModal() {
+        if (currentModal) {
+            currentModal.hide();
+            setTimeout(() => {
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(backdrop => backdrop.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            }, 150);
+        }
+    }
+
+    // Load Kanji list
+    async function loadKanjiList(page, isNavigation = false) {
+        if (isLoadingMore) return;
+        isLoadingMore = true;
+
+        currentPage = page;
+        const level = document.getElementById('levelFilter').value;
+        const search = document.getElementById('searchInput').value;
+        const size = document.getElementById('pageSize').value;
+
+        const token = localStorage.getItem('token');
+        const grid = document.getElementById('kanjiGrid');
+
+        if (!isNavigation) {
+            grid.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Đang tải dữ liệu...</p></div>`;
+        }
+
+        try {
+            let url = `/api/kanji/all?page=${page - 1}&size=${size}`;
+            if (level) url += `&level=${level}`;
+            if (search) url += `&search=${encodeURIComponent(search)}`;
+
+            const response = await fetch(url, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (!response.ok) throw new Error('Lỗi tải dữ liệu');
+
+            const data = await response.json();
+            totalPages = data.totalPages;
+            currentKanjiList = data.content || [];
+
+            if (!currentKanjiList || currentKanjiList.length === 0) {
+                if (!isNavigation) {
+                    grid.innerHTML = `
+                        <div class="no-data-container">
+                            <div class="no-data">
+                                <i class="fas fa-book-open"></i>
+                                <p>Chưa có dữ liệu Kanji nào!</p>
+                                <p class="small">Vui lòng quay lại sau hoặc liên hệ quản trị viên</p>
+                            </div>
+                        </div>
+                    `;
+                }
+                document.getElementById('pagination').innerHTML = '';
+                isLoadingMore = false;
+                return;
+            }
+
+            if (!isNavigation) {
+                renderKanjiGrid(currentKanjiList);
+                renderPagination();
+            }
+
+            isLoadingMore = false;
+            return Promise.resolve();
+
+        } catch (error) {
+            console.error(error);
+            if (!isNavigation) {
+                grid.innerHTML = `
+                    <div class="no-data-container">
+                        <div class="no-data">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <p>Không thể tải dữ liệu!</p>
+                            <p class="small">Vui lòng kiểm tra kết nối hoặc thử lại sau</p>
+                            <button class="btn-custom btn-teal" onclick="loadKanjiList(1)">
+                                <i class="fas fa-sync-alt"></i> Thử lại
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            isLoadingMore = false;
+            return Promise.reject(error);
+        }
+    }
+
+    // Render Kanji grid
+    function renderKanjiGrid(kanjis) {
+        const grid = document.getElementById('kanjiGrid');
+
+        if (!kanjis || kanjis.length === 0) {
+            grid.innerHTML = `
+                <div class="no-data-container">
+                    <div class="no-data">
+                        <i class="fas fa-book-open"></i>
+                        <p>Chưa có dữ liệu Kanji nào!</p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        grid.innerHTML = kanjis.map((kanji, idx) => `
+            <div class="kanji-card" onclick="showKanjiDetail(${kanji.id}, ${idx})">
+                <div class="kanji-char">${escapeHtml(kanji.character)}</div>
+                <div class="kanji-sino">${escapeHtml(kanji.sinoVietnamese || kanji.meaning || '---')}</div>
+            </div>
+        `).join('');
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Render pagination
+    function renderPagination() {
+        const container = document.getElementById('pagination');
+
+        if (totalPages <= 1) {
+            container.innerHTML = '';
+            return;
+        }
+
+        let html = '<ul class="pagination">';
+
+        html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" onclick="loadKanjiList(${currentPage - 1})">&laquo;</a>
+                </li>`;
+
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+
+        if (startPage > 1) {
+            html += `<li class="page-item"><a class="page-link" onclick="loadKanjiList(1)">1</a></li>`;
+            if (startPage > 2) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" onclick="loadKanjiList(${i})">${i}</a>
+                    </li>`;
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            html += `<li class="page-item"><a class="page-link" onclick="loadKanjiList(${totalPages})">${totalPages}</a></li>`;
+        }
+
+        html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" onclick="loadKanjiList(${currentPage + 1})">&raquo;</a>
+                </li>`;
+
+        html += '</ul>';
+        container.innerHTML = html;
+    }
+
+    // Điều hướng đến Kanji tiếp theo
+    async function nextKanji() {
+        if (currentKanjiList.length === 0) return;
+
+        let newIndex = currentKanjiIndex + 1;
+        if (newIndex >= currentKanjiList.length) {
+            if (currentPage < totalPages && !isLoadingMore) {
+                // Hiển thị loading trong modal
+                const detailContainer = document.getElementById('kanjiDetail');
+                detailContainer.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-spinner fa-spin fa-2x"></i>
+                        <p class="mt-3">Đang tải trang tiếp theo...</p>
+                    </div>
+                `;
+                await loadKanjiList(currentPage + 1, true);
+                currentKanjiIndex = 0;
+                await showKanjiDetail(currentKanjiList[0].id, 0, true);
+            } else {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Đã đến cuối danh sách',
+                    text: 'Bạn đã xem hết các Kanji rồi!',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+            return;
+        }
+        await showKanjiDetail(currentKanjiList[newIndex].id, newIndex, true);
+    }
+
+    // Điều hướng đến Kanji trước đó
+    async function prevKanji() {
+        if (currentKanjiList.length === 0) return;
+
+        let newIndex = currentKanjiIndex - 1;
+        if (newIndex < 0) {
+            if (currentPage > 1 && !isLoadingMore) {
+                const detailContainer = document.getElementById('kanjiDetail');
+                detailContainer.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-spinner fa-spin fa-2x"></i>
+                        <p class="mt-3">Đang tải trang trước...</p>
+                    </div>
+                `;
+                await loadKanjiList(currentPage - 1, true);
+                currentKanjiIndex = currentKanjiList.length - 1;
+                await showKanjiDetail(currentKanjiList[currentKanjiIndex].id, currentKanjiIndex, true);
+            } else {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Đã đến đầu danh sách',
+                    text: 'Bạn đã xem hết các Kanji rồi!',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+            return;
+        }
+        await showKanjiDetail(currentKanjiList[newIndex].id, newIndex, true);
+    }
+
+    // Hiển thị chi tiết Kanji
+    async function showKanjiDetail(id, index, keepModalOpen = false) {
+        const token = localStorage.getItem('token');
+        const detailContainer = document.getElementById('kanjiDetail');
+
+        currentKanjiIndex = index !== undefined ? index : currentKanjiList.findIndex(k => k.id === id);
+        currentKanjiId = id;
+
+        detailContainer.innerHTML = `<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-3">Đang tải...</p></div>`;
+
+        try {
+            const response = await fetch(`/api/kanji/${id}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (!response.ok) throw new Error('Lỗi tải dữ liệu');
+
+            const kanji = await response.json();
+
+            let examplesHtml = '';
+            if (kanji.examples && kanji.examples.length > 0) {
+                examplesHtml = `
+                    <table class="example-table">
+                        <thead>
+                            <tr>
+                                <th>Từ vựng</th>
+                                <th>Cách đọc</th>
+                                <th>Ý nghĩa</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${kanji.examples.map(ex => `
+                                <tr>
+                                    <td class="example-word">${escapeHtml(ex.word)}</td>
+                                    <td class="example-reading">${escapeHtml(ex.reading || '---')}</td>
+                                    <td class="example-meaning">${escapeHtml(ex.meaning || '---')}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } else {
+                examplesHtml = '<p class="text-muted">Chưa có ví dụ</p>';
+            }
+
+            detailContainer.innerHTML = `
+                <div class="detail-kanji">
+                    <div class="detail-kanji-char">${escapeHtml(kanji.character)}</div>
+                    <div class="kanji-info-row">
+                        <span class="kanji-level">${escapeHtml(kanji.jlptLevel || 'N5')}</span>
+                        <span> - </span>
+                        <span class="detail-stroke-count">Số nét: ${kanji.strokeCount || '---'}</span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-section">
+                            <div class="detail-section-title">Âm Hán Việt</div>
+                            <div class="detail-content">${escapeHtml(kanji.sinoVietnamese || '---')}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-section">
+                            <div class="detail-section-title">Ý nghĩa</div>
+                            <div class="detail-content">${escapeHtml(kanji.meaning)}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-section">
+                            <div class="detail-section-title">Âm ON (音読み)</div>
+                            <div class="detail-content">${escapeHtml(kanji.onReading || '---')}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-section">
+                            <div class="detail-section-title">Âm KUN (訓読み)</div>
+                            <div class="detail-content">${escapeHtml(kanji.kunReading || '---')}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    ${examplesHtml}
+                </div>
+            `;
+
+            if (!keepModalOpen) {
+                const modal = getModal();
+                modal.show();
+            }
+
+        } catch (error) {
+            console.error(error);
+            detailContainer.innerHTML = `<div class="text-center text-danger">Không thể tải chi tiết kanji</div>`;
+        }
+    }
+
+    // Đánh dấu đã học
+    async function markAsLearned() {
+        if (!currentKanjiId) return;
+
+        const token = localStorage.getItem('token');
+
+        try {
+            const response = await fetch(`/api/kanji/${currentKanjiId}/learn`, {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (response.ok) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Đã đánh dấu!',
+                    text: 'Kanji đã được thêm vào danh sách đã học',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    // Khởi tạo sự kiện bàn phím và nút điều hướng
+    function initNavigation() {
+        const prevBtn = document.getElementById('navPrevBtn');
+        const nextBtn = document.getElementById('navNextBtn');
+
+        if (prevBtn) {
+            prevBtn.onclick = () => prevKanji();
+        }
+        if (nextBtn) {
+            nextBtn.onclick = () => nextKanji();
+        }
+
+        // Bắt sự kiện bàn phím
+        document.addEventListener('keydown', function(e) {
+            const modal = document.getElementById('kanjiModal');
+            const isModalOpen = modal.classList.contains('show');
+
+            if (isModalOpen) {
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    prevKanji();
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    nextKanji();
+                } else if (e.key === 'Escape') {
+                    closeModal();
+                }
+            }
+        });
+    }
+
+    // Xử lý đóng modal sạch sẽ
+    function initModalCleanup() {
+        const modalElement = document.getElementById('kanjiModal');
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => backdrop.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        });
+    }
+
+    // Load initial data
+    document.addEventListener('DOMContentLoaded', () => {
+        loadKanjiList(1);
+        initNavigation();
+        initModalCleanup();
+    });
+</script>
+
+
+</body>
+
+</html>

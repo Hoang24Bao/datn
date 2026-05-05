@@ -210,67 +210,85 @@
 <th:block th:replace="~{layout :: navbar}"></th:block>
 
 <div class="study-layout">
-    <div class="image-section">
-        <div class="lesson-header-box">
-            <div class="d-flex align-items-center">
-                <i class="fas fa-mouse-pointer me-3" style="color: #fb873f; font-size: 1.5rem;"></i>
-                <div>
-                    <h3 class="fw-bold mb-0 text-dark" th:text="${lesson?.lessonName}">Tên bài học</h3>
-                    <small class="text-muted">Click vào các vật thể để khám phá từ vựng</small>
+    <div th:if="${!hasScenes}" class="alert alert-warning text-center w-100" style="border-radius: 20px;">
+        <i class="fas fa-image fa-3x mb-3 opacity-50"></i>
+        <h4 class="fw-bold">Chưa có hình ảnh tương tác</h4>
+        <p th:text="${message}">Bài học này chưa có hình ảnh tương tác nào.</p>
+        <a th:href="@{/study/lessons(id=${currentCateId})}" class="btn btn-ganbatte rounded-pill px-4">
+            <i class="fas fa-arrow-left me-2"></i>Quay lại bài học
+        </a>
+    </div>
+    <div th:if="${hasScenes}" style="display: contents;">
+        <div class="image-section">
+            <div class="lesson-header-box">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-mouse-pointer me-3" style="color: #fb873f; font-size: 1.5rem;"></i>
+                    <div>
+                        <h3 class="fw-bold mb-0 text-dark" th:text="${lesson?.lessonName}">Tên bài học</h3>
+                        <small class="text-muted">Click vào các vật thể để khám phá từ vựng</small>
+                    </div>
+                </div>
+                <a th:href="@{/study/lessons(id=${currentCateId})}" class="btn btn-ganbatte rounded-pill px-4">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại
+                </a>
+            </div>
+
+            <div class="progress-wrapper">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="small fw-bold text-secondary">Tiến độ bài học</span>
+                    <span class="small text-muted"><span id="comp-count">0</span>/<span id="total-count">0</span></span>
+                </div>
+                <div class="progress-container">
+                    <div id="orange-bar" class="progress-bar-orange"></div>
                 </div>
             </div>
-            <a th:href="@{/study/lessons(id=${currentCateId})}" class="btn btn-ganbatte rounded-pill px-4">
-                <i class="fas fa-arrow-left me-2"></i>Quay lại
-            </a>
-        </div>
 
-        <div class="progress-wrapper">
-            <div class="d-flex justify-content-between mb-1">
-                <span class="small fw-bold text-secondary">Tiến độ bài học</span>
-                <span class="small text-muted"><span id="comp-count">0</span>/<span id="total-count">0</span></span>
-            </div>
-            <div class="progress-container">
-                <div id="orange-bar" class="progress-bar-orange"></div>
-            </div>
-        </div>
+            <div th:each="scene, iter : ${scenes}" th:id="'scene-container-' + ${iter.index}" class="scene-block"
+                 th:style="${iter.index == 0} ? 'display: block;' : 'display: none;'">
 
-        <div th:each="scene, iter : ${scenes}" th:id="'scene-container-' + ${iter.index}" class="scene-block"
-             th:style="${iter.index == 0} ? 'display: block;' : 'display: none;'">
-
-            <div class="scene-wrapper">
-                <img th:src="@{'/' + ${scene.imageUrl}}" class="scene-img">
-                <div th:each="point : ${scene.points}" class="hotspot"
-                     th:style="'left: ' + ${point.coordX} + '%; top: ' + ${point.coordY} + '%; width: ' + ${point.width} + '%; height: ' + ${point.height} + '%;'"
-                     th:onclick="showVocabSidebar([[${point.vocabulary}]], this)">
+                <div class="scene-wrapper">
+                    <img th:src="${scene.imageUrl}" class="scene-img">
+                    <div th:each="point : ${scene.points}" class="hotspot"
+                         th:style="'left: ' + ${point.coordX} + '%; top: ' + ${point.coordY} + '%; width: ' + ${point.width} + '%; height: ' + ${point.height} + '%;'"
+                         th:onclick="showVocabSidebar([[${point.vocabulary}]], this)">
+                    </div>
                 </div>
+                <p class="mt-3 text-center fw-bold text-secondary" th:text="${scene.description}">Mô tả cảnh</p>
             </div>
-            <p class="mt-3 text-center fw-bold text-secondary" th:text="${scene.description}">Mô tả cảnh</p>
-        </div>
 
-        <div class="scene-nav-modern" th:if="${scenes.size() > 1}">
-            <button class="nav-arrow" onclick="changeScene(-1)"><i class="fas fa-arrow-left"></i></button>
-            <span class="fw-bold fs-5">
+            <div class="scene-nav-modern" th:if="${scenes.size() > 1}">
+                <button class="nav-arrow" onclick="changeScene(-1)"><i class="fas fa-arrow-left"></i></button>
+                <span class="fw-bold fs-5">
                     Cảnh <strong id="current-scene-text">1</strong> / <strong th:text="${scenes.size()}">3</strong>
                 </span>
-            <button class="nav-arrow" onclick="changeScene(1)"><i class="fas fa-arrow-right"></i></button>
+                <button class="nav-arrow" onclick="changeScene(1)"><i class="fas fa-arrow-right"></i></button>
+            </div>
         </div>
     </div>
 
     <div class="sidebar-section">
         <div id="vocab-sidebar" class="vocab-card" style="display: none;">
             <div class="text-center">
-                <img id="side-img" src="" class="img-fluid rounded-4 shadow-sm mb-2" style="max-height: 220px; width: 100%; object-fit: contain;">
-                <h1 id="side-expression" class="fw-bold text-dark mb-1" style="color: #fb873f !important; font-size: 2.5rem;"></h1>
+                <img id="side-img" src="" class="img-fluid rounded-4 shadow-sm mb-2"
+                     style="max-height: 220px; width: 100%; object-fit: contain;">
+                <h1 id="side-expression" class="fw-bold text-dark mb-1"
+                    style="color: #fb873f !important; font-size: 2.5rem;"></h1>
                 <div class="mb-3" style="line-height: 1.2;">
                     <div id="side-kana" style="font-size: 1.5rem; color: #6c757d; font-weight: 500;"></div>
-                    <div id="side-romaji" style="font-size: 1.2rem; color: #adb5bd; font-style: italic; margin-top: -2px;"></div>
+                    <div id="side-romaji"
+                         style="font-size: 1.2rem; color: #adb5bd; font-style: italic; margin-top: -2px;"></div>
+                    <div id="side-meaning"
+                         style="font-size: 1.4rem; color: #fb873f; font-weight: 700; margin-top: 5px;"></div>
                 </div>
-                <button onclick="playSideAudio()" class="btn btn-warning text-white rounded-pill px-4 mb-3 shadow-sm btn-pronounce">
+
+                <button onclick="playSideAudio()"
+                        class="btn btn-warning text-white rounded-pill px-4 mb-3 shadow-sm btn-pronounce">
                     <i class="fas fa-volume-up me-2"></i>PHÁT ÂM
                 </button>
                 <audio id="side-audio" src=""></audio>
             </div>
-            <div class="mt-2 p-2 rounded-4 example-section" style="background-color: #fff8f3; border-left: 5px solid #fb873f;">
+            <div class="mt-2 p-2 rounded-4 example-section"
+                 style="background-color: #fff8f3; border-left: 5px solid #fb873f;">
                 <h6 class="fw-bold mb-3 text-uppercase text-secondary">Ví dụ:</h6>
                 <p id="side-example" class="fw-bold mb-2"></p>
                 <p id="side-example-vi" class="italic"></p>
@@ -314,6 +332,7 @@
         document.getElementById('side-expression').textContent = vocab.expression;
         document.getElementById('side-kana').textContent = vocab.kana;
         document.getElementById('side-romaji').textContent = vocab.romaji;
+        document.getElementById('side-meaning').textContent = vocab.meaning || '';
         document.getElementById('side-example').textContent = vocab.example || 'Chưa có ví dụ';
         document.getElementById('side-example-vi').textContent = vocab.exampleVi || '';
 
@@ -345,88 +364,6 @@
 
     // Tự động tính tổng số từ khi trang vừa load
     window.onload = updateProgress;
-
-    // 2: LOGIC KÉO VÙNG LẤY TỌA ĐỘ (DÀNH CHO ADMIN)
-let isDrawing = false;
-let startX, startY;
-let selectionBox = null;
-let activeWrapper = null;
-
-// Chỉ bắt sự kiện mousedown trên các wrapper
-document.querySelectorAll('.scene-wrapper').forEach(wrapper => {
-    wrapper.addEventListener('mousedown', function (e) {
-        // Chỉ hoạt động nếu đang ở cảnh hiển thị và không click vào nút/hotspot có sẵn
-        if (e.button !== 0 || e.target.classList.contains('hotspot')) return;
-
-        isDrawing = true;
-        activeWrapper = this;
-        const img = this.querySelector('.scene-img');
-        const rect = img.getBoundingClientRect();
-
-        startX = e.clientX - rect.left;
-        startY = e.clientY - rect.top;
-
-        if (selectionBox) selectionBox.remove();
-
-        selectionBox = document.createElement('div');
-        selectionBox.className = 'selection-box';
-        selectionBox.style.left = startX + 'px';
-        selectionBox.style.top = startY + 'px';
-
-        this.appendChild(selectionBox);
-        e.preventDefault();
-    });
-});
-
-// Sự kiện MouseMove và MouseUp chỉ khai báo DUY NHẤT một lần bên ngoài vòng lặp
-window.addEventListener('mousemove', function (e) {
-    if (!isDrawing || !selectionBox || !activeWrapper) return;
-
-    const img = activeWrapper.querySelector('.scene-img');
-    const rect = img.getBoundingClientRect();
-
-    let currentX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-    let currentY = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
-
-    selectionBox.style.width = Math.abs(currentX - startX) + 'px';
-    selectionBox.style.height = Math.abs(currentY - startY) + 'px';
-    selectionBox.style.left = Math.min(currentX, startX) + 'px';
-    selectionBox.style.top = Math.min(currentY, startY) + 'px';
-});
-
-window.addEventListener('mouseup', function (e) {
-    if (!isDrawing || !selectionBox || !activeWrapper) return;
-    isDrawing = false;
-
-    const img = activeWrapper.querySelector('.scene-img');
-    const rect = img.getBoundingClientRect();
-
-    // Ngăn chặn lỗi chia cho 0
-    if (rect.width === 0) return;
-
-    const finalW = parseFloat(selectionBox.style.width) || 0;
-    const finalH = parseFloat(selectionBox.style.height) || 0;
-    const finalLeft = parseFloat(selectionBox.style.left) || 0;
-    const finalTop = parseFloat(selectionBox.style.top) || 0;
-
-    // Tính % dựa trên kích thước thật của ảnh hiển thị
-    const wPercent = (finalW / rect.width * 100).toFixed(2);
-    const hPercent = (finalH / rect.height * 100).toFixed(2);
-    const xCenter = ((finalLeft + finalW / 2) / rect.width * 100).toFixed(2);
-    const yCenter = ((finalTop + finalH / 2) / rect.height * 100).toFixed(2);
-
-    if (finalW > 10 && finalH > 10) {
-        const result = `coord_x: ${xCenter}\ncoord_y: ${yCenter}\nwidth: ${wPercent}\nheight: ${hPercent}`;
-        console.log("Dữ liệu Admin:\n" + result);
-        alert("THÔNG SỐ NHẬP DB:\n" + result);
-    } else {
-        selectionBox.remove();
-    }
-
-    selectionBox = null;
-    activeWrapper = null;
-});
-
 
 
 </script>

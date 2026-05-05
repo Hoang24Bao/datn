@@ -343,7 +343,7 @@ span.nav-label {
     border: 1px solid #fb873f;
     border-radius: 10px;
     padding: 9px 18px;
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 600;
     font-family: 'Be Vietnam Pro', sans-serif;
     cursor: pointer;
@@ -723,11 +723,14 @@ tbody td {
 .status-pill {
     display: inline-flex;
     align-items: center;
+    justify-content: center;  /* Thêm để căn giữa nội dung */
     gap: 5px;
-    padding: 5px 12px;
+    padding: 5px 16px;  /* Tăng padding ngang từ 12px lên 16px */
     border-radius: 20px;
     font-size: 14px;
     font-weight: 600;
+    min-width: 100px;  /* Đảm bảo độ rộng tối thiểu */
+    white-space: nowrap;  /* Không xuống dòng */
 }
 
 
@@ -1395,13 +1398,6 @@ th .select-checkbox {
     margin-top: 30px;
 }
 
-.lessons-list h3 {
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 20px;
-    color: var(--text-dark);
-}
-
 .lessons-table {
     width: 100%;
     border-collapse: collapse;
@@ -1422,6 +1418,258 @@ th .select-checkbox {
 
 
 
+/* Lesson Detail Page */
+.lesson-detail-container {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.lesson-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.lesson-detail-title input {
+    font-size: 28px;
+    font-weight: 700;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    width: 100%;
+}
+
+.back-to-list {
+    background: var(--teal);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.back-to-list:hover {
+    background: #0598a6;
+    transform: translateX(-3px);
+}
+
+/* Vocab Table */
+.vocab-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.vocab-table th,
+.vocab-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.vocab-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+/* Scenes Grid */
+.scenes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.scene-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.scene-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.scene-preview {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+}
+
+.scene-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.scene-order {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(6, 187, 204, 0.9);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.scene-info {
+    padding: 15px;
+}
+
+.scene-info p {
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.scene-actions {
+    padding: 12px 15px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+/* Tab Navigation */
+.nav-tabs {
+    border-bottom: 1px solid var(--border);
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: var(--text-muted);
+    font-weight: 600;
+    padding: 12px 24px;
+    transition: all 0.3s;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--teal);
+    background: transparent;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--teal);
+    border-bottom: 2px solid var(--teal);
+    background: transparent;
+}
+
+/* Tab Navigation - 2 nút đều nhau */
+.nav-justified {
+    display: flex;
+    width: 100%;
+}
+
+.nav-justified .nav-item {
+    flex: 1;
+    text-align: center;
+}
+
+.nav-justified .nav-link {
+    width: 100%;
+    text-align: center;
+}
+
+#vocab-tab, #scenes-tab {
+    font-size: 16px;
+}
+
+
+
+
+/* ===== CẢNH TƯƠNG TÁC ===== */
+.selection-box {
+    position: absolute;
+    border: 2px dashed #fb873f;
+    background-color: rgba(251, 135, 63, 0.2);
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.hotspot-editor {
+    position: absolute;
+    border: 2px solid #fb873f;
+    background-color: rgba(251, 135, 63, 0.3);
+    cursor: pointer;
+    z-index: 10;
+    border-radius: 4px;
+}
+
+.hotspot-editor:hover {
+    background-color: rgba(251, 135, 63, 0.5);
+}
+
+.vocab-item {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.vocab-item:hover {
+    background-color: #fb873f10;
+}
+
+.vocab-item.selected {
+    background-color: #fb873f20 !important;
+    border-left: 3px solid #fb873f !important;
+}
+
+
+
+
+/* Wrapper ảnh cảnh tương tác */
+#sceneWrapper,
+#editSceneWrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    user-select: none;        /* Ngăn chọn text khi kéo */
+    -webkit-user-select: none;
+    cursor: crosshair;        /* Con trỏ dạng chữ thập khi hover */
+}
+
+#hotspotsContainer,
+#editHotspotsContainer {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;     /* QUAN TRỌNG: cho phép click xuyên qua overlay */
+}
+
+/* Khung quét selection */
+.selection-box {
+    position: absolute;
+    border: 2px dashed #fb873f;
+    background: rgba(251, 135, 63, 0.2);
+    pointer-events: none;
+    border-radius: 4px;
+    z-index: 10;
+}
+
+/* Hotspot đã tạo */
+.hotspot-editor {
+    position: absolute;
+    border: 2px solid #fb873f;
+    background: rgba(251, 135, 63, 0.3);
+    border-radius: 4px;
+    pointer-events: none;
+}
+
+/* Ẩn các item bị filter */
+.vocab-filtered-hidden {
+    display: none !important;
+}
 
 
 
@@ -1430,8 +1678,61 @@ th .select-checkbox {
 
 
 
+/* Vocab Detail Page */
+.vocab-detail-container {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
 
+.vocab-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+}
 
+.vocab-detail-title input {
+    font-size: 28px;
+    font-weight: 700;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    width: 100%;
+}
+
+.vocab-sub-info {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.ml-2 {
+    margin-left: 8px;
+}
+
+.info-card {
+    background: #f8f9fa;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--border);
+}
+
+.info-card h4 {
+    font-size: 16px;
+    color: var(--text-dark);
+    margin-bottom: 16px;
+    font-weight: 700;
+    border-left: 3px solid var(--teal);
+    padding-left: 12px;
+}
+
+.fw-600 {
+    font-weight: 600;
+}
 
 
 
