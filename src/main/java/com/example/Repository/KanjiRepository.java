@@ -18,4 +18,5 @@ public interface KanjiRepository extends JpaRepository<Kanji, Integer> {
     Page<Kanji> findWithFilters(@Param("level") String level,
                                 @Param("search") String search,
                                 Pageable pageable);
+    
 }

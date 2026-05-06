@@ -444,13 +444,19 @@
         </div>
 
         <div class="filter-group">
-            <label>Số trên trang:</label>
+            <label>Hiển thị:</label>
             <select id="pageSize" class="filter-select" onchange="loadKanjiList(1)">
-                <option value="10">10</option>
                 <option value="20">20</option>
-                <option value="30">30</option>
                 <option value="50">50</option>
+                <option value="70">70</option>
+                <option value="100">100</option>
             </select>
+        </div>
+
+        <div class="filter-group">
+            <span id="kanjiCount" style="font-weight: 600; color: var(--teal); font-size: 16px;">
+                <i class="fas fa-layer-group me-1"></i>Đang tải...
+            </span>
         </div>
 
         <div class="search-box">
@@ -474,7 +480,7 @@
 </div>
 
 <!-- Modal Chi tiết Kanji -->
-<div class="modal fade" id="kanjiModal" tabindex="-1" data-bs-backdrop="static">
+<div class="modal fade" id="kanjiModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <button class="modal-nav-btn modal-nav-prev" id="navPrevBtn" title="Kanji trước (←)">
@@ -527,7 +533,6 @@
         if (!currentModal) {
             const modalElement = document.getElementById('kanjiModal');
             currentModal = new bootstrap.Modal(modalElement, {
-                backdrop: 'static',
                 keyboard: true
             });
         }
@@ -579,6 +584,12 @@
             const data = await response.json();
             totalPages = data.totalPages;
             currentKanjiList = data.content || [];
+
+            // Cập nhật count
+            const total = data.totalElements || 0;
+            const isFiltered = level || search;
+            document.getElementById('kanjiCount').innerHTML =
+                `<i class="fas fa-layer-group me-1"></i>${isFiltered ? 'Kết quả: ' : 'Tổng: '}<strong>${total}</strong> kanji`;
 
             if (!currentKanjiList || currentKanjiList.length === 0) {
                 if (!isNavigation) {

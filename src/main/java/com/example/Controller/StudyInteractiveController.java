@@ -3,6 +3,7 @@ package com.example.Controller;
 import com.example.Entity.InteractiveScene;
 import com.example.Repository.InteractivePointRepository;
 import com.example.Repository.InteractiveSceneRepository;
+import com.example.Repository.LessonsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,18 +24,24 @@ public class StudyInteractiveController {
     @Autowired
     private InteractivePointRepository pointRepository;
 
+    @Autowired
+    private LessonsRepository lessonsRepository;
+
     @GetMapping("/interactive")
     public String interactiveStudy(@RequestParam("lessonId") Integer lessonId, Model model) {
         // Lấy TẤT CẢ scenes của bài học theo lessonId
         List<InteractiveScene> scenes = sceneRepository.findByLessonIdOrderByOrderIndexAsc(lessonId);
 
-        // ✅ Nếu chưa có scene nào, hiển thị thông báo thay vì lỗi
         if (scenes.isEmpty()) {
+            // Lấy lesson để có categoryId
+            lessonsRepository.findById(lessonId).ifPresent(lesson -> {
+                model.addAttribute("currentCateId", lesson.getCategoryId());
+                model.addAttribute("lesson", lesson);
+            });
+
             model.addAttribute("hasScenes", false);
             model.addAttribute("message", "Bài học này chưa có hình ảnh tương tác nào. Vui lòng quay lại sau!");
             model.addAttribute("scenes", new ArrayList<>());
-            model.addAttribute("currentCateId", null);
-            model.addAttribute("lesson", null);
             return "study/interactive";
         }
 
