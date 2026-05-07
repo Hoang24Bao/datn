@@ -70,13 +70,15 @@
                class="nav-item nav-link">Giới thiệu</a>
             <div class="nav-item dropdown">
                 <a href="#" class="nav-link dropdown-toggle"
-                   th:classappend="${currentPage == 'categories' || currentPage == 'instructor' || currentPage == 'team'} ? 'active' : ''"
+                   th:classappend="${currentPage == 'categories' || currentPage == 'kanji' || currentPage == 'team'} ? 'active' : ''"
                    data-bs-toggle="dropdown">Học tập</a>
                 <div class="dropdown-menu fade-down m-0">
                     <a th:href="@{/study/categories}" th:classappend="${currentPage == 'categories'} ? 'active' : ''"
                        class="dropdown-item">Từ vựng</a>
-                    <a th:href="@{/study/kanji}" class="dropdown-item">Kanji</a>
-                    <a th:href="@{/team}" class="dropdown-item">Bảng chữ cái</a>
+                    <a th:href="@{/study/kanji}" th:classappend="${currentPage == 'kanji'} ? 'active' : ''"
+                       class="dropdown-item">Kanji</a>
+                    <a th:href="@{/team}" th:classappend="${currentPage == 'team'} ? 'active' : ''"
+                       class="dropdown-item">Bảng chữ cái</a>
                 </div>
             </div>
             <div class="nav-item dropdown">

@@ -2,7 +2,6 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{layout :: html_head(title='Học Kanji - Ganbatte')}"></head>
-<link th:href="@{/css/style.css}" rel="stylesheet">
 
 <style>
     /* Kanji Page Styles */
@@ -174,7 +173,7 @@
 
     /* Nút điều hướng trong modal */
     .modal-nav-btn {
-        position: absolute;
+        position: fixed;
         top: 50%;
         transform: translateY(-50%);
         width: 40px;
@@ -196,14 +195,15 @@
         background: var(--teal);
         color: white;
         border-color: var(--teal);
+        transform: translateY(-50%) scale(1.1);
     }
 
     .modal-nav-prev {
-        left: -20px;
+        left: 300px;
     }
 
     .modal-nav-next {
-        right: -20px;
+        right: 300px;
     }
 
     .modal-header {
@@ -400,11 +400,11 @@
         }
 
         .modal-nav-prev {
-            left: -10px;
+            left: 10px;
         }
 
         .modal-nav-next {
-            right: -10px;
+            right: 10px;
         }
     }
 
@@ -481,7 +481,7 @@
 
 <!-- Modal Chi tiết Kanji -->
 <div class="modal fade" id="kanjiModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-md">
         <div class="modal-content">
             <button class="modal-nav-btn modal-nav-prev" id="navPrevBtn" title="Kanji trước (←)">
                 <i class="fas fa-chevron-left"></i>

@@ -61,7 +61,7 @@
 }
 
 .expression-text {
-    font-size: 20px;
+    font-size: 25px;
     font-weight: 500;
     color: #6c757d;
     margin-bottom: 0;
@@ -76,17 +76,17 @@
 }
 
 .romaji-text {
-    font-size: 18px;
+    font-size: 20px;
     color: #181d38;
 }
 
 .btn-audio {
     align-self: center;
-    width: 60px;
-    height: 60px;
-    min-width: 60px;
-    min-height: 60px;
-    font-size: 25px;
+    width: 55px;
+    height: 55px;
+    min-width: 55px;
+    min-height: 55px;
+    font-size: 23px;
     margin-top: -10px;
     margin-bottom: 10px;
     border-radius: 50%;

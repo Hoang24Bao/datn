@@ -1,96 +1,260 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="~{layout :: html_head(title='FLashcard')}">
-    <title>Flashcard</title>
-</head>
+<head th:replace="~{layout :: html_head(title='Flashcard')}"></head>
+<style>
+    .lesson-header {
+        background: white;
+        padding: 10px 5px;
+        border-radius: 0 0 20px 20px;
+        margin-top: 20px;
+        margin-bottom: 25px;
+    }
 
-<body>
+    .flashcard-container {
+        background-color: #f8f9fa;
+    }
+</style>
+
+<body class="flashcard-container">
 <th:block th:replace="~{layout :: spinner}"></th:block>
 <th:block th:replace="~{layout :: navbar}" th:with="currentPage='flashcard'"></th:block>
 
 
-    <!--Header Start-->
-    <div class="container-fluid py-2 mb-1" style="background-color:#fb873f;">
-        <div class="container text-center">
-            <h3 class="text-white m-0" style="font-size: 25px;">Đang học: <span id="lesson-name"th:text="${lesson != null ? lesson.lessonName : 'Tiếng Nhật'}">Tiếng Nhật</span></h3>
-        </div>
+<div class="container lesson-header d-flex justify-content-between align-items-center">
+    <div>
+        <h3 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: 1.5rem;">
+            <i class="fas fa-th me-2" style="color: #fb873f;"></i>
+            <span id="lesson-name"
+                  th:text="${lesson != null ? lesson.lessonName : 'Tiếng Nhật'}">Tiếng Nhật</span>
+        </h3>
     </div>
-    <!--Header End-->
+    <a th:href="@{/study/lessons(id=${currentCateId})}" class="btn btn-ganbatte rounded-pill px-4">
+        <i class="fas fa-arrow-left me-2"></i>Quay lại
+    </a>
+</div>
 
 
-    <!--Learning Start-->
-    <div class="container py-3">
-        <div class="learning-wrapper">
+<!--Learning Start-->
+<div class="container py-3">
+    <div class="learning-wrapper" id="learningWrapper">
 
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="text-muted small">Tiến trình học</span>
-                <span id="progress-text" class="fw-bold" style="color: #fb873f;">1/10</span>
-            </div>
-            <div class="progress mb-4" style="height: 10px; border-radius: 10px;">
-                <div id="progress-bar" class="progress-bar" style="width: 10%; background-color: #fb873f;"></div>
-            </div>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small">Tiến trình học</span>
+            <span id="progress-text" class="fw-bold" style="color: #fb873f;">1/10</span>
+        </div>
+        <div class="progress mb-4" style="height: 10px; border-radius: 10px;">
+            <div id="progress-bar" class="progress-bar" style="width: 10%; background-color: #fb873f;"></div>
+        </div>
 
-            <div class="position-relative d-flex align-items-center">
-                <button class="btn-nav btn-nav-left" onclick="prevWord()">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
+        <div class="position-relative d-flex align-items-center">
+            <button class="btn-nav btn-nav-left" onclick="prevWord()">
+                <i class="fas fa-chevron-left"></i>
+            </button>
 
-                <div class="flashcard-container" onclick="toggleFlip()">
-                    <div class="flashcard" id="flashcard">
-                        <div class="card-front">
-                            <button onclick="playAudio(event)" class="btn-audio">
-                                <i class="fas fa-volume-up"></i>
-                            </button>
-                            <img id="vocab-img" src="img/course-1.jpg" alt="Từ vựng" class="vocab-img">
-                            <div id="vocab-expression" class="expression-text">林檎</div>
-                            <div id="vocab-kana" class="jp-text">りんご</div>
-                            <div id="vocab-romaji" class="romaji-text">ringo</div>
-                            <audio id="vocab-audio" src=""></audio>
-                        </div>
-                        <div class="card-back">
-                            <p class="text-muted mb-3" style="font-size: 20px; font-weight: bold;">Ý nghĩa</p>
-                            <div id="vocab-vn" class="vn-text">Quả táo</div>
-                            <hr class="w-100">
-                            <p class="small text-muted" style="font-size: 15px;">Nhấn vào thẻ để xem mặt trước</p>
-                        </div>
+            <div class="flashcard-container" onclick="toggleFlip()">
+                <div class="flashcard" id="flashcard">
+                    <div class="card-front">
+                        <button onclick="playAudio(event)" class="btn-audio">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                        <img id="vocab-img" src="/img/default-vocab.jpg" alt="Từ vựng" class="vocab-img">
+                        <div id="vocab-expression" class="expression-text"></div>
+                        <div id="vocab-kana" class="jp-text"></div>
+                        <div id="vocab-romaji" class="romaji-text"></div>
+                        <audio id="vocab-audio" src=""></audio>
+                    </div>
+                    <div class="card-back">
+                        <p class="text-muted mb-3" style="font-size: 20px; font-weight: bold;">Ý nghĩa</p>
+                        <div id="vocab-vn" class="vn-text"></div>
+                        <hr class="w-100">
+                        <p class="small text-muted" style="font-size: 15px;">Nhấn vào thẻ để xem mặt trước</p>
                     </div>
                 </div>
-
-                <button class="btn-nav btn-nav-right" onclick="nextWord()">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
             </div>
 
-            <div class="d-flex justify-content-center gap-3 mt-0">
-                <button class="btn-learn btn-control btn-not-learned" style="font-size: 15px;">
-                    <i class="fas fa-chevron-left me-2"></i>Chưa thuộc
-                </button>
-                <button class="btn-learn btn-control btn-learned">
-                    Đã thuộc<i class="fas fa-chevron-right ms-2"></i>
-                </button>
-            </div>
-
+            <button class="btn-nav btn-nav-right" onclick="nextWord()">
+                <i class="fas fa-chevron-right"></i>
+            </button>
         </div>
+
+        <div class="d-flex justify-content-center gap-3 mt-0">
+            <button class="btn-learn btn-control btn-not-learned" onclick="markNotLearned()" style="font-size: 15px;">
+                <i class="fas fa-chevron-left me-2"></i>Chưa thuộc
+            </button>
+            <button class="btn-learn btn-control btn-learned" onclick="markLearned()">
+                Đã thuộc<i class="fas fa-chevron-right ms-2"></i>
+            </button>
+        </div>
+
     </div>
-    <!--Learning End-->
+
+    <!-- Thêm div thông báo khi không có dữ liệu -->
+    <div id="noDataMessage" class="text-center py-5" style="display: none;">
+        <i class="fas fa-book-open fa-4x mb-3" style="color: #adb5bd;"></i>
+        <h4 class="text-muted">Chưa có từ vựng trong bài học này</h4>
+        <p class="text-muted">Vui lòng quay lại sau hoặc liên hệ quản trị viên</p>
+        <a href="/study/lessons?id=" th:href="@{/study/lessons(id=${categoryId})}" class="btn-custom btn-teal mt-3">
+            <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách bài học
+        </a>
+    </div>
+</div>
+<!--Learning End-->
 
 
 <th:block th:replace="~{layout :: footer}"></th:block>
 
 
 <script th:inline="javascript">
-    /* Thymeleaf sẽ "nhúng" dữ liệu từ SQL vào đây */
+    /* Thymeleaf nhúng dữ liệu */
     const vocabulary = /*[[${vocabs}]]*/ [];
     const lessonName = /*[[${lesson != null ? lesson.lessonName : 'Tiếng Nhật'}]]*/ 'Tiếng Nhật';
+    const lessonId = /*[[${lesson != null ? lesson.id : 0}]]*/ 0;
     const categoryId = /*[[${currentCateId}]]*/ 1;
+
+    // Khởi tạo trạng thái đã học (lấy từ database)
+    let learnedStatus = {};
+    let memoryLevel = {};
 </script>
 
 <script>
-    // Cập nhật tiêu đề bài học từ dữ liệu SQL
+    // Cập nhật tiêu đề bài học
     document.getElementById('lesson-name').innerText = lessonName;
 
+    // Kiểm tra nếu không có từ vựng
+    if (!vocabulary || vocabulary.length === 0) {
+        // Ẩn phần học, hiện thông báo
+        document.getElementById('learningWrapper').style.display = 'none';
+        document.getElementById('noDataMessage').style.display = 'block';
+    } else {
+        document.getElementById('learningWrapper').style.display = 'block';
+        document.getElementById('noDataMessage').style.display = 'none';
+    }
+
     let currentIndex = 0;
+    let isProcessing = false; // Chống spam click
+
+    // Tải trạng thái đã học từ server
+    async function loadProgress() {
+        const token = localStorage.getItem('token');
+        if (!token || vocabulary.length === 0) return;
+
+        try {
+            // Lấy danh sách vocab_id của bài học hiện tại
+            const vocabIds = vocabulary.map(v => v.id).join(',');
+            const response = await fetch(`/api/progress/batch?vocabIds=${vocabIds}&lessonId=${lessonId}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (response.ok) {
+                const progressList = await response.json();
+                progressList.forEach(p => {
+                    learnedStatus[p.vocabId] = p.isLearned;
+                    memoryLevel[p.vocabId] = p.memoryLevel || 1;
+                });
+            }
+        } catch (error) {
+            console.error("Lỗi tải progress:", error);
+        }
+    }
+
+    // Lưu trạng thái học
+    async function saveProgress(vocabId, isLearned, newMemoryLevel) {
+        const token = localStorage.getItem('token');
+        if (!token) return false;
+
+        try {
+            const response = await fetch('/api/progress/update', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    vocabId: vocabId,
+                    lessonId: lessonId,
+                    isLearned: isLearned,
+                    memoryLevel: newMemoryLevel
+                })
+            });
+
+            if (response.ok) {
+                // Cập nhật local status
+                learnedStatus[vocabId] = isLearned;
+                memoryLevel[vocabId] = newMemoryLevel;
+                return true;
+            }
+        } catch (error) {
+            console.error("Lỗi lưu progress:", error);
+        }
+        return false;
+    }
+
+    // Đánh dấu "Đã thuộc"
+    async function markLearned() {
+        if (isProcessing) return;
+        isProcessing = true;
+
+        const currentVocab = vocabulary[currentIndex];
+        if (!currentVocab) {
+            isProcessing = false;
+            return;
+        }
+
+        const currentLevel = memoryLevel[currentVocab.id] || 1;
+        const newLevel = Math.min(5, currentLevel + 1);
+        const isLearned = newLevel >= 4;
+
+        const success = await saveProgress(currentVocab.id, isLearned, newLevel);
+
+        if (success) {
+            let message = '';
+            if (newLevel === 1) message = 'Chưa thuộc';
+            else if (newLevel === 2) message = 'Thuộc lơ mơ';
+            else if (newLevel === 3) message = 'Thuộc kha khá';
+            else if (newLevel === 4) message = 'Đã thuộc';
+            else if (newLevel === 5) message = 'Thuộc làu làu! 🎉';
+
+        }
+
+        setTimeout(() => {
+            nextWord();
+            isProcessing = false;
+        }, 300);
+    }
+
+    // Đánh dấu "Chưa thuộc"
+    async function markNotLearned() {
+        if (isProcessing) return;
+        isProcessing = true;
+
+        const currentVocab = vocabulary[currentIndex];
+        if (!currentVocab) {
+            isProcessing = false;
+            return;
+        }
+
+        const currentLevel = memoryLevel[currentVocab.id] || 1;
+        const newLevel = Math.max(1, currentLevel - 1);
+        const isLearned = newLevel >= 4;
+
+        const success = await saveProgress(currentVocab.id, isLearned, newLevel);
+
+        if (success) {
+            let message = '';
+            if (newLevel === 1) message = 'Chưa thuộc';
+            else if (newLevel === 2) message = 'Thuộc lơ mơ';
+            else if (newLevel === 3) message = 'Thuộc kha khá';
+            else if (newLevel === 4) message = 'Đã thuộc';
+            else if (newLevel === 5) message = 'Thuộc làu làu! 🎉';
+
+        }
+
+        setTimeout(() => {
+            nextWord();
+            isProcessing = false;
+        }, 300);
+    }
 
     function toggleFlip() {
         document.getElementById('flashcard').classList.toggle('flipped');
@@ -98,44 +262,37 @@
 
     function updateUI() {
         if (!vocabulary || vocabulary.length === 0) {
-            console.error("Dữ liệu từ vựng trống!");
             return;
         }
 
         const flashcard = document.getElementById('flashcard');
         const word = vocabulary[currentIndex];
         const total = vocabulary.length;
-        const timestamp = new Date().getTime(); // Dùng để xóa cache ảnh
+        const timestamp = new Date().getTime();
 
-        // 1. Reset trạng thái thẻ (Tắt hiệu ứng để quay mặt về trước ngay lập tức)
         flashcard.style.transition = 'none';
         flashcard.classList.remove('flipped');
-        void flashcard.offsetWidth; // Force reflow
+        void flashcard.offsetWidth;
 
-        // 2. Cập nhật Nội dung chữ
         document.getElementById('vocab-expression').innerText = word.expression || "";
         document.getElementById('vocab-kana').innerText = word.kana || "";
         document.getElementById('vocab-romaji').innerText = word.romaji || "";
         document.getElementById('vocab-vn').innerText = word.meaning || "";
 
-        // 3. Cập nhật Ảnh (Thêm ?v= để xóa cache trình duyệt)
         const imgElement = document.getElementById('vocab-img');
-        if (word.imageUrl) {
+        if (word.imageUrl && word.imageUrl.trim() !== '') {
             imgElement.src = word.imageUrl + '?v=' + timestamp;
         } else {
-            imgElement.src = '/img/default.jpg';
+            imgElement.src = '/img/default-vocab.jpg';
         }
 
-        // 4. Cập nhật Audio
         const audioPath = word.audioUrl;
         document.getElementById('vocab-audio').src = audioPath;
 
-        // 5. Cập nhật Thanh tiến độ
         const currentPos = currentIndex + 1;
         document.getElementById('progress-text').innerText = `${currentPos}/${total}`;
         document.getElementById('progress-bar').style.width = `${(currentPos / total) * 100}%`;
 
-        // 6. Bật lại hiệu ứng xoay cho lần nhấn tiếp theo
         setTimeout(() => {
             flashcard.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
         }, 10);
@@ -146,18 +303,85 @@
             currentIndex++;
             updateUI();
         } else {
-            Swal.fire({
-            title: '🎉 Chúc mừng!',
-            text: 'Bạn đã hoàn thành bài học.',
-            icon: 'success',
-            confirmButtonText: 'Về trang Bài học',
-            confirmButtonColor: '#28a745',
-            allowOutsideClick: false
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = "/study/lessons?id=" + categoryId;
+            let stats = {
+                level1: 0, level2: 0, level3: 0, level4: 0, level5: 0
+            };
+
+            for (const vocab of vocabulary) {
+                const level = memoryLevel[vocab.id] || 1;
+                if (level === 1) stats.level1++;
+                else if (level === 2) stats.level2++;
+                else if (level === 3) stats.level3++;
+                else if (level === 4) stats.level4++;
+                else if (level === 5) stats.level5++;
             }
-        });
+
+            const total = vocabulary.length;
+            const learned = stats.level4 + stats.level5;
+            const percent = Math.round(learned / total * 100);
+
+            Swal.fire({
+    title: '🎉 Chúc mừng!',
+    html: `
+        <p class="mb-3"><strong>Bạn đã hoàn thành bài học!</strong></p>
+        <p class="mb-2">📊 <strong>Kết quả học tập:</strong></p>
+        <table style="width:100%; border-collapse: collapse; margin-bottom: 12px; font-size: 16px;">
+            <thead>
+                <tr style="background-color: #f8f9fa;">
+                    <th style="padding: 8px 10px; border: 1px solid #dee2e6; text-align: center;">Mức độ</th>
+                    <th style="padding: 8px 10px; border: 1px solid #dee2e6; text-align: center;">Số từ</th>
+                    <th style="padding: 8px 10px; border: 1px solid #dee2e6; text-align: center;">Tỉ lệ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding: 7px 10px; border: 1px solid #dee2e6;">🔴 Chưa thuộc</td>
+                    <td style="padding: 7px 10px; border: 1px solid #dee2e6; text-align: center;"><strong>${stats.level1}</strong></td>
+                    <td style="padding: 7px 10px; border: 1px solid #dee2e6; text-align: center;">${Math.round(stats.level1/total*100)}%</td>
+                </tr>
+                <tr style="background-color: #f8f9fa;">
+                    <td style="padding: 7px 10px; border: 1px solid #dee2e6;">🟠 Thuộc lơ mơ</td>
+                    <td style="padding: 7px 10px; border: 1px solid #dee2e6; text-align: center;"><strong>${stats.level2}</strong></td>
+                    <td style="padding: 7px 10px; border: 1px solid #dee2e6; text-align: center;">${Math.round(stats.level2/total*100)}%</td>
+                </tr>
+                <tr>
+                    <td style="padding: 7px 10px; border: 1px solid #dee2e6;">🟡 Thuộc kha khá</td>
+                    <td style="padding: 7px 10px; border: 1px solid #dee2e6; text-align: center;"><strong>${stats.level3}</strong></td>
+                    <td style="padding: 7px 10px; border: 1px solid #dee2e6; text-align: center;">${Math.round(stats.level3/total*100)}%</td>
+                </tr>
+                <tr style="background-color: #f8f9fa;">
+                    <td style="padding: 7px 10px; border: 1px solid #dee2e6;">🟢 Đã thuộc</td>
+                    <td style="padding: 7px 10px; border: 1px solid #dee2e6; text-align: center;"><strong>${stats.level4}</strong></td>
+                    <td style="padding: 7px 10px; border: 1px solid #dee2e6; text-align: center;">${Math.round(stats.level4/total*100)}%</td>
+                </tr>
+                <tr>
+                    <td style="padding: 7px 10px; border: 1px solid #dee2e6;">⭐ Thuộc làu làu</td>
+                    <td style="padding: 7px 10px; border: 1px solid #dee2e6; text-align: center;"><strong>${stats.level5}</strong></td>
+                    <td style="padding: 7px 10px; border: 1px solid #dee2e6; text-align: center;">${Math.round(stats.level5/total*100)}%</td>
+                </tr>
+                <tr style="background-color: #e9f7ef; font-weight: bold;">
+                    <td style="padding: 7px 10px; border: 1px solid #dee2e6;">📈 Tổng đã thuộc</td>
+                    <td style="padding: 7px 10px; border: 1px solid #dee2e6; text-align: center;">${learned}/${total}</td>
+                    <td style="padding: 7px 10px; border: 1px solid #dee2e6; text-align: center;">${percent}%</td>
+                </tr>
+            </tbody>
+        </table>
+    `,
+
+    showConfirmButton: true,
+    confirmButtonText: '<i class="fas fa-arrow-left me-1"></i> Về trang Bài học',
+    confirmButtonColor: 'var(--teal)',
+    showDenyButton: true,
+    denyButtonText: '<i class="fas fa-redo me-1"></i> Thử lại',
+    denyButtonColor: '#fb873f',
+    allowOutsideClick: false
+}).then((result) => {
+    if (result.isConfirmed) {
+        window.location.href = "/study/lessons?id=" + categoryId;
+    } else if (result.isDenied) {
+        window.location.reload();
+    }
+});
         }
     }
 
@@ -173,15 +397,42 @@
         const audio = document.getElementById('vocab-audio');
         audio.play().catch(e => {
             console.error("Không tìm thấy file âm thanh:", audio.src);
-            alert("Không tìm thấy file âm thanh cho từ này.");
         });
     }
 
-    // Khởi tạo hiển thị lần đầu
-    document.addEventListener('DOMContentLoaded', updateUI);
+    // Khởi tạo
+    document.addEventListener('DOMContentLoaded', async () => {
+        if (vocabulary && vocabulary.length > 0) {
+            await loadProgress();
+            updateUI();
+        }
+    });
+
+    // Thêm sự kiện bàn phím cho flashcard
+    document.addEventListener('keydown', function(e) {
+        const flashcardContainer = document.querySelector('.flashcard-container');
+        if (!flashcardContainer) return;
+
+        // Kiểm tra xem có đang hiển thị phần học không
+        if (vocabulary.length === 0) return;
+
+        const activeElement = document.activeElement;
+        if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+            return;
+        }
+
+        if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            nextWord();
+        } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            prevWord();
+        } else if (e.key === ' ' || e.key === 'Space' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            toggleFlip();
+        }
+    });
 </script>
 
-
 </body>
-
 </html>
