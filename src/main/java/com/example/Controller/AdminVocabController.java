@@ -1,6 +1,8 @@
 package com.example.Controller;
 
+import com.example.Entity.Lessons;
 import com.example.Entity.Vocabulary;
+import com.example.Repository.LessonsRepository;
 import com.example.Repository.VocabularyRepository;
 import com.example.Service.AudioGenerationService;
 import jakarta.transaction.Transactional;
@@ -12,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +33,9 @@ public class AdminVocabController {
 
     @Autowired
     private InteractivePointRepository interactivePointRepository;
+
+    @Autowired
+    private LessonsRepository lessonRepository;
 
     @PostMapping("/generate-audio")
     public ResponseEntity<?> generateAudio(@RequestBody Map<String, String> request) {
@@ -284,14 +290,52 @@ public class AdminVocabController {
     /**
      * Kiểm tra từ vựng có đang được dùng trong InteractivePoint của một bài học cụ thể không
      */
-    @GetMapping("/{id}/check-usage-in-lesson")
-    public ResponseEntity<?> checkVocabUsageInLesson(@PathVariable Integer id, @RequestParam Integer lessonId) {
-        int pointCount = interactivePointRepository.countByVocabIdAndLessonId(id, lessonId);
+    @GetMapping("/{id}/check-usage-in-category")
+    public ResponseEntity<?> checkVocabUsageInCategory(@PathVariable Integer id, @RequestParam Integer categoryId) {
+        int pointCount = interactivePointRepository.countByVocabIdAndCategoryId(id, categoryId);
 
         Map<String, Object> response = new HashMap<>();
         response.put("hasInteractivePoints", pointCount > 0);
         response.put("pointCount", pointCount);
+        response.put("categoryId", categoryId);
 
         return ResponseEntity.ok(response);
+    }
+
+
+    @GetMapping("/by-category/{categoryId}")
+    public ResponseEntity<?> getVocabByCategory(@PathVariable Integer categoryId) {
+        try {
+            // Lấy tất cả lessons trong category
+            List<Lessons> lessons = lessonRepository.findByCategoryId(categoryId);
+
+            List<Map<String, Object>> result = new ArrayList<>();
+            for (Lessons lesson : lessons) {
+                // Lấy vocabulary theo từng lesson
+                List<Vocabulary> vocabList = vocabularyRepository.findByLessonId(lesson.getId());
+                for (Vocabulary vocab : vocabList) {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("id", vocab.getId());
+                    item.put("expression", vocab.getExpression());
+                    item.put("kana", vocab.getKana());
+                    item.put("romaji", vocab.getRomaji());
+                    item.put("meaning", vocab.getMeaning());
+                    item.put("wordType", vocab.getWordType());
+                    item.put("example", vocab.getExample());
+                    item.put("exampleVi", vocab.getExampleVi());
+                    item.put("imageUrl", vocab.getImageUrl());
+                    item.put("audioUrl", vocab.getAudioUrl());
+                    item.put("isActive", vocab.getIsActive());
+                    item.put("lessonName", lesson.getLessonName());
+                    item.put("lessonId", lesson.getId());
+                    result.add(item);
+                }
+            }
+
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }

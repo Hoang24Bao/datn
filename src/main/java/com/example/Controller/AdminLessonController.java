@@ -5,6 +5,7 @@ import com.example.Entity.Categories;
 import com.example.Entity.InteractiveScene;
 import com.example.Entity.Lessons;
 import com.example.Entity.Vocabulary;
+import com.example.Repository.InteractiveSceneRepository;
 import com.example.Repository.LessonsRepository;
 import com.example.Repository.CategoriesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ public class AdminLessonController {
 
     @Autowired
     private LessonsRepository lessonRepository;
+
+    @Autowired
+    private InteractiveSceneRepository interactiveSceneRepository;
 
     @Autowired
     private CategoriesRepository categoryRepository;
@@ -272,19 +276,23 @@ public class AdminLessonController {
 
     @GetMapping("/{id}/scenes")
     public ResponseEntity<?> getScenesByLesson(@PathVariable Integer id) {
-        List<InteractiveScene> scenes = lessonRepository.findScenesByLessonId(id);
+        // Lấy lesson để biết categoryId
+        return lessonRepository.findById(id).map(lesson -> {
+            // Lấy scenes theo categoryId (không phải theo lessonId)
+            List<InteractiveScene> scenes = interactiveSceneRepository.findByCategoryIdOrderByOrderIndexAsc(lesson.getCategoryId());
 
-        List<InteractiveSceneDTO> response = scenes.stream()
-                .map(scene -> new InteractiveSceneDTO(
-                        scene.getId(),
-                        scene.getImageUrl(),
-                        scene.getDescription(),
-                        scene.getOrderIndex(),
-                        scene.getPoints() != null ? scene.getPoints().size() : 0
-                ))
-                .collect(Collectors.toList());
+            List<InteractiveSceneDTO> response = scenes.stream()
+                    .map(scene -> new InteractiveSceneDTO(
+                            scene.getId(),
+                            scene.getImageUrl(),
+                            scene.getDescription(),
+                            scene.getOrderIndex(),
+                            scene.getPoints() != null ? scene.getPoints().size() : 0
+                    ))
+                    .collect(Collectors.toList());
 
-        return ResponseEntity.ok(response);
+            return ResponseEntity.ok(response);
+        }).orElse(ResponseEntity.notFound().build());
     }
 
 
@@ -319,6 +327,33 @@ public class AdminLessonController {
         return ResponseEntity.ok(availableVocab);
     }
 
+    @PostMapping("/lesson-vocab/batch-add")
+    @Transactional
+    public ResponseEntity<?> batchAddVocabToLesson(@RequestBody List<Map<String, Object>> payload) {
+        try {
+            // payload: [{ lessonId, vocabId }, ...]
+            // Lấy max displayOrder hiện tại một lần duy nhất
+            if (payload.isEmpty()) return ResponseEntity.badRequest().body("Danh sách rỗng!");
+
+            Integer lessonId = Integer.parseInt(payload.get(0).get("lessonId").toString());
+            Integer currentMax = lessonRepository.getMaxDisplayOrder(lessonId);
+            int order = (currentMax != null ? currentMax : 0);
+
+            int added = 0;
+            for (Map<String, Object> item : payload) {
+                Integer vocabId = Integer.parseInt(item.get("vocabId").toString());
+                if (!lessonRepository.isVocabInLesson(lessonId, vocabId)) {
+                    order++;
+                    lessonRepository.addVocabToLesson(lessonId, vocabId, order);
+                    added++;
+                }
+            }
+            return ResponseEntity.ok("Đã thêm " + added + " từ vựng vào bài học");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Lỗi: " + e.getMessage());
+        }
+    }
+
     // Xóa từ vựng khỏi bài học
     @DeleteMapping("/lesson-vocab")
     @Transactional
@@ -336,6 +371,45 @@ public class AdminLessonController {
             return ResponseEntity.badRequest().body("Lỗi: " + e.getMessage());
         }
     }
+
+    // Kiểm tra từ vựng có đang được dùng trong InteractivePoint của lesson không
+    @GetMapping("/vocab/{vocabId}/check-usage-in-lesson")
+    public ResponseEntity<?> checkVocabUsageInLesson(
+            @PathVariable Integer vocabId,
+            @RequestParam Integer lessonId) {
+        try {
+            // Đếm số interactive points có sử dụng từ vựng này trong các scene của lesson
+            int pointCount = lessonRepository.countInteractivePointsByVocabAndLesson(vocabId, lessonId);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("hasInteractivePoints", pointCount > 0);
+            result.put("pointCount", pointCount);
+
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Lỗi: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{lessonId}/vocab/all")
+    @Transactional
+    public ResponseEntity<?> removeAllVocabFromLesson(@PathVariable Integer lessonId) {
+        try {
+            // Kiểm tra xem có từ vựng nào đang được dùng trong InteractivePoint không
+            int usageCount = lessonRepository.countInteractivePointsByLesson(lessonId);
+
+            if (usageCount > 0) {
+                return ResponseEntity.badRequest()
+                        .body("Không thể xóa: Có " + usageCount + " điểm tương tác đang sử dụng từ vựng trong bài học này!");
+            }
+
+            int deletedCount = lessonRepository.removeAllVocabFromLesson(lessonId);
+            return ResponseEntity.ok("Đã xóa " + deletedCount + " từ vựng khỏi bài học");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Lỗi: " + e.getMessage());
+        }
+    }
+
 
     // Helper: Đồng bộ total_lessons cho một category
     private void syncTotalLessons(Integer categoryId) {

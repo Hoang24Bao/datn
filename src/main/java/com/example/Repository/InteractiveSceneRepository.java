@@ -8,8 +8,15 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface InteractiveSceneRepository extends JpaRepository<InteractiveScene, Integer> {
-    List<InteractiveScene> findByLessonIdOrderByOrderIndexAsc(Integer lessonId);
 
-    @Query("SELECT COALESCE(MAX(s.orderIndex), 0) FROM InteractiveScene s WHERE s.lesson.id = :lessonId")
-    int getMaxOrderIndex(@Param("lessonId") Integer lessonId);
+    // Sửa từ findByLessonId → findByCategoryId
+    List<InteractiveScene> findByCategoryIdOrderByOrderIndexAsc(Integer categoryId);
+
+    // Lấy scene đang active theo category
+    List<InteractiveScene> findByCategoryIdAndIsActiveTrueOrderByOrderIndexAsc(Integer categoryId);
+
+    // Lấy max order index trong category
+    // Thêm method này nếu chưa có
+    @Query("SELECT COALESCE(MAX(s.orderIndex), 0) FROM InteractiveScene s WHERE s.categoryId = :categoryId")
+    int getMaxOrderIndex(@Param("categoryId") Integer categoryId);
 }

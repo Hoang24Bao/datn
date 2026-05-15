@@ -9,14 +9,37 @@ import java.util.List;
 import java.util.Map;
 
 public interface InteractivePointRepository extends JpaRepository<InteractivePoint, Integer> {
+
     List<InteractivePoint> findBySceneId(Integer sceneId);
 
-    @Query("SELECT COUNT(ip) FROM InteractivePoint ip WHERE ip.vocabulary.id = :vocabId")
+    @Query("SELECT p FROM InteractivePoint p WHERE p.sceneId = :sceneId")
+    List<InteractivePoint> findPointsBySceneId(@Param("sceneId") Integer sceneId);
+
+    // ========== CÁC METHOD CHO AdminVocabController (cập nhật theo category) ==========
+
+    // Đếm số lượng interactive points theo vocab_id
+    @Query("SELECT COUNT(p) FROM InteractivePoint p WHERE p.vocabId = :vocabId")
     int countByVocabId(@Param("vocabId") Integer vocabId);
 
-    @Query("SELECT COUNT(ip) FROM InteractivePoint ip WHERE ip.vocabulary.id = :vocabId AND ip.scene.lesson.id = :lessonId")
-    int countByVocabIdAndLessonId(@Param("vocabId") Integer vocabId, @Param("lessonId") Integer lessonId);
+    // Đếm số lượng interactive points theo vocab_id và category_id (qua scene)
+    @Query(value = "SELECT COUNT(*) FROM Interactive_Points ip " +
+            "INNER JOIN Interactive_Scenes ist ON ip.scene_id = ist.id " +
+            "WHERE ip.vocab_id = :vocabId AND ist.category_id = :categoryId",
+            nativeQuery = true)
+    int countByVocabIdAndCategoryId(@Param("vocabId") Integer vocabId,
+                                    @Param("categoryId") Integer categoryId);
 
-    @Query("SELECT new map(ip.scene.id as sceneId, ip.scene.description as sceneName, ip.scene.lesson.id as lessonId, ip.scene.lesson.lessonName as lessonName) FROM InteractivePoint ip WHERE ip.vocabulary.id = :vocabId GROUP BY ip.scene.id, ip.scene.description, ip.scene.lesson.id, ip.scene.lesson.lessonName")
+    // Lấy thông tin các scene có chứa vocab này (theo category mới)
+    // Sửa lại query trong InteractivePointRepository.java
+    @Query(value = "SELECT ist.id as sceneId, ist.description as sceneName, " +
+            "ist.category_id as categoryId, c.category_name as categoryName, " +
+            "l.id as lessonId " +
+            "FROM Interactive_Points ip " +
+            "INNER JOIN Interactive_Scenes ist ON ip.scene_id = ist.id " +
+            "INNER JOIN Categories c ON ist.category_id = c.id " +
+            "LEFT JOIN Lessons l ON l.category_id = c.id " +
+            "WHERE ip.vocab_id = :vocabId " +
+            "GROUP BY ist.id, ist.description, ist.category_id, c.category_name, l.id",
+            nativeQuery = true)
     List<Map<String, Object>> findSceneUsageByVocabId(@Param("vocabId") Integer vocabId);
 }

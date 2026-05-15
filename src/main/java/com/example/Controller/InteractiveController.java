@@ -2,11 +2,11 @@ package com.example.Controller;
 
 import com.example.Entity.InteractivePoint;
 import com.example.Entity.InteractiveScene;
-import com.example.Entity.Lessons;
+import com.example.Entity.Categories;
 import com.example.Entity.Vocabulary;
 import com.example.Repository.InteractivePointRepository;
 import com.example.Repository.InteractiveSceneRepository;
-import com.example.Repository.LessonsRepository;
+import com.example.Repository.CategoriesRepository;
 import com.example.Repository.VocabularyRepository;
 import com.example.Service.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,28 +33,29 @@ public class InteractiveController {
     private InteractivePointRepository pointRepository;
 
     @Autowired
-    private LessonsRepository lessonsRepository;
+    private CategoriesRepository categoriesRepository;  // Đổi từ LessonsRepository
 
     @Autowired
     private VocabularyRepository vocabularyRepository;
 
+    // Tạo scene mới (theo category, không theo lesson)
     @PostMapping("/scene")
     public ResponseEntity<?> createScene(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("lessonId") Integer lessonId,
-            @RequestParam("description") String description) {
+            @RequestParam("categoryId") Integer categoryId,
+            @RequestParam(value = "description", required = false) String description) {
         try {
             String imageUrl = cloudinaryService.uploadImage(file);
 
-            Lessons lesson = lessonsRepository.findById(lessonId)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy bài học"));
+            Categories category = categoriesRepository.findById(categoryId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy chủ đề"));
 
             InteractiveScene scene = new InteractiveScene();
-            scene.setLesson(lesson);
+            scene.setCategoryId(categoryId);
             scene.setImageUrl(imageUrl);
             scene.setDescription(description);
 
-            int maxOrder = sceneRepository.getMaxOrderIndex(lessonId);
+            int maxOrder = sceneRepository.getMaxOrderIndex(categoryId);
             scene.setOrderIndex(maxOrder + 1);
 
             sceneRepository.save(scene);
@@ -69,6 +70,7 @@ public class InteractiveController {
         }
     }
 
+    // Thêm điểm tương tác
     @PostMapping("/point")
     public ResponseEntity<?> createPoint(@RequestBody Map<String, Object> payload) {
         try {
@@ -82,8 +84,8 @@ public class InteractiveController {
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy từ vựng"));
 
             InteractivePoint point = new InteractivePoint();
-            point.setScene(scene);
-            point.setVocabulary(vocabulary);
+            point.setSceneId(sceneId);
+            point.setVocabId(vocabId);
             point.setCoordX(Double.parseDouble(payload.get("coordX").toString()));
             point.setCoordY(Double.parseDouble(payload.get("coordY").toString()));
             point.setWidth(Double.parseDouble(payload.get("width").toString()));
@@ -96,9 +98,10 @@ public class InteractiveController {
         }
     }
 
-    @GetMapping("/scenes/{lessonId}")
-    public ResponseEntity<?> getScenesByLesson(@PathVariable Integer lessonId) {
-        List<InteractiveScene> scenes = sceneRepository.findByLessonIdOrderByOrderIndexAsc(lessonId);
+    // Lấy danh sách scenes theo category (cho admin)
+    @GetMapping("/scenes/{categoryId}")
+    public ResponseEntity<?> getScenesByCategory(@PathVariable Integer categoryId) {
+        List<InteractiveScene> scenes = sceneRepository.findByCategoryIdOrderByOrderIndexAsc(categoryId);
 
         List<Map<String, Object>> result = scenes.stream().map(scene -> {
             Map<String, Object> item = new HashMap<>();
@@ -117,17 +120,16 @@ public class InteractiveController {
                 pointItem.put("height", point.getHeight());
 
                 Vocabulary vocab = point.getVocabulary();
-                pointItem.put("vocab", Map.of(
-                        "id", vocab.getId(),
-                        "expression", vocab.getExpression(),
-                        "kana", vocab.getKana(),
-                        "romaji", vocab.getRomaji(),
-                        "meaning", vocab.getMeaning(),
-                        "imageUrl", vocab.getImageUrl(),
-                        "audioUrl", vocab.getAudioUrl(),
-                        "example", vocab.getExample(),
-                        "exampleVi", vocab.getExampleVi()
-                ));
+                if (vocab != null) {
+                    pointItem.put("vocab", Map.of(
+                            "id", vocab.getId(),
+                            "expression", vocab.getExpression(),
+                            "kana", vocab.getKana(),
+                            "romaji", vocab.getRomaji(),
+                            "meaning", vocab.getMeaning(),
+                            "imageUrl", vocab.getImageUrl()
+                    ));
+                }
                 return pointItem;
             }).collect(Collectors.toList());
             item.put("points", pointList);
@@ -137,6 +139,7 @@ public class InteractiveController {
         return ResponseEntity.ok(result);
     }
 
+    // Xóa scene
     @DeleteMapping("/scene/{sceneId}")
     public ResponseEntity<?> deleteScene(@PathVariable Integer sceneId) {
         try {
@@ -147,42 +150,69 @@ public class InteractiveController {
         }
     }
 
+    // Tạo scene từ URL (cho admin)
+    // Sửa method createSceneFromUrl
     @PostMapping("/scene-from-url")
     public ResponseEntity<?> createSceneFromUrl(@RequestBody Map<String, Object> payload) {
         try {
             String imageUrl = (String) payload.get("imageUrl");
-            Integer lessonId = Integer.parseInt(payload.get("lessonId").toString());
+            Object categoryIdObj = payload.get("categoryId");
+
+            if (imageUrl == null || imageUrl.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "imageUrl không được để trống"));
+            }
+
+            if (categoryIdObj == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "categoryId không được để trống"));
+            }
+
+            Integer categoryId = Integer.parseInt(categoryIdObj.toString());
             String description = (String) payload.get("description");
 
-            Lessons lesson = lessonsRepository.findById(lessonId)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy bài học"));
+            // Kiểm tra category tồn tại
+            Categories category = categoriesRepository.findById(categoryId)
+                    .orElse(null);
+
+            if (category == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Không tìm thấy chủ đề với ID: " + categoryId));
+            }
 
             InteractiveScene scene = new InteractiveScene();
-            scene.setLesson(lesson);
+            scene.setCategoryId(categoryId);
             scene.setImageUrl(imageUrl);
-            scene.setDescription(description);
+            scene.setDescription(description != null ? description : "");
 
-            int maxOrder = sceneRepository.getMaxOrderIndex(lessonId);
+            int maxOrder = sceneRepository.getMaxOrderIndex(categoryId);
             scene.setOrderIndex(maxOrder + 1);
 
-            sceneRepository.save(scene);
+            InteractiveScene savedScene = sceneRepository.save(scene);
 
-            return ResponseEntity.ok(Map.of("sceneId", scene.getId(), "message", "Tạo cảnh thành công!"));
+            Map<String, Object> response = new HashMap<>();
+            response.put("sceneId", savedScene.getId());
+            response.put("message", "Tạo cảnh thành công!");
+
+            return ResponseEntity.ok(response);
+
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "categoryId phải là số"));
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
+    // Upload ảnh scene
     @PostMapping("/upload-scene-image")
     public ResponseEntity<?> uploadSceneImage(@RequestParam("file") MultipartFile file) {
         try {
-            String imageUrl = cloudinaryService.uploadImage(file);  // Gọi đúng method upload vào folder interactive
+            String imageUrl = cloudinaryService.uploadImage(file);
             return ResponseEntity.ok(Map.of("imageUrl", imageUrl));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
+    // Lấy chi tiết scene theo ID
     @GetMapping("/scene/{sceneId}")
     public ResponseEntity<?> getSceneById(@PathVariable Integer sceneId) {
         try {
@@ -204,12 +234,16 @@ public class InteractiveController {
                 pointItem.put("coordY", point.getCoordY());
                 pointItem.put("width", point.getWidth());
                 pointItem.put("height", point.getHeight());
-                pointItem.put("vocabId", point.getVocabulary().getId());
-                pointItem.put("vocab", Map.of(
-                        "id", point.getVocabulary().getId(),
-                        "expression", point.getVocabulary().getExpression(),
-                        "meaning", point.getVocabulary().getMeaning()
-                ));
+                pointItem.put("vocabId", point.getVocabId());
+
+                Vocabulary vocab = point.getVocabulary();
+                if (vocab != null) {
+                    pointItem.put("vocab", Map.of(
+                            "id", vocab.getId(),
+                            "expression", vocab.getExpression(),
+                            "meaning", vocab.getMeaning()
+                    ));
+                }
                 return pointItem;
             }).collect(Collectors.toList());
 
@@ -221,6 +255,7 @@ public class InteractiveController {
         }
     }
 
+    // Cập nhật mô tả scene
     @PutMapping("/scene/update")
     public ResponseEntity<?> updateScene(@RequestBody Map<String, Object> payload) {
         try {
@@ -230,7 +265,9 @@ public class InteractiveController {
             InteractiveScene scene = sceneRepository.findById(sceneId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy cảnh"));
 
-            scene.setDescription(description);
+            if (description != null) {
+                scene.setDescription(description);
+            }
             sceneRepository.save(scene);
 
             return ResponseEntity.ok(Map.of("message", "Cập nhật thành công"));
@@ -239,6 +276,7 @@ public class InteractiveController {
         }
     }
 
+    // Xóa tất cả points của scene
     @DeleteMapping("/scene/{sceneId}/points")
     public ResponseEntity<?> deleteAllPoints(@PathVariable Integer sceneId) {
         try {

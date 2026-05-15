@@ -1,9 +1,10 @@
 package com.example.Controller;
 
 import com.example.Entity.InteractiveScene;
+import com.example.Entity.Categories;
 import com.example.Repository.InteractivePointRepository;
 import com.example.Repository.InteractiveSceneRepository;
-import com.example.Repository.LessonsRepository;
+import com.example.Repository.CategoriesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,22 +26,22 @@ public class StudyInteractiveController {
     private InteractivePointRepository pointRepository;
 
     @Autowired
-    private LessonsRepository lessonsRepository;
+    private CategoriesRepository categoriesRepository;  // Đổi từ LessonsRepository
 
     @GetMapping("/interactive")
-    public String interactiveStudy(@RequestParam("lessonId") Integer lessonId, Model model) {
-        // Lấy TẤT CẢ scenes của bài học theo lessonId
-        List<InteractiveScene> scenes = sceneRepository.findByLessonIdOrderByOrderIndexAsc(lessonId);
+    public String interactiveStudy(@RequestParam("categoryId") Integer categoryId, Model model) {
+        // Lấy TẤT CẢ scenes của category theo categoryId
+        List<InteractiveScene> scenes = sceneRepository.findByCategoryIdOrderByOrderIndexAsc(categoryId);
 
         if (scenes.isEmpty()) {
-            // Lấy lesson để có categoryId
-            lessonsRepository.findById(lessonId).ifPresent(lesson -> {
-                model.addAttribute("currentCateId", lesson.getCategoryId());
-                model.addAttribute("lesson", lesson);
+            // Lấy category để có thông tin
+            categoriesRepository.findById(categoryId).ifPresent(category -> {
+                model.addAttribute("currentCateId", category.getId());
+                model.addAttribute("category", category);
             });
 
             model.addAttribute("hasScenes", false);
-            model.addAttribute("message", "Bài học này chưa có hình ảnh tương tác nào. Vui lòng quay lại sau!");
+            model.addAttribute("message", "Chủ đề này chưa có hình ảnh tương tác nào. Vui lòng quay lại sau!");
             model.addAttribute("scenes", new ArrayList<>());
             return "study/interactive";
         }
@@ -56,8 +57,8 @@ public class StudyInteractiveController {
 
         model.addAttribute("hasScenes", true);
         model.addAttribute("scenes", scenes);
-        model.addAttribute("currentCateId", scenes.get(0).getLesson().getCategoryId());
-        model.addAttribute("lesson", scenes.get(0).getLesson());
+        model.addAttribute("currentCateId", scenes.get(0).getCategoryId());
+        model.addAttribute("category", scenes.get(0).getCategory());
 
         return "study/interactive";
     }

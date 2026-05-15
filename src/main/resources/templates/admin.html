@@ -499,16 +499,300 @@
     </div>
 </div>
 
+<!-- Modal Import Excel -->
+<div class="modal fade" id="importExcelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px;">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-file-excel me-2" style="color: #28a745;"></i>
+                    Import từ vựng từ Excel
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Hướng dẫn:</strong><br>
+                    - File Excel cần có các cột theo thứ tự: expression, kana, romaji, meaning, image, audio, word_type,
+                    example, example_vi<br>
+                    - Tên file ảnh/audio trong Excel phải trùng với tên file bạn chọn bên dưới<br>
+                    - Ảnh và audio sẽ được tự động upload lên Cloudinary
+                </div>
+
+                <form id="importExcelForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">File Excel <span class="text-danger">*</span></label>
+                        <input type="file" id="excelFile" class="form-control" accept=".xlsx,.xls" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Chọn file ảnh (có thể chọn nhiều)</label>
+                        <input type="file" id="imageFiles" class="form-control" accept="image/*" multiple>
+                        <small class="text-muted">Chọn tất cả file ảnh (.jpg, .png) tương ứng với cột "image" trong
+                            Excel</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Chọn file audio (có thể chọn nhiều)</label>
+                        <input type="file" id="audioFiles" class="form-control" accept=".mp3,.wav" multiple>
+                        <small class="text-muted">Chọn tất cả file audio (.mp3) tương ứng với cột "audio" trong
+                            Excel</small>
+                    </div>
+                </form>
+
+                <!-- Progress bar -->
+                <div id="importProgress" style="display: none;" class="mt-3">
+                    <div class="progress">
+                        <div id="importProgressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                             style="width: 0%">0%
+                        </div>
+                    </div>
+                    <p class="mt-2 text-center" id="importStatus">Đang xử lý...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-custom btn-red" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn-custom" id="submitImportBtn"
+                        style="background: #28a745; color: white;" onclick="submitImportExcel()">
+                    <i class="fas fa-upload me-2"></i>Import
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal tạo cảnh tương tác (THÊM MỚI) - ĐẶT CỐ ĐỊNH -->
+<div class="modal fade" id="createSceneModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px;">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-image me-2" style="color: var(--teal);"></i>Tạo cảnh tương tác
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <!-- Bước 1: Nhập thông tin ảnh -->
+                <div id="step1Container">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Mô tả cảnh</label>
+                            <input type="text" id="sceneDesc" class="form-control"
+                                   placeholder="VD: Phòng khách, Văn phòng...">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">URL ảnh (có sẵn trên Cloudinary)</label>
+                            <div class="input-group">
+                                <input type="text" id="sceneImageUrl" class="form-control"
+                                       placeholder="https://res.cloudinary.com/.../image.jpg">
+                                <button class="btn btn-outline-secondary" type="button" onclick="previewImageFromUrl()">
+                                    <i class="fas fa-eye"></i> Xem trước
+                                </button>
+                            </div>
+                            <div class="text-center my-2">--- HOẶC ---</div>
+                            <label class="form-label fw-bold">Tải ảnh từ máy tính</label>
+                            <input type="file" id="sceneImageFile" class="form-control" accept="image/*"
+                                   onchange="previewSceneImageFile()">
+                        </div>
+                    </div>
+                    <!-- Preview ảnh -->
+                    <div id="sceneImagePreviewArea" class="text-center mt-3" style="display: none;">
+                        <img id="scenePreviewImg"
+                             style="max-width: 100%; max-height: 300px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <div class="mt-2">
+                            <button class="btn btn-sm btn-danger" onclick="clearSceneImagePreview()" type="button">
+                                <i class="fas fa-times"></i> Xóa ảnh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button class="btn btn-primary" onclick="processSceneImage()" id="processSceneBtn" disabled>
+                            Tiếp theo: Thiết lập tương tác
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bước 2: Kéo vùng và gán từ vựng -->
+                <div id="step2Container" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div id="sceneWrapper" style="position: relative;">
+                                <img id="sceneDisplay" class="img-fluid rounded" style="width: 100%;">
+                                <div id="hotspotsContainer"></div>
+                            </div>
+                            <p class="text-muted mt-2 small">
+                                <i class="fas fa-info-circle"></i> Hướng dẫn: Chọn từ vựng bên phải, sau đó kéo chuột
+                                trên ảnh để tạo vùng tương tác
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Danh sách từ vựng</label>
+                            <div id="vocabListContainer"
+                                 style="max-height: 280px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px;">
+                                <div class="text-center p-3">Đang tải...</div>
+                            </div>
+
+                            <label class="form-label fw-bold mt-3">Các vùng đã tạo</label>
+                            <div id="hotspotListContainer" style="max-height: 180px; overflow-y: auto;">
+                                <div class="text-muted text-center p-3">Chưa có vùng nào</div>
+                            </div>
+
+                            <div class="mt-3 d-flex gap-2">
+                                <button class="btn btn-secondary flex-grow-1" onclick="cancelCreateScene()">Hủy</button>
+                                <button class="btn btn-success flex-grow-1" onclick="saveScene()">Hoàn thành</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal sửa cảnh tương tác - ĐẶT CỐ ĐỊNH -->
+<div class="modal fade" id="editSceneModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px;">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-edit me-2" style="color: var(--teal);"></i>Sửa cảnh tương tác
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Mô tả cảnh</label>
+                            <input type="text" id="editSceneDesc" class="form-control">
+                        </div>
+                        <div id="editSceneWrapper" style="position: relative;">
+                            <img id="editSceneDisplay" class="img-fluid rounded" style="width: 100%;">
+                            <div id="editHotspotsContainer"></div>
+                        </div>
+                        <p class="text-muted mt-2 small">
+                            <i class="fas fa-info-circle"></i> Hướng dẫn: Click chọn từ vựng bên phải, sau đó kéo chuột
+                            trên ảnh để tạo vùng mới.
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Danh sách từ vựng</label>
+                        <div id="editVocabListContainer"
+                             style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px;">
+                            <div class="text-center p-3">Đang tải...</div>
+                        </div>
+
+                        <label class="form-label fw-bold mt-3">Các vùng tương tác</label>
+                        <div id="editHotspotListContainer" style="max-height: 200px; overflow-y: auto;">
+                            <div class="text-muted text-center p-3">Chưa có vùng nào</div>
+                        </div>
+
+                        <div class="mt-3 d-flex gap-2">
+                            <button class="btn btn-secondary flex-grow-1" onclick="closeEditSceneModal()">Hủy</button>
+                            <button class="btn btn-primary flex-grow-1" onclick="updateScene()">Cập nhật</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
 <script th:inline="javascript">
+
+    // ===== IMPORT EXCEL ===== //
+function openImportExcelModal() {
+    document.getElementById('importExcelForm').reset();
+    document.getElementById('importProgress').style.display = 'none';
+    new bootstrap.Modal(document.getElementById('importExcelModal')).show();
+}
+
+async function submitImportExcel() {
+    const excelFile = document.getElementById('excelFile').files[0];
+    if (!excelFile) {
+        Swal.fire('Lỗi', 'Vui lòng chọn file Excel!', 'warning');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('excelFile', excelFile);
+
+    // Thêm các file ảnh
+    const imageFiles = document.getElementById('imageFiles').files;
+    for (let i = 0; i < imageFiles.length; i++) {
+        formData.append('imageFiles', imageFiles[i]);
+    }
+
+    // Thêm các file audio
+    const audioFiles = document.getElementById('audioFiles').files;
+    for (let i = 0; i < audioFiles.length; i++) {
+        formData.append('audioFiles', audioFiles[i]);
+    }
+
+    const token = localStorage.getItem('token');
+
+    // Hiển thị progress
+    const progressDiv = document.getElementById('importProgress');
+    const progressBar = document.getElementById('importProgressBar');
+    const statusText = document.getElementById('importStatus');
+    progressDiv.style.display = 'block';
+    progressBar.style.width = '30%';
+    progressBar.textContent = '30%';
+    statusText.textContent = 'Đang xử lý...';
+
+    try {
+        const response = await fetch('/api/admin/import/vocab', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token },
+            body: formData
+        });
+
+        progressBar.style.width = '100%';
+        progressBar.textContent = '100%';
+
+        const result = await response.json();
+
+        if (response.ok) {
+            statusText.innerHTML = `
+                <span style="color: green;">✅ Import thành công!</span><br>
+                Thành công: ${result.success} / Tổng: ${result.total}<br>
+                Thất bại: ${result.fail}
+                ${result.errors && result.errors.length > 0 ? '<br><span style="color: orange;">⚠️ ' + result.errors.slice(0, 5).join(', ') + (result.errors.length > 5 ? '...' : '') + '</span>' : ''}
+            `;
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Import thành công!',
+                html: `Đã import ${result.success}/${result.total} từ vựng`,
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+            // Reload danh sách từ vựng sau 2 giây
+            setTimeout(() => {
+                bootstrap.Modal.getInstance(document.getElementById('importExcelModal')).hide();
+                loadVocabWithPagination(0);
+            }, 2000);
+        } else {
+            statusText.innerHTML = `<span style="color: red;">❌ Lỗi: ${result.error || 'Import thất bại'}</span>`;
+            Swal.fire('Lỗi', result.error || JSON.stringify(result.errors) || 'Import thất bại', 'error');
+        }
+    } catch (error) {
+        console.error(error);
+        statusText.innerHTML = '<span style="color: red;">❌ Lỗi kết nối server</span>';
+        Swal.fire('Lỗi', 'Không thể kết nối đến server', 'error');
+    }
+}
+
+
     // ===== NHÓM CHUNG ===== //
-
-
-
 function getAvatarPath(url, fullname) {
     const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullname)}&background=06BBCC&color=fff`;
     if (!url) return defaultAvatar;
@@ -871,6 +1155,9 @@ function loadSection(section, element, event) {
             <div class="table-header-right" style="display: flex; align-items: center; gap: 10px;">
                 <button class="btn-bulk-mode" id="toggleBulkModeBtn" onclick="toggleBulkMode()">
                     <i class="fas fa-check-square"></i> Chọn nhiều
+                </button>
+                <button class="btn-home" onclick="openImportExcelModal()" style="background: #28a745;">
+                    <i class="fas fa-file-excel" style="margin-right:5px"></i> Import Excel
                 </button>
                 <span class="status-pill count-pill" style="font-size: 16px; gap:0px;" id="vocabCountBadge">Đang tải...</span>
                 <button class="btn-home" onclick="openAddVocabModal()">
@@ -1334,20 +1621,6 @@ async function editLesson(id) {
             vocabularies = await vocabRes.json();
         }
 
-        // ===== QUAN TRỌNG: Khai báo scenes trước khi dùng =====
-        let scenes = [];
-        try {
-            const scenesRes = await fetch(`/api/admin/lessons/${id}/scenes`, {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            if (scenesRes.ok) {
-                scenes = await scenesRes.json();
-            }
-        } catch (sceneError) {
-            console.error('Lỗi tải scenes:', sceneError);
-            scenes = [];
-        }
-
         // Lấy danh sách categories để chọn
         const cateRes = await fetch('/api/admin/categories', {
             headers: { 'Authorization': 'Bearer ' + token }
@@ -1396,10 +1669,6 @@ async function editLesson(id) {
                             <h4><i class="fas fa-chart-simple"></i> Tổng số từ vựng</h4>
                             <div class="info-value">${vocabularies.length} <small>từ</small></div>
                         </div>
-                        <div class="info-card">
-                            <h4><i class="fas fa-image"></i> Số cảnh tương tác</h4>
-                            <div class="info-value">${scenes.length} <small>cảnh</small></div>
-                        </div>
                     </div>
                 </form>
 
@@ -1409,219 +1678,68 @@ async function editLesson(id) {
                     </button>
                 </div>
 
-                <!-- Tab Navigation -->
-                <div class="tab-navigation-wrapper mb-4">
-                    <ul class="nav nav-tabs nav-justified" id="lessonTab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="vocab-tab" data-bs-toggle="tab" data-bs-target="#vocab" type="button" role="tab">
-                                <i class="fas fa-spell-check"></i> Từ vựng
+                <!-- Chỉ còn phần từ vựng, không còn tab Cảnh tương tác -->
+                <div class="vocab-list">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0;"><i class="fas fa-spell-check"></i> Danh sách từ vựng</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-home btn-danger" onclick="removeAllVocabFromLesson(${id})" style="background: #dc2626;">
+                                <i class="fas fa-trash-alt" style="margin-right:5px"></i> Xóa tất cả
                             </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="scenes-tab" data-bs-toggle="tab" data-bs-target="#scenes" type="button" role="tab">
-                                <i class="fas fa-image"></i> Cảnh tương tác
+                            <button class="btn-home" onclick="openAddVocabModalFromLesson(${id})">
+                                <i class="fas fa-plus" style="margin-right:5px"></i> Thêm từ vựng
                             </button>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Tab Content -->
-                <div class="tab-content" id="lessonTabContent">
-                    <!-- Tab Từ vựng -->
-                    <div class="tab-pane fade show active" id="vocab" role="tabpanel">
-                        <div class="vocab-list">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                                <h3 style="margin: 0;"><i class="fas fa-spell-check"></i> Danh sách từ vựng</h3>
-                                <button class="btn-home" onclick="openAddVocabModalFromLesson(${id})">
-                                    <i class="fas fa-plus" style="margin-right:5px"></i> Thêm từ vựng
-                                </button>
-                            </div>
-                            ${vocabularies.length === 0 ?
-                                '<p class="text-muted text-center py-4">Chưa có từ vựng nào trong bài học này</p>' :
-                                `<table class="vocab-table">
-                                    <thead>
-                                        <tr>
-                                            <th>STT</th>
-                                            <th>ID</th>
-                                            <th style="width: 16%;">Từ vựng</th>
-                                            <th style="width: 18%;">Kana</th>
-                                            <th style="width: 12%;">Romaji</th>
-                                            <th>Ý nghĩa</th>
-                                            <th style="width: 120px; text-align: center;">Thao tác</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${vocabularies.map((vocab, idx) => {
-                                            const isHidden = vocab.isActive === false;
-                                            const rowClass = isHidden ? 'row-hidden' : '';
-                                            const actionBtn = `<button class="btn-action btn-trash" title="Xóa khỏi bài học" onclick="removeVocabFromLesson(${vocab.id}, ${id})">
-                                                                    <i class="fas fa-trash"></i>
-                                                                </button>`;
-
-                                            return `
-                                            <tr class="${rowClass}" data-vocab-id="${vocab.id}">
-                                                <td style="text-align: center;">${idx + 1}</td>
-                                                <td style="text-align: center;"><span class="id-badge">#${vocab.id}</span></td>
-                                                <td><strong style="font-size: 18px;">${escapeHtml(vocab.expression)}</strong></td>
-                                                <td><span style="color: var(--teal);font-weight: 600;">${escapeHtml(vocab.kana)}</span></td>
-                                                <td><small style="font-size: 15px;">${escapeHtml(vocab.romaji || '')}</small></td>
-                                                <td>${escapeHtml(vocab.meaning)}</td>
-                                                <td style="text-align: center;">
-                                                    <button class="btn-action btn-edit me-1" title="Sửa" onclick="editVocab(${vocab.id})">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    ${actionBtn}
-                                                </td>
-                                            </tr>
-                                            `;
-                                        }).join('')}
-                                    </tbody>
-                                </table>`
-                            }
                         </div>
                     </div>
+                    ${vocabularies.length === 0 ?
+                        '<p class="text-muted text-center py-4">Chưa có từ vựng nào trong bài học này</p>' :
+                        `<table class="vocab-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>ID</th>
+                                    <th style="width: 16%;">Từ vựng</th>
+                                    <th style="width: 18%;">Kana</th>
+                                    <th style="width: 12%;">Romaji</th>
+                                    <th>Ý nghĩa</th>
+                                    <th style="width: 120px; text-align: center;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${vocabularies.map((vocab, idx) => {
+                                    const isHidden = vocab.isActive === false;
+                                    const rowClass = isHidden ? 'row-hidden' : '';
+                                    const actionBtn = `<button class="btn-action btn-trash" title="Xóa khỏi bài học" onclick="removeVocabFromLesson(${vocab.id}, ${id})">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>`;
 
-
-
-<!-- Tab Cảnh tương tác -->
-<div class="tab-pane fade" id="scenes" role="tabpanel">
-    <div class="scenes-list">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 style="margin: 0;"><i class="fas fa-image me-2" style="color: var(--teal);"></i>Danh sách cảnh tương tác</h3>
-            <button class="btn-home" onclick="openCreateSceneModal()">
-                <i class="fas fa-plus" style="margin-right:5px"></i> Thêm cảnh
-            </button>
-        </div>
-
-        <div id="scenesListContainer">
-            <!-- Danh sách cảnh sẽ hiển thị ở đây -->
-            <div class="text-center py-5 text-muted">
-                <i class="fas fa-image fa-3x mb-3 opacity-25"></i>
-                <p>Đang tải dữ liệu...</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal tạo cảnh tương tác (THÊM MỚI) -->
-<div class="modal fade" id="createSceneModal" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 20px;">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold">
-                    <i class="fas fa-image me-2" style="color: var(--teal);"></i>Tạo cảnh tương tác
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" style="padding: 20px;">
-                <!-- Bước 1: Upload ảnh -->
-                <div id="step1Container">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Mô tả cảnh</label>
-                            <input type="text" id="sceneDesc" class="form-control" placeholder="VD: Phòng khách, Văn phòng...">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Chọn ảnh</label>
-                            <input type="file" id="sceneImage" class="form-control" accept="image/*" onchange="previewSceneImage()">
-                        </div>
-                    </div>
-                    <div id="imagePreviewArea" class="text-center mt-3" style="display: none;">
-                        <img id="imagePreview" style="max-width: 100%; max-height: 300px; border-radius: 12px;">
-                    </div>
-                    <div class="mt-4">
-                        <button class="btn btn-primary" onclick="uploadSceneImage()" id="uploadSceneBtn" disabled>Tiếp theo: Thiết lập tương tác</button>
-                    </div>
-                </div>
-
-                <!-- Bước 2: Kéo vùng và gán từ vựng -->
-                <div id="step2Container" style="display: none;">
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div id="sceneWrapper" style="position: relative;">
-                                <img id="sceneDisplay" class="img-fluid rounded" style="width: 100%;">
-                                <div id="hotspotsContainer"></div>
-                            </div>
-                            <p class="text-muted mt-2 small">
-                                <i class="fas fa-info-circle"></i> Hướng dẫn: Chọn từ vựng bên phải, sau đó kéo chuột trên ảnh để tạo vùng tương tác
-                            </p>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold">Danh sách từ vựng trong bài học</label>
-                            <div id="vocabListContainer" style="max-height: 280px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px;">
-                                <div class="text-center p-3">Đang tải...</div>
-                            </div>
-
-                            <label class="form-label fw-bold mt-3">Các vùng đã tạo</label>
-                            <div id="hotspotListContainer" style="max-height: 180px; overflow-y: auto;">
-                                <div class="text-muted text-center p-3">Chưa có vùng nào</div>
-                            </div>
-
-                            <div class="mt-3 d-flex gap-2">
-                                <button class="btn btn-secondary flex-grow-1" onclick="cancelCreateScene()">Hủy</button>
-                                <button class="btn btn-success flex-grow-1" onclick="saveScene()">Hoàn thành</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal sửa cảnh tương tác -->
-<div class="modal fade" id="editSceneModal" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 20px;">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold">
-                    <i class="fas fa-edit me-2" style="color: var(--teal);"></i>Sửa cảnh tương tác
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" style="padding: 20px;">
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Mô tả cảnh</label>
-                            <input type="text" id="editSceneDesc" class="form-control">
-                        </div>
-                        <div id="editSceneWrapper" style="position: relative;">
-                            <img id="editSceneDisplay" class="img-fluid rounded" style="width: 100%;">
-                            <div id="editHotspotsContainer"></div>
-                        </div>
-                        <p class="text-muted mt-2 small">
-                            <i class="fas fa-info-circle"></i> Hướng dẫn: Click chọn từ vựng bên phải, sau đó kéo chuột trên ảnh để tạo vùng mới. Click vào vùng đã có để xóa.
-                        </p>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Danh sách từ vựng trong bài học</label>
-                        <div id="editVocabListContainer" style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px;">
-                            <div class="text-center p-3">Đang tải...</div>
-                        </div>
-
-                        <label class="form-label fw-bold mt-3">Các vùng tương tác</label>
-                        <div id="editHotspotListContainer" style="max-height: 200px; overflow-y: auto;">
-                            <div class="text-muted text-center p-3">Chưa có vùng nào</div>
-                        </div>
-
-                        <div class="mt-3 d-flex gap-2">
-                            <button class="btn btn-secondary flex-grow-1" onclick="closeEditSceneModal()">Hủy</button>
-                            <button class="btn btn-primary flex-grow-1" onclick="updateScene()">Cập nhật</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+                                    return `
+                                    <tr class="${rowClass}" data-vocab-id="${vocab.id}">
+                                        <td style="text-align: center;">${idx + 1}</td>
+                                        <td style="text-align: center;"><span class="id-badge">#${vocab.id}</span></td>
+                                        <td><strong style="font-size: 18px;">${escapeHtml(vocab.expression)}</strong></td>
+                                        <td><span style="color: var(--teal);font-weight: 600;">${escapeHtml(vocab.kana)}</span></td>
+                                        <td><small style="font-size: 15px;">${escapeHtml(vocab.romaji || '')}</small></td>
+                                        <td>${escapeHtml(vocab.meaning)}</td>
+                                        <td style="text-align: center;">
+                                            <button class="btn-action btn-edit me-1" title="Sửa" onclick="editVocab(${vocab.id})">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            ${actionBtn}
+                                        </td>
+                                    </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>`
+                    }
                 </div>
             </div>
         `;
 
         localStorage.setItem('activeAdminTab', 'lessons');
-        currentSceneLessonId = id;
-loadScenesList();
+
+
 
     } catch (e) {
         console.error(e);
@@ -1740,6 +1858,181 @@ async function openAddVocabModalFromLesson(lessonId) {
     }
 }
 
+// Xóa tất cả từ vựng khỏi bài học
+async function removeAllVocabFromLesson(lessonId) {
+    const token = localStorage.getItem('token');
+
+    try {
+        // 1. Lấy danh sách từ vựng hiện tại của bài học
+        const vocabRes = await fetch(`/api/admin/vocab/by-lesson/${lessonId}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (!vocabRes.ok) {
+            throw new Error('Không thể lấy danh sách từ vựng');
+        }
+
+        const vocabList = await vocabRes.json();
+
+        if (vocabList.length === 0) {
+            Swal.fire('Thông báo', 'Bài học này chưa có từ vựng nào!', 'info');
+            return;
+        }
+
+        // 2. Kiểm tra xem có từ vựng nào đang được dùng trong InteractivePoint không
+        let hasInteractivePoints = false;
+        let usedVocabs = [];
+
+        for (const vocab of vocabList) {
+            const checkRes = await fetch(`/api/admin/vocab/${vocab.id}/check-usage-in-lesson?lessonId=${lessonId}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (checkRes.ok) {
+                const usageData = await checkRes.json();
+                if (usageData.hasInteractivePoints) {
+                    hasInteractivePoints = true;
+                    usedVocabs.push({
+                        id: vocab.id,
+                        expression: vocab.expression,
+                        pointCount: usageData.pointCount
+                    });
+                }
+            }
+        }
+
+        // 3. Hiển thị dialog xác nhận
+        let confirmMessage = '';
+        let warningHtml = '';
+
+        if (hasInteractivePoints) {
+            warningHtml = `
+                <div style="text-align: left; background: #fee2e2; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <p style="color: #dc2626; font-weight: bold; margin-bottom: 10px;">
+                        <i class="fas fa-exclamation-triangle"></i> Cảnh báo:
+                    </p>
+                    <p>Có <strong>${usedVocabs.length}</strong> từ vựng đang được sử dụng trong các điểm tương tác của bài học này:</p>
+                    <ul style="margin: 10px 0 0 20px; color: #666;">
+                        ${usedVocabs.slice(0, 5).map(v =>
+                            `<li><strong>${escapeHtml(v.expression)}</strong> (${v.pointCount} điểm tương tác)</li>`
+                        ).join('')}
+                        ${usedVocabs.length > 5 ? `<li>... và ${usedVocabs.length - 5} từ khác</li>` : ''}
+                    </ul>
+                    <p class="mt-2" style="color: #dc2626;">
+                        <strong>Bạn phải xóa các điểm tương tác này trong mục "Cảnh tương tác" trước khi xóa từ vựng!</strong>
+                    </p>
+                </div>
+            `;
+
+            const result = await Swal.fire({
+                title: 'Không thể xóa tất cả!',
+                html: warningHtml,
+                icon: 'warning',
+                confirmButtonText: 'Đến trang Cảnh tương tác',
+                showCancelButton: true,
+                cancelButtonText: 'Hủy'
+            });
+
+            if (result.isConfirmed) {
+                // Chuyển đến tab Scenes
+                const scenesTab = document.querySelector('#scenes-tab');
+                if (scenesTab) {
+                    const tab = new bootstrap.Tab(scenesTab);
+                    tab.show();
+                }
+            }
+            return;
+        }
+
+        // 4. Xác nhận xóa tất cả (khi không có ràng buộc)
+        const result = await Swal.fire({
+            title: 'Xác nhận xóa tất cả?',
+            html: `
+                <div style="text-align: left;">
+                    <p>Bạn có chắc muốn xóa <strong>tất cả ${vocabList.length} từ vựng</strong> khỏi bài học này?</p>
+                    <p class="text-danger mt-2" style="color: #dc2626;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Hành động này không thể hoàn tác!
+                    </p>
+                </div>
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#06BBCC',
+            confirmButtonText: 'Xóa tất cả',
+            cancelButtonText: 'Hủy'
+        });
+
+        if (!result.isConfirmed) return;
+
+        // 5. Hiển thị loading
+        Swal.fire({
+            title: 'Đang xóa...',
+            text: `Đang xóa ${vocabList.length} từ vựng khỏi bài học`,
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // 6. Xóa từng từ vựng
+        let successCount = 0;
+        let failCount = 0;
+
+        for (const vocab of vocabList) {
+            try {
+                const deleteRes = await fetch(`/api/admin/lessons/lesson-vocab?lessonId=${lessonId}&vocabId=${vocab.id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (deleteRes.ok) {
+                    successCount++;
+                } else {
+                    failCount++;
+                    console.error(`Failed to remove vocab ${vocab.id}: ${await deleteRes.text()}`);
+                }
+            } catch (e) {
+                failCount++;
+                console.error(e);
+            }
+        }
+
+        // 7. Thông báo kết quả
+        Swal.close();
+
+        if (failCount === 0) {
+            await Swal.fire({
+                icon: 'success',
+                title: 'Thành công!',
+                html: `Đã xóa <strong>${successCount}</strong> từ vựng khỏi bài học`,
+                timer: 1500,
+                showConfirmButton: false
+            });
+        } else {
+            await Swal.fire({
+                icon: 'warning',
+                title: 'Xóa không hoàn toàn',
+                html: `Thành công: ${successCount}<br>Thất bại: ${failCount}`,
+                confirmButtonColor: '#06BBCC'
+            });
+        }
+
+        // 8. Reload lại trang chi tiết lesson
+        refreshLessonDetail();
+
+    } catch (error) {
+        console.error(error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Lỗi!',
+            text: error.message || 'Không thể xóa từ vựng',
+            confirmButtonColor: '#06BBCC'
+        });
+    }
+}
+
 // Hàm filter realtime - SỬ DỤNG CLASS THAY VÌ STYLE TRỰC TIẾP
 function filterVocabModalRealTime(keyword) {
     keyword = keyword.toLowerCase().trim();
@@ -1823,23 +2116,35 @@ async function confirmAddVocabToLesson(lessonId) {
 
     Swal.fire({ title: `Đang thêm ${vocabIds.length} từ vựng...`, didOpen: () => Swal.showLoading() });
 
-    let successCount = 0;
-    for (const vocabId of vocabIds) {
-        try {
-            const res = await fetch(
-                `/api/admin/lessons/lesson-vocab?lessonId=${lessonId}&vocabId=${vocabId}&displayOrder=0`,
-                { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }
-            );
-            if (res.ok) successCount++;
-        } catch (e) { console.error(e); }
+    // Gửi 1 request batch thay vì loop
+    const payload = vocabIds.map(vocabId => ({ lessonId, vocabId }));
+
+    try {
+        const res = await fetch('/api/admin/lessons/lesson-vocab/batch-add', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addVocabToLessonModal'));
+        if (modal) modal.hide();
+
+        if (res.ok) {
+            const msg = await res.text();
+            Swal.fire('Thành công', msg, 'success');
+        } else {
+            const err = await res.text();
+            Swal.fire('Lỗi', err, 'error');
+        }
+        refreshLessonDetail();
+    } catch (e) {
+        Swal.fire('Lỗi', 'Không thể thêm từ vựng', 'error');
     }
-
-    const modal = bootstrap.Modal.getInstance(document.getElementById('addVocabToLessonModal'));
-    if (modal) modal.hide();
-
-    Swal.fire('Thành công', `Đã thêm ${successCount}/${vocabIds.length} từ vựng vào bài học`, 'success');
-    refreshLessonDetail();
 }
+
 
 // Xóa từ vựng khỏi bài học - có kiểm tra ràng buộc với InteractivePoint
 async function removeVocabFromLesson(vocabId, lessonId) {
@@ -2210,110 +2515,12 @@ function removeEditHotspot(index) {
     updateEditHotspotList();
 }
 
-async function updateScene() {
-    const token = localStorage.getItem('token');
-    const description = document.getElementById('editSceneDesc').value;
-
-    Swal.fire({ title: 'Đang cập nhật...', didOpen: () => Swal.showLoading() });
-
-    try {
-        // 1. Cập nhật mô tả scene
-        await fetch('/api/admin/interactive/scene/update', {
-            method: 'PUT',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                sceneId: currentEditSceneId,
-                description: description
-            })
-        });
-
-        // 2. Xóa tất cả points cũ
-        await fetch(`/api/admin/interactive/scene/${currentEditSceneId}/points`, {
-            method: 'DELETE',
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
-
-        // 3. Thêm các points mới
-        for (const point of editSceneHotspots) {
-            await fetch('/api/admin/interactive/point', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    sceneId: currentEditSceneId,
-                    vocabId: point.vocabId,
-                    coordX: parseFloat(point.coordX),
-                    coordY: parseFloat(point.coordY),
-                    width: parseFloat(point.width),
-                    height: parseFloat(point.height)
-                })
-            });
-        }
-
-        const modal = bootstrap.Modal.getInstance(document.getElementById('editSceneModal'));
-        if (modal) modal.hide();
-
-        Swal.fire('Thành công', 'Đã cập nhật cảnh tương tác!', 'success');
-
-        // Reload danh sách cảnh
-        await loadScenesList();
-
-    } catch(e) {
-        console.error(e);
-        Swal.fire('Lỗi', e.message || 'Không thể cập nhật', 'error');
-    }
-}
 
 function closeEditSceneModal() {
     const modal = bootstrap.Modal.getInstance(document.getElementById('editSceneModal'));
     if (modal) modal.hide();
 }
 
-// Xóa cảnh tương tác
-async function deleteScene(sceneId) {
-    const result = await Swal.fire({
-        title: 'Xác nhận xóa?',
-        text: "Bạn có chắc muốn xóa cảnh tương tác này?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#06BBCC',
-        confirmButtonText: 'Xóa',
-        cancelButtonText: 'Hủy'
-    });
-
-    if (result.isConfirmed) {
-        const token = localStorage.getItem('token');
-        const lessonId = document.querySelector('.lesson-detail-container')?.getAttribute('data-lesson-id');
-
-        try {
-            // Gọi API xóa scene
-            const res = await fetch(`/api/admin/scenes/${sceneId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-
-            if (res.ok) {
-                Swal.fire('Thành công', 'Đã xóa cảnh tương tác', 'success');
-                // Reload trang chi tiết bài học
-                if (lessonId) {
-                    editLesson(parseInt(lessonId));
-                }
-            } else {
-                const error = await res.text();
-                Swal.fire('Lỗi', error, 'error');
-            }
-        } catch (e) {
-            console.error(e);
-            Swal.fire('Lỗi', 'Không thể xóa cảnh tương tác', 'error');
-        }
-    }
-}
 
 // Lưu thay đổi bài học
 async function saveLessonChanges(id) {
@@ -2348,7 +2555,7 @@ async function saveLessonChanges(id) {
                 timer: 1000,
                 showConfirmButton: false
             });
-            goBackToLessons();
+            editLesson(id);
         } else {
             const error = await res.text();
             Swal.fire('Lỗi', error, 'error');
@@ -2943,6 +3150,20 @@ async function editCategory(id) {
             lessons = await lessonsRes.json();
         }
 
+        // Lấy danh sách scenes theo category
+        let scenes = [];
+        try {
+            const scenesRes = await fetch(`/api/admin/interactive/scenes/${id}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (scenesRes.ok) {
+                scenes = await scenesRes.json();
+            }
+        } catch (sceneError) {
+            console.error('Lỗi tải scenes:', sceneError);
+            scenes = [];
+        }
+
         mainTitle.innerText = `Chỉnh sửa Chủ đề: ${category.categoryName}`;
 
         mainContent.innerHTML = `
@@ -3022,63 +3243,694 @@ async function editCategory(id) {
                     </button>
                 </div>
 
-                <div class="lessons-list">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h3 style="margin: 0;"><i class="fas fa-book-reader"></i> Danh sách bài học</h3>
-                        <button class="btn-home" onclick="openAddLessonInCateModal(${id})">
-                            <i class="fas fa-plus" style="margin-right:5px"></i> Thêm bài học
-                        </button>
-                    </div>
-                    ${lessons.length === 0 ?
-                        '<p class="text-muted text-center py-4">Chưa có bài học nào trong chủ đề này</p>' :
-                        `<table class="lessons-table">
-                            <thead>
-                                <tr>
-                                    <th>STT</th>
-                                    <th>ID</th>
-                                    <th style="padding-left: 30px;">Tên bài học</th>
-                                    <th style="text-align: center;">Số từ vựng</th>
-                                    <th style="text-align: center;">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${lessons.map((lesson, idx) => {
-                                    const isHidden = lesson.isActive === false;
-                                    const rowClass = isHidden ? 'row-hidden' : '';
-                                    const actionBtn = isHidden
-                                        ? `<button class="btn-action btn-restore" title="Khôi phục" onclick="deleteLesson(${lesson.id})">
-                                            <i class="fas fa-trash-restore"></i>
-                                           </button>`
-                                        : `<button class="btn-action btn-trash" title="Ẩn bài học" onclick="deleteLesson(${lesson.id})">
-                                            <i class="fas fa-trash"></i>
-                                           </button>`;
+                <!-- Tab Navigation -->
+                <div class="tab-navigation-wrapper mb-4">
+                    <ul class="nav nav-tabs nav-justified" id="categoryTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="lessons-tab" data-bs-toggle="tab" data-bs-target="#lessons" type="button" role="tab">
+                                <i class="fas fa-book"></i> Bài học
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="scenes-tab" data-bs-toggle="tab" data-bs-target="#scenes" type="button" role="tab">
+                                <i class="fas fa-image"></i> Cảnh tương tác
+                            </button>
+                        </li>
+                    </ul>
+                </div>
 
-                                    return `
-                                    <tr class="${rowClass}" data-lesson-id="${lesson.id}">
-                                        <td>${idx + 1}</td>
-                                        <td><span class="id-badge">#${lesson.id}</span></td>
-                                        <td style="padding-left: 30px;"><strong>${escapeHtml(lesson.lessonName)}</strong></td>
-                                        <td style="text-align: center;"><span class="level-badge">${lesson.totalVocab || 0} từ</span></td>
-                                        <td style="text-align: center;">
-                                            <button class="btn-action btn-view me-1" title="Xem & Sửa" onclick="editLesson(${lesson.id})">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            ${actionBtn}
-                                        </td>
-                                    </tr>`;
-                                }).join('')}
-                            </tbody>
-                         </table>`
-                    }
+                <!-- Tab Content -->
+                <div class="tab-content" id="categoryTabContent">
+                    <!-- Tab Bài học -->
+                    <div class="tab-pane fade show active" id="lessons" role="tabpanel">
+                        <div class="lessons-list">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h3 style="margin: 0;"><i class="fas fa-book-reader"></i> Danh sách bài học</h3>
+                                <button class="btn-home" onclick="openAddLessonInCateModal(${id})">
+                                    <i class="fas fa-plus" style="margin-right:5px"></i> Thêm bài học
+                                </button>
+                            </div>
+                            ${lessons.length === 0 ?
+                                '<p class="text-muted text-center py-4">Chưa có bài học nào trong chủ đề này</p>' :
+                                `<table class="lessons-table">
+                                    <thead>
+                                        <tr>
+                                            <th>STT</th>
+                                            <th>ID</th>
+                                            <th style="padding-left: 30px;">Tên bài học</th>
+                                            <th style="text-align: center;">Số từ vựng</th>
+                                            <th style="text-align: center;">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${lessons.map((lesson, idx) => {
+                                            const isHidden = lesson.isActive === false;
+                                            const rowClass = isHidden ? 'row-hidden' : '';
+                                            const actionBtn = isHidden
+                                                ? `<button class="btn-action btn-restore" title="Khôi phục" onclick="deleteLesson(${lesson.id})">
+                                                    <i class="fas fa-trash-restore"></i>
+                                                   </button>`
+                                                : `<button class="btn-action btn-trash" title="Ẩn bài học" onclick="deleteLesson(${lesson.id})">
+                                                    <i class="fas fa-trash"></i>
+                                                   </button>`;
+
+                                            return `
+                                            <tr class="${rowClass}" data-lesson-id="${lesson.id}">
+                                                <td style="text-align: center;">${idx + 1}</td>
+                                                <td style="text-align: center;"><span class="id-badge">#${lesson.id}</span></td>
+                                                <td style="padding-left: 30px;"><strong>${escapeHtml(lesson.lessonName)}</strong></td>
+                                                <td style="text-align: center;"><span class="level-badge">${lesson.totalVocab || 0} từ</span></td>
+                                                <td style="text-align: center;">
+                                                    <button class="btn-action btn-view me-1" title="Xem & Sửa" onclick="editLesson(${lesson.id})">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    ${actionBtn}
+                                                </td>
+                                            </tr>`;
+                                        }).join('')}
+                                    </tbody>
+                                  </table>`
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Tab Cảnh tương tác -->
+                    <div class="tab-pane fade" id="scenes" role="tabpanel">
+                        <div class="scenes-list">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h3 style="margin: 0;"><i class="fas fa-image me-2" style="color: var(--teal);"></i>Danh sách cảnh tương tác</h3>
+                                <button class="btn-home" onclick="openCreateSceneModalFromCategory()">
+                                    <i class="fas fa-plus" style="margin-right:5px"></i> Thêm cảnh
+                                </button>
+                            </div>
+
+                            <div id="scenesListContainer">
+                                <!-- Danh sách cảnh sẽ hiển thị ở đây -->
+                                ${scenes.length === 0 ?
+                                    `<div class="text-center py-5 text-muted">
+                                        <i class="fas fa-image fa-3x mb-3 opacity-25"></i>
+                                        <p>Chưa có cảnh tương tác nào trong chủ đề này</p>
+                                        <button class="btn btn-primary" onclick="openCreateSceneModalFromCategory()">Tạo cảnh đầu tiên</button>
+                                    </div>` :
+                                    scenes.map((scene, idx) => `
+                                        <div class="card mb-3" data-scene-id="${scene.id}">
+                                            <div class="row g-0">
+                                                <div class="col-md-3">
+                                                    <img src="${scene.imageUrl}" class="img-fluid rounded-start"
+                                                         style="height: 150px; width: 100%; object-fit: cover;">
+                                                </div>
+                                                <div class="col-md-7">
+                                                    <div class="card-body">
+                                                        <h6 class="card-title fw-bold">Cảnh ${idx + 1}: ${scene.description || 'Không có mô tả'}</h6>
+                                                        <div class="mt-2">
+                                                            ${scene.points?.map(p => `<span class="badge bg-warning me-1">📌 ${p.vocab?.expression || '?'}</span>`).join('') || '<span class="text-muted">Chưa có điểm tương tác</span>'}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2 d-flex align-items-center justify-content-end pe-3 gap-2">
+                                                    <button class="btn btn-sm btn-warning" onclick="editSceneFromCategory(${scene.id})" title="Sửa cảnh">
+                                                        <i class="fas fa-edit"></i> Sửa
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteSceneFromCategory(${scene.id})" title="Xóa cảnh">
+                                                        <i class="fas fa-trash"></i> Xóa
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).join('')
+                                }
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
 
         localStorage.setItem('activeAdminTab', 'categories');
 
+        // Lưu categoryId cho các hàm scene
+        currentCategoryIdForScene = id;
+
+        // Load danh sách scenes nếu có
+        if (scenes.length > 0) {
+            loadScenesListForCategory();
+        }
+
     } catch (e) {
         console.error(e);
         Swal.fire('Lỗi', 'Không thể tải thông tin chi tiết', 'error');
+    }
+}
+
+// Xem trước ảnh từ URL
+function previewImageFromUrl() {
+    const url = document.getElementById('sceneImageUrl').value.trim();
+    const previewArea = document.getElementById('sceneImagePreviewArea');
+    const previewImg = document.getElementById('scenePreviewImg');
+    const processBtn = document.getElementById('processSceneBtn');
+
+    if (url) {
+        previewImg.src = url;
+        previewArea.style.display = 'block';
+        processBtn.disabled = false;
+        processBtn.setAttribute('data-image-url', url);
+        processBtn.setAttribute('data-source', 'url');
+    } else {
+        Swal.fire('Chú ý', 'Vui lòng nhập URL ảnh', 'warning');
+    }
+}
+
+// Xem trước ảnh từ file upload
+function previewSceneImageFile() {
+    const file = document.getElementById('sceneImageFile').files[0];
+    const previewArea = document.getElementById('sceneImagePreviewArea');
+    const previewImg = document.getElementById('scenePreviewImg');
+    const processBtn = document.getElementById('processSceneBtn');
+    const urlInput = document.getElementById('sceneImageUrl');
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            previewArea.style.display = 'block';
+            processBtn.disabled = false;
+            processBtn.setAttribute('data-file', 'true');
+            processBtn.setAttribute('data-source', 'file');
+            if (urlInput) urlInput.value = '';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Xóa preview ảnh trong scene modal
+function clearSceneImagePreview() {
+    const previewArea = document.getElementById('sceneImagePreviewArea');
+    const previewImg = document.getElementById('scenePreviewImg');
+    const fileInput = document.getElementById('sceneImageFile');
+    const urlInput = document.getElementById('sceneImageUrl');
+    const processBtn = document.getElementById('processSceneBtn');
+
+    if (previewArea) previewArea.style.display = 'none';
+    if (previewImg) previewImg.src = '';
+    if (fileInput) fileInput.value = '';
+    if (urlInput) urlInput.value = '';
+    if (processBtn) {
+        processBtn.disabled = true;
+        processBtn.removeAttribute('data-image-url');
+        processBtn.removeAttribute('data-file');
+        processBtn.removeAttribute('data-source');
+    }
+}
+
+// Xử lý ảnh (upload nếu là file mới, hoặc dùng URL có sẵn)
+async function processSceneImage() {
+    const processBtn = document.getElementById('processSceneBtn');
+    const source = processBtn.getAttribute('data-source');
+    const token = localStorage.getItem('token');
+
+    Swal.fire({ title: 'Đang xử lý ảnh...', didOpen: () => Swal.showLoading() });
+
+    try {
+        if (source === 'file') {
+            const file = document.getElementById('sceneImageFile').files[0];
+            if (!file) throw new Error('Không tìm thấy file ảnh');
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const res = await fetch('/api/admin/interactive/upload-scene-image', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token },
+                body: formData
+            });
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || 'Upload thất bại');
+            currentImageUrl = data.imageUrl;
+        } else {
+            const url = document.getElementById('sceneImageUrl').value.trim();
+            if (!url) throw new Error('Vui lòng nhập URL ảnh');
+            currentImageUrl = url;
+        }
+
+        document.getElementById('sceneDisplay').src = currentImageUrl;
+        document.getElementById('step1Container').style.display = 'none';
+        document.getElementById('step2Container').style.display = 'block';
+        initDrawingEvents();
+        Swal.close();
+
+    } catch(e) {
+        console.error(e);
+        Swal.fire('Lỗi', e.message || 'Không thể xử lý ảnh', 'error');
+    }
+}
+
+// Sửa lại hàm openCreateSceneModalFromCategory
+async function openCreateSceneModalFromCategory() {
+    const container = document.querySelector('.category-detail-container');
+    const categoryId = container ? container.getAttribute('data-category-id') : null;
+
+    if (!categoryId) {
+        Swal.fire('Lỗi', 'Không xác định được chủ đề!', 'error');
+        return;
+    }
+
+    currentCategoryIdForScene = parseInt(categoryId);
+    currentSceneCategoryId = parseInt(categoryId);
+
+    sceneHotspots = [];
+    selectedVocabIdForScene = null;
+    currentImageUrl = null;
+
+    // Reset UI
+    document.getElementById('step1Container').style.display = 'block';
+    document.getElementById('step2Container').style.display = 'none';
+    document.getElementById('sceneDesc').value = '';
+    document.getElementById('sceneImageFile').value = '';
+    document.getElementById('sceneImageUrl').value = '';
+    document.getElementById('sceneImagePreviewArea').style.display = 'none';
+    document.getElementById('scenePreviewImg').src = '';
+    document.getElementById('processSceneBtn').disabled = true;
+    document.getElementById('processSceneBtn').removeAttribute('data-image-url');
+    document.getElementById('processSceneBtn').removeAttribute('data-file');
+    document.getElementById('processSceneBtn').removeAttribute('data-source');
+    document.getElementById('hotspotsContainer').innerHTML = '';
+    document.getElementById('hotspotListContainer').innerHTML = '<div class="text-muted text-center p-3">Chưa có vùng nào</div>';
+
+    await loadSceneVocabListForCategory();
+
+    const modalElement = document.getElementById('createSceneModal');
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    } else {
+        Swal.fire('Lỗi', 'Không tìm thấy modal tạo cảnh!', 'error');
+    }
+}
+
+// Xóa hàm uploadSceneImage cũ (không cần dùng)
+// Và sửa cancelCreateScene
+function cancelCreateScene() {
+    sceneHotspots = [];
+    currentImageUrl = null;
+    selectedVocabIdForScene = null;
+
+    const modal = bootstrap.Modal.getInstance(document.getElementById('createSceneModal'));
+    if (modal) modal.hide();
+}
+
+// Load danh sách từ vựng cho Category (tất cả bài học trong category)
+async function loadSceneVocabListForCategory() {
+    const token = localStorage.getItem('token');
+    const container = document.getElementById('vocabListContainer');
+
+    if (!container) return;
+
+    container.innerHTML = '<div class="text-center p-3">Đang tải từ vựng...</div>';
+
+    try {
+        const res = await fetch(`/api/admin/vocab/by-category/${currentCategoryIdForScene}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (!res.ok) {
+            throw new Error('Không thể tải từ vựng');
+        }
+
+        sceneVocabList = await res.json();
+
+        if (sceneVocabList.length === 0) {
+            container.innerHTML = '<div class="alert alert-warning m-2">Chưa có từ vựng nào trong chủ đề này. Hãy thêm từ vựng vào các bài học trước!</div>';
+        } else {
+            container.innerHTML = sceneVocabList.map(v => `
+                <div class="vocab-item p-2 border-bottom" data-vocab-id="${v.id}"
+                     onclick="selectVocabForScene(${v.id})" style="cursor: pointer;">
+                    <strong>${escapeHtml(v.expression)}</strong>
+                    <div class="small text-muted">${escapeHtml(v.meaning)}</div>
+                    <small class="text-info">📖 ${escapeHtml(v.lessonName)}</small>
+                </div>
+            `).join('');
+        }
+    } catch(e) {
+        console.error(e);
+        container.innerHTML = '<div class="alert alert-danger m-2">Lỗi tải từ vựng</div>';
+    }
+}
+
+// Sửa cảnh từ Category
+async function editSceneFromCategory(sceneId) {
+    currentEditSceneId = sceneId;
+    editSceneHotspots = [];
+    editSelectedVocabId = null;
+
+    const token = localStorage.getItem('token');
+
+    Swal.fire({ title: 'Đang tải dữ liệu...', didOpen: () => Swal.showLoading() });
+
+    try {
+        const res = await fetch(`/api/admin/interactive/scene/${sceneId}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            document.getElementById('editSceneDesc').value = data.description || '';
+            document.getElementById('editSceneDisplay').src = data.imageUrl;
+
+            // Load danh sách từ vựng của category
+            await loadEditVocabListForCategory();
+
+            if (data.points && data.points.length > 0) {
+                editSceneHotspots = data.points.map(point => ({
+                    id: point.id,
+                    vocabId: point.vocabId,
+                    vocabName: point.vocab?.expression,
+                    coordX: point.coordX,
+                    coordY: point.coordY,
+                    width: point.width,
+                    height: point.height,
+                    isExisting: true
+                }));
+                renderEditHotspots();
+                updateEditHotspotList();
+            }
+
+            Swal.close();
+            const modal = new bootstrap.Modal(document.getElementById('editSceneModal'));
+            modal.show();
+
+            setTimeout(() => {
+                initEditDrawingEvents();
+            }, 500);
+        } else {
+            Swal.fire('Lỗi', data.error || 'Không thể tải dữ liệu', 'error');
+        }
+    } catch(e) {
+        console.error(e);
+        Swal.fire('Lỗi', 'Không thể tải dữ liệu', 'error');
+    }
+}
+
+// Load danh sách từ vựng cho modal sửa (Category)
+async function loadEditVocabListForCategory() {
+    const token = localStorage.getItem('token');
+    const container = document.getElementById('editVocabListContainer');
+
+    if (!container) return;
+
+    container.innerHTML = '<div class="text-center p-3">Đang tải từ vựng...</div>';
+
+    try {
+        const res = await fetch(`/api/admin/vocab/by-category/${currentCategoryIdForScene}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        editSceneVocabList = await res.json();
+
+        if (editSceneVocabList.length === 0) {
+            container.innerHTML = '<div class="alert alert-warning m-2">Chưa có từ vựng nào trong chủ đề này. Hãy thêm từ vựng vào các bài học trước!</div>';
+        } else {
+            container.innerHTML = editSceneVocabList.map(v => `
+                <div class="vocab-item p-2 border-bottom" data-vocab-id="${v.id}"
+                     onclick="selectEditVocab(${v.id})" style="cursor: pointer;">
+                    <strong>${escapeHtml(v.expression)}</strong>
+                    <div class="small text-muted">${escapeHtml(v.meaning)}</div>
+                    <small class="text-info">📖 ${escapeHtml(v.lessonName)}</small>
+                </div>
+            `).join('');
+        }
+    } catch(e) {
+        console.error(e);
+        container.innerHTML = '<div class="alert alert-danger m-2">Lỗi tải từ vựng</div>';
+    }
+}
+
+// Xóa cảnh từ Category
+async function deleteSceneFromCategory(sceneId) {
+    const result = await Swal.fire({
+        title: 'Xác nhận xóa?',
+        text: 'Cảnh này sẽ bị xóa vĩnh viễn cùng tất cả điểm tương tác!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
+        const token = localStorage.getItem('token');
+        const categoryId = currentCategoryIdForScene;
+
+        try {
+            const res = await fetch(`/api/admin/interactive/scene/${sceneId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (res.ok) {
+                Swal.fire('Thành công', 'Đã xóa cảnh!', 'success');
+                // Reload danh sách cảnh thay vì reload toàn bộ trang
+                if (categoryId) {
+                    await loadScenesListForCategory();
+                }
+            } else {
+                const error = await res.text();
+                Swal.fire('Lỗi', error || 'Không thể xóa', 'error');
+            }
+        } catch(e) {
+            console.error(e);
+            Swal.fire('Lỗi', 'Không thể xóa cảnh', 'error');
+        }
+    }
+}
+
+// Load danh sách cảnh cho Category
+async function loadScenesListForCategory() {
+    const categoryId = currentCategoryIdForScene;
+    const token = localStorage.getItem('token');
+    const container = document.getElementById('scenesListContainer');
+
+    if (!container) return;
+    if (!categoryId) return;
+
+    try {
+        const res = await fetch(`/api/admin/interactive/scenes/${categoryId}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const scenes = await res.json();
+
+        if (!scenes || scenes.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-5 text-muted">
+                    <i class="fas fa-image fa-3x mb-3 opacity-25"></i>
+                    <p>Chưa có cảnh tương tác nào trong chủ đề này</p>
+                    <button class="btn btn-primary" onclick="openCreateSceneModalFromCategory()">Tạo cảnh đầu tiên</button>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = scenes.map((scene, idx) => `
+            <div class="card mb-3" data-scene-id="${scene.id}">
+                <div class="row g-0">
+                    <div class="col-md-3">
+                        <img src="${scene.imageUrl}" class="img-fluid rounded-start"
+                             style="height: 150px; width: 100%; object-fit: cover;">
+                    </div>
+                    <div class="col-md-7">
+                        <div class="card-body">
+                            <h6 class="card-title fw-bold">Cảnh ${idx + 1}: ${escapeHtml(scene.description || 'Không có mô tả')}</h6>
+                            <div class="mt-2">
+                                ${scene.points?.map(p => `<span class="badge bg-warning me-1">📌 ${escapeHtml(p.vocab?.expression || '?')}</span>`).join('') || '<span class="text-muted">Chưa có điểm tương tác</span>'}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-center justify-content-end pe-3 gap-2">
+                        <button class="btn btn-sm btn-warning" onclick="editSceneFromCategory(${scene.id})" title="Sửa cảnh">
+                            <i class="fas fa-edit"></i> Sửa
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteSceneFromCategory(${scene.id})" title="Xóa cảnh">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } catch(e) {
+        console.error(e);
+        container.innerHTML = '<div class="alert alert-danger">Lỗi tải dữ liệu</div>';
+    }
+}
+
+async function saveScene() {
+    if (sceneHotspots.length === 0) {
+        Swal.fire('Chú ý', 'Hãy tạo ít nhất một vùng tương tác!', 'warning');
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+    const description = document.getElementById('sceneDesc').value;
+
+    // Lấy categoryId từ biến global đã được set
+    const categoryId = currentCategoryIdForScene || currentSceneCategoryId;
+
+    console.log('Saving scene - categoryId:', categoryId);
+    console.log('Saving scene - currentImageUrl:', currentImageUrl);
+
+    if (!categoryId) {
+        Swal.fire('Lỗi', 'Không xác định được chủ đề!', 'error');
+        return;
+    }
+
+    if (!currentImageUrl) {
+        Swal.fire('Lỗi', 'Chưa upload ảnh! Vui lòng chọn ảnh trước.', 'error');
+        return;
+    }
+
+    Swal.fire({ title: 'Đang lưu...', didOpen: () => Swal.showLoading() });
+
+    try {
+        const requestBody = {
+            imageUrl: currentImageUrl,
+            categoryId: categoryId,
+            description: description || ''
+        };
+
+        console.log('Sending request body:', JSON.stringify(requestBody));
+
+        const sceneRes = await fetch('/api/admin/interactive/scene-from-url', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        const responseText = await sceneRes.text();
+        console.log('Response text:', responseText);
+
+        let sceneData;
+        try {
+            sceneData = JSON.parse(responseText);
+        } catch (e) {
+            throw new Error('Server trả về dữ liệu không hợp lệ: ' + responseText);
+        }
+
+        if (!sceneRes.ok) {
+            throw new Error(sceneData.error || 'Không thể tạo scene');
+        }
+
+        if (!sceneData.sceneId) {
+            throw new Error('Server không trả về sceneId');
+        }
+
+        const sceneId = sceneData.sceneId;
+
+        // Tạo các points
+        for (const point of sceneHotspots) {
+            const pointRes = await fetch('/api/admin/interactive/point', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sceneId: sceneId,
+                    vocabId: point.vocabId,
+                    coordX: parseFloat(point.coordX),
+                    coordY: parseFloat(point.coordY),
+                    width: parseFloat(point.width),
+                    height: parseFloat(point.height)
+                })
+            });
+
+            if (!pointRes.ok) {
+                console.error('Failed to create point:', await pointRes.text());
+            }
+        }
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('createSceneModal'));
+        if (modal) modal.hide();
+
+        Swal.fire('Thành công', 'Đã tạo cảnh tương tác!', 'success');
+
+        // Reset state
+        sceneHotspots = [];
+        currentImageUrl = null;
+        selectedVocabIdForScene = null;
+
+        // Reload lại trang category
+        if (categoryId) {
+            editCategory(categoryId);
+        }
+
+    } catch(e) {
+        console.error('Error:', e);
+        Swal.fire('Lỗi', e.message || 'Không thể lưu cảnh', 'error');
+    }
+}
+
+// Sửa lại hàm updateScene cho Category
+async function updateScene() {
+    const token = localStorage.getItem('token');
+    const description = document.getElementById('editSceneDesc').value;
+    const categoryId = currentCategoryIdForScene;
+
+    Swal.fire({ title: 'Đang cập nhật...', didOpen: () => Swal.showLoading() });
+
+    try {
+        // 1. Cập nhật mô tả scene
+        await fetch('/api/admin/interactive/scene/update', {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                sceneId: currentEditSceneId,
+                description: description
+            })
+        });
+
+        // 2. Xóa tất cả points cũ
+        await fetch(`/api/admin/interactive/scene/${currentEditSceneId}/points`, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        // 3. Thêm các points mới
+        for (const point of editSceneHotspots) {
+            await fetch('/api/admin/interactive/point', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sceneId: currentEditSceneId,
+                    vocabId: point.vocabId,
+                    coordX: parseFloat(point.coordX),
+                    coordY: parseFloat(point.coordY),
+                    width: parseFloat(point.width),
+                    height: parseFloat(point.height)
+                })
+            });
+        }
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('editSceneModal'));
+        if (modal) modal.hide();
+
+        Swal.fire('Thành công', 'Đã cập nhật cảnh tương tác!', 'success');
+
+        // CHỈ RELOAD DANH SÁCH CẢNH, KHÔNG RELOAD TOÀN BỘ TRANG
+        if (categoryId) {
+            await loadScenesListForCategory();
+        }
+
+    } catch(e) {
+        console.error(e);
+        Swal.fire('Lỗi', e.message || 'Không thể cập nhật', 'error');
     }
 }
 
@@ -3315,7 +4167,6 @@ function handleEditFileSelect(input, categoryId) {
         reader.onload = function (e) {
 
             document.getElementById('detailAvatar').src = e.target.result;
-            document.getElementById('editIconUrl').value = data.iconUrl;
         };
         reader.readAsDataURL(pendingIconFile);
     }
@@ -3329,7 +4180,6 @@ function handleEditThumbnailSelect(input, categoryId) {
         reader.onload = function (e) {
             document.getElementById('detailThumbnail').src = e.target.result;
             document.getElementById('thumbnailPreviewContainer').classList.remove('d-none');
-            document.getElementById('editThumbnailUrl').value = data.thumbnailUrl;
             document.getElementById('thumbnailPreviewContainer').classList.remove('d-none');
         };
         reader.readAsDataURL(pendingThumbnailFile);
@@ -3433,7 +4283,7 @@ async function saveCategoryChanges(id) {
 
             // Quay lại danh sách (sẽ reload với cache bust)
             setTimeout(() => {
-                goBackToCategories();
+                editCategory(id);
             }, 1500);
         } else {
             const error = await res.text();
@@ -4177,7 +5027,9 @@ function clearVocabAudio() {
 // ========== CẢNH TƯƠNG TÁC (HOÀN CHỈNH) ==========
 
 let currentSceneLessonId = null;
-    let currentImageUrl = null;
+let currentSceneCategoryId = null;
+let currentCategoryIdForScene = null;
+let currentImageUrl = null;
 let currentSceneId = null;
 let sceneVocabList = [];
 let sceneHotspots = [];
@@ -4186,65 +5038,21 @@ let startX, startY;
 let selectionBox = null;
 let selectedVocabIdForScene = null;
 
-// Load danh sách cảnh
-async function loadScenesList() {
-    const lessonId = currentSceneLessonId;
-    const token = localStorage.getItem('token');
 
-    try {
-        const res = await fetch(`/api/admin/interactive/scenes/${lessonId}`, {
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
-        const scenes = await res.json();
-
-        const container = document.getElementById('scenesListContainer');
-        if (!scenes || scenes.length === 0) {
-            container.innerHTML = `
-                <div class="text-center py-5 text-muted">
-                    <i class="fas fa-image fa-3x mb-3 opacity-25"></i>
-                    <p>Chưa có cảnh tương tác nào</p>
-                    <button class="btn btn-primary" onclick="openCreateSceneModal()">Tạo cảnh đầu tiên</button>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = scenes.map((scene, idx) => `
-    <div class="card mb-3" data-scene-id="${scene.id}">
-        <div class="row g-0">
-            <div class="col-md-3">
-                <img src="${scene.imageUrl}" class="img-fluid rounded-start"
-                     style="height: 150px; width: 100%; object-fit: cover;">
-            </div>
-            <div class="col-md-7">
-                <div class="card-body">
-                    <h6 class="card-title fw-bold">Cảnh ${idx + 1}: ${scene.description || 'Không có mô tả'}</h6>
-                    <div class="mt-2">
-                        ${scene.points?.map(p => `<span class="badge bg-warning me-1">📌 ${p.vocab?.expression || '?'}</span>`).join('') || '<span class="text-muted">Chưa có điểm tương tác</span>'}
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2 d-flex align-items-center justify-content-end pe-3 gap-2">
-                <button class="btn btn-sm btn-warning" onclick="editScene(${scene.id})" title="Sửa cảnh">
-                    <i class="fas fa-edit"></i> Sửa
-                </button>
-                <button class="btn btn-sm btn-outline-danger" onclick="deleteScene(${scene.id})" title="Xóa cảnh">
-                    <i class="fas fa-trash"></i> Xóa
-                </button>
-            </div>
-        </div>
-    </div>
-`).join('');
-    } catch(e) {
-        console.error(e);
-        document.getElementById('scenesListContainer').innerHTML = `<div class="alert alert-danger">Lỗi tải dữ liệu</div>`;
-    }
-}
 
 // Mở modal tạo cảnh mới
 async function openCreateSceneModal() {
-    currentSceneLessonId = document.querySelector('.lesson-detail-container')?.getAttribute('data-lesson-id');
-    if (!currentSceneLessonId) return;
+    const lessonId = document.querySelector('.lesson-detail-container')?.getAttribute('data-lesson-id');
+    currentSceneLessonId = lessonId;
+    if (!lessonId) return;
+
+    // Lấy categoryId từ lesson
+    const token = localStorage.getItem('token');
+    const lessonRes = await fetch(`/api/admin/lessons/${lessonId}`, {
+        headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const lesson = await lessonRes.json();
+    currentSceneCategoryId = lesson.categoryId;
 
     sceneHotspots = [];
     selectedVocabIdForScene = null;
@@ -4316,14 +5124,17 @@ async function uploadSceneImage() {
     const file = document.getElementById('sceneImage').files[0];
     const token = localStorage.getItem('token');
 
+    if (!file) {
+        Swal.fire('Lỗi', 'Vui lòng chọn file ảnh!', 'error');
+        return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('romaji', 'scene_' + Date.now());
 
     Swal.fire({ title: 'Đang upload ảnh...', didOpen: () => Swal.showLoading() });
 
     try {
-        // Gọi API upload ảnh thông thường (không phải /interactive/scene)
         const res = await fetch('/api/admin/interactive/upload-scene-image', {
             method: 'POST',
             headers: { 'Authorization': 'Bearer ' + token },
@@ -4333,15 +5144,15 @@ async function uploadSceneImage() {
 
         if (res.ok) {
             currentImageUrl = data.imageUrl;
-            document.getElementById('sceneDisplay').src = currentImageUrl;
+            console.log('Uploaded image URL:', currentImageUrl);
 
-            // Chuyển sang bước 2
+            document.getElementById('sceneDisplay').src = currentImageUrl;
             document.getElementById('step1Container').style.display = 'none';
             document.getElementById('step2Container').style.display = 'block';
             initDrawingEvents();
             Swal.close();
         } else {
-            Swal.fire('Lỗi', data.message || 'Upload thất bại', 'error');
+            Swal.fire('Lỗi', data.error || 'Upload thất bại', 'error');
         }
     } catch(e) {
         console.error(e);
@@ -4501,30 +5312,54 @@ async function saveScene() {
 
     const token = localStorage.getItem('token');
     const description = document.getElementById('sceneDesc').value;
+    const categoryId = currentCategoryIdForScene || currentSceneCategoryId;
+
+    if (!categoryId) {
+        Swal.fire('Lỗi', 'Không xác định được chủ đề!', 'error');
+        return;
+    }
+
+    if (!currentImageUrl) {
+        Swal.fire('Lỗi', 'Chưa upload ảnh! Vui lòng chọn ảnh trước.', 'error');
+        return;
+    }
 
     Swal.fire({ title: 'Đang lưu...', didOpen: () => Swal.showLoading() });
 
     try {
-        // 1. Tạo scene từ URL ảnh đã upload
+        const requestBody = {
+            imageUrl: currentImageUrl,
+            categoryId: categoryId,
+            description: description || ''
+        };
+
         const sceneRes = await fetch('/api/admin/interactive/scene-from-url', {
             method: 'POST',
             headers: {
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                imageUrl: currentImageUrl,
-                lessonId: currentSceneLessonId,
-                description: description
-            })
+            body: JSON.stringify(requestBody)
         });
-        const sceneData = await sceneRes.json();
 
-        if (!sceneRes.ok) throw new Error(sceneData.error);
+        const responseText = await sceneRes.text();
+        let sceneData;
+        try {
+            sceneData = JSON.parse(responseText);
+        } catch (e) {
+            throw new Error('Server trả về dữ liệu không hợp lệ: ' + responseText);
+        }
+
+        if (!sceneRes.ok) {
+            throw new Error(sceneData.error || 'Không thể tạo scene');
+        }
+
+        if (!sceneData.sceneId) {
+            throw new Error('Server không trả về sceneId');
+        }
 
         const sceneId = sceneData.sceneId;
 
-        // 2. Tạo các points
         for (const point of sceneHotspots) {
             await fetch('/api/admin/interactive/point', {
                 method: 'POST',
@@ -4548,54 +5383,19 @@ async function saveScene() {
 
         Swal.fire('Thành công', 'Đã tạo cảnh tương tác!', 'success');
 
-        // Reset state
         sceneHotspots = [];
         currentImageUrl = null;
         selectedVocabIdForScene = null;
 
-        // Reload danh sách cảnh
-        await loadScenesList();
+        await loadScenesListForCategory();
 
     } catch(e) {
-        console.error(e);
-        Swal.fire('Lỗi', e.message || 'Không thể lưu', 'error');
+        console.error('Error:', e);
+        Swal.fire('Lỗi', e.message || 'Không thể lưu cảnh', 'error');
     }
 }
 
-function cancelCreateScene() {
-    const modal = bootstrap.Modal.getInstance(document.getElementById('createSceneModal'));
-    if (modal) modal.hide();
-}
 
-// Ghi đè hàm deleteScene cũ
-async function deleteScene(sceneId) {
-    const result = await Swal.fire({
-        title: 'Xác nhận xóa?',
-        text: 'Cảnh này sẽ bị xóa vĩnh viễn cùng tất cả điểm tương tác!',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        confirmButtonText: 'Xóa',
-        cancelButtonText: 'Hủy'
-    });
-
-    if (result.isConfirmed) {
-        const token = localStorage.getItem('token');
-        try {
-            const res = await fetch(`/api/admin/interactive/scene/${sceneId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-
-            if (res.ok) {
-                Swal.fire('Thành công', 'Đã xóa cảnh!', 'success');
-                await loadScenesList();
-            } else {
-                Swal.fire('Lỗi', 'Không thể xóa', 'error');
-            }
-        } catch(e) { console.error(e); }
-    }
-}
 
 
 // ===== VOCABULARY DETAIL ===== //
@@ -4940,7 +5740,7 @@ async function saveVocabChanges(id) {
 
             // Quay lại danh sách
             setTimeout(() => {
-                goBackToVocabulary();
+                editVocab(id);
             }, 1500);
         } else {
             const error = await res.text();

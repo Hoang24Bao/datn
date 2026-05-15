@@ -25,7 +25,7 @@ public interface VocabularyRepository extends JpaRepository<Vocabulary, Integer>
             "AND (:search IS NULL OR :search = '' OR " +
             "LOWER(v.expression) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
             "LOWER(v.kana) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-            "LOWER(v.romaji) LIKE LOWER(CONCAT('%', :search, '%')) OR " + // THÊM DÒNG NÀY
+            "LOWER(v.romaji) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
             "LOWER(v.meaning) LIKE LOWER(CONCAT('%', :search, '%'))) " +
             "GROUP BY v.id, v.expression, v.kana, v.romaji, v.meaning, " +
             "v.image_url, v.audio_url, v.word_type, v.example, v.example_vi, v.is_active ",
@@ -39,7 +39,7 @@ public interface VocabularyRepository extends JpaRepository<Vocabulary, Integer>
                     "AND (:search IS NULL OR :search = '' OR " +
                     "LOWER(v.expression) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
                     "LOWER(v.kana) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-                    "LOWER(v.romaji) LIKE LOWER(CONCAT('%', :search, '%')) OR " + // THÊM DÒNG NÀY
+                    "LOWER(v.romaji) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
                     "LOWER(v.meaning) LIKE LOWER(CONCAT('%', :search, '%')))",
             nativeQuery = true)
     Page<Vocabulary> findByFilters(
@@ -72,4 +72,36 @@ public interface VocabularyRepository extends JpaRepository<Vocabulary, Integer>
 
     // 6. Lấy tất cả từ vựng đang active
     List<Vocabulary> findByIsActiveTrue();
+
+    // =====================================================
+    // 7. Lấy danh sách từ vựng theo Category (sửa lại - dùng native query)
+    // =====================================================
+    @Query(value = "SELECT DISTINCT v.* FROM Vocabulary v " +
+            "INNER JOIN Lesson_Vocab lv ON v.id = lv.vocab_id " +
+            "INNER JOIN Lessons l ON lv.lesson_id = l.id " +
+            "WHERE l.category_id = :categoryId AND v.is_active = 1 " +
+            "ORDER BY v.id ASC",
+            nativeQuery = true)
+    List<Vocabulary> findByCategoryId(@Param("categoryId") Integer categoryId);
+
+    // 8. Đếm số từ vựng trong Category
+    @Query(value = "SELECT COUNT(DISTINCT v.id) FROM Vocabulary v " +
+            "INNER JOIN Lesson_Vocab lv ON v.id = lv.vocab_id " +
+            "INNER JOIN Lessons l ON lv.lesson_id = l.id " +
+            "WHERE l.category_id = :categoryId AND v.is_active = 1",
+            nativeQuery = true)
+    int countByCategoryId(@Param("categoryId") Integer categoryId);
+
+    @Query(value = "SELECT DISTINCT " +
+            "v.id, v.expression, v.kana, v.romaji, v.meaning, " +
+            "v.word_type, v.example, v.example_vi, v.image_url, v.audio_url, v.is_active, " +
+            "l.lesson_name, l.id as lesson_id " +
+            "FROM vocabulary v " +
+            "INNER JOIN lesson_vocab lv ON v.id = lv.vocab_id " +
+            "INNER JOIN lessons l ON l.id = lv.lesson_id " +
+            "WHERE l.category_id = :categoryId " +
+            "AND v.is_active = 1 " +
+            "ORDER BY l.id, lv.display_order",
+            nativeQuery = true)
+    List<Object[]> findVocabByCategoryIdNative(@Param("categoryId") Integer categoryId);
 }

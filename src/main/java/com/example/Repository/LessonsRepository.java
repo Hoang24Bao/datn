@@ -79,8 +79,6 @@ public interface LessonsRepository extends JpaRepository<Lessons, Integer> {
             "ORDER BY l.id ASC", nativeQuery = true)
     List<Object[]> findLessonsByCategoryIdWithStats(@Param("categoryId") Integer categoryId);
 
-    @Query("SELECT s FROM InteractiveScene s WHERE s.lesson.id = :lessonId ORDER BY s.orderIndex ASC")
-    List<InteractiveScene> findScenesByLessonId(@Param("lessonId") Integer lessonId);
 
     @Query(value = "SELECT COUNT(*) FROM Lesson_Vocab WHERE lesson_id = :lessonId AND vocab_id = :vocabId", nativeQuery = true)
     int countVocabInLesson(@Param("lessonId") Integer lessonId, @Param("vocabId") Integer vocabId);
@@ -121,4 +119,31 @@ public interface LessonsRepository extends JpaRepository<Lessons, Integer> {
     //Đếm số lượng bài học đang active (is_active = true) theo category_id
     @Query("SELECT COUNT(l) FROM Lessons l WHERE l.categoryId = :categoryId AND l.isActive = true")
     int countByCategoryIdAndIsActiveTrue(@Param("categoryId") Integer categoryId);
+
+    @Query(value = "SELECT COUNT(*) FROM Interactive_Points ip " +
+            "INNER JOIN Interactive_Scenes ist ON ip.scene_id = ist.id " +
+            "WHERE ip.vocab_id = :vocabId AND ist.category_id = :categoryId",  // Đổi lesson_id → category_id
+            nativeQuery = true)
+    int countInteractivePointsByVocabAndCategory(@Param("vocabId") Integer vocabId,
+                                                 @Param("categoryId") Integer categoryId);
+
+    @Query(value = "SELECT COUNT(*) FROM Interactive_Points ip " +
+            "INNER JOIN Interactive_Scenes ist ON ip.scene_id = ist.id " +
+            "INNER JOIN Lessons l ON l.category_id = ist.category_id " +
+            "WHERE l.id = :lessonId", nativeQuery = true)
+    int countInteractivePointsByLesson(@Param("lessonId") Integer lessonId);
+
+    // Method xóa tất cả (đã đúng)
+    @Modifying
+    @Query(value = "DELETE FROM Lesson_Vocab WHERE lesson_id = :lessonId", nativeQuery = true)
+    int removeAllVocabFromLesson(@Param("lessonId") Integer lessonId);
+
+    @Query(value = "SELECT COUNT(*) FROM Interactive_Points ip " +
+            "INNER JOIN Interactive_Scenes ist ON ip.scene_id = ist.id " +
+            "INNER JOIN Lessons l ON l.category_id = ist.category_id " +
+            "WHERE ip.vocab_id = :vocabId AND l.id = :lessonId", nativeQuery = true)
+    int countInteractivePointsByVocabAndLesson(@Param("vocabId") Integer vocabId,
+                                               @Param("lessonId") Integer lessonId);
+
+
 }

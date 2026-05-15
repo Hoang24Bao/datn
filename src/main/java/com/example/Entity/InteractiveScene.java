@@ -1,40 +1,42 @@
 package com.example.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Table(name = "Interactive_Scenes")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class InteractiveScene {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "image_url", nullable = false, length = 500)
-    private String imageUrl;
+    @Column(name = "category_id", nullable = false)
+    private Integer categoryId;
 
-    @Column(name = "description", length = 255)
+    @Column(name = "description")
     private String description;
+
+    @Column(name = "image_url", nullable = false)
+    private String imageUrl;
 
     @Column(name = "order_index")
     private Integer orderIndex = 0;
 
-    // Liên kết với bài học
+    @Column(name = "is_active")
+    private Boolean isActive = true;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lesson_id", nullable = false)
-    private Lessons lesson;
+    @JoinColumn(name = "category_id", insertable = false, updatable = false)
+    private Categories category;
 
-    // Liên kết với các điểm chạm thuộc cảnh này
-    @OneToMany(mappedBy = "scene", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "scene", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<InteractivePoint> points;
-
-    
 }
