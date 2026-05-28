@@ -24,13 +24,11 @@ public class WebSecurityConfig {
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
 
-    // Bean cho PasswordEncoder (dùng interface)
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Bean riêng cho BCryptPasswordEncoder (nếu cần inject trực tiếp)
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
@@ -43,21 +41,36 @@ public class WebSecurityConfig {
                 .cors(cors -> cors.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(unauthorizedHandler)  // THÊM DÒNG NÀY
+                        .authenticationEntryPoint(unauthorizedHandler)
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // Public resources - ai cũng xem được
                         .requestMatchers("/css/**", "/js/**", "/img/**", "/lib/**", "/favicon.ico").permitAll()
+
+                        // Public APIs - không cần đăng nhập
                         .requestMatchers("/api/auth/**").permitAll()
+
+                        // Public pages - ai cũng xem được
                         .requestMatchers("/", "/home", "/signup", "/login", "/about",
                                 "/contact", "/privacy", "/terms", "/faq",
                                 "/instructor", "/team", "/testimonial").permitAll()
+
+                        // Admin only
                         .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers("/study/**", "/profile", "/settings").authenticated()
-                        .anyRequest().permitAll()   // ← đổi thành permitAll để tránh chặn trang lạ
+
+                        // ⭐ QUAN TRỌNG: Các API cần xác thực
+                        .requestMatchers("/api/study-session/**").authenticated()
+                        .requestMatchers("/api/progress/**").authenticated()
+                        .requestMatchers("/study/**").authenticated()
+                        .requestMatchers("/profile", "/settings").authenticated()
+
+                        // Mặc định cho phép tất cả các request còn lại
+                        .anyRequest().permitAll()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable);
 
+        // Thêm filter JWT vào trước UsernamePasswordAuthenticationFilter
         http.addFilterBefore(authenticationJwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

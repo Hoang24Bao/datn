@@ -41,12 +41,10 @@ public class ProgressController {
 
     /**
      * API lấy progress batch cho nhiều vocab cùng lúc
-     * GET /api/progress/batch?vocabIds=1,2,3,4&lessonId=5
+     * GET /api/progress/batch?vocabIds=1,2,3,4
      */
     @GetMapping("/batch")
-    public ResponseEntity<?> getProgressBatch(
-            @RequestParam String vocabIds,
-            @RequestParam(required = false) Integer lessonId) {
+    public ResponseEntity<?> getProgressBatch(@RequestParam String vocabIds) {
 
         Users currentUser = getCurrentUser();
         if (currentUser == null) {
@@ -54,7 +52,6 @@ public class ProgressController {
         }
 
         try {
-            // Parse danh sách vocab IDs
             List<Integer> vocabIdList = Arrays.stream(vocabIds.split(","))
                     .map(String::trim)
                     .filter(s -> !s.isEmpty())
@@ -65,11 +62,9 @@ public class ProgressController {
                 return ResponseEntity.ok(Collections.emptyList());
             }
 
-            // Lấy progress từ database
             List<Progress> progressList = progressRepository.findByUserIdAndVocabIdIn(
                     currentUser.getId(), vocabIdList);
 
-            // Chuyển đổi thành response DTO
             List<Map<String, Object>> response = progressList.stream().map(p -> {
                 Map<String, Object> item = new HashMap<>();
                 item.put("vocabId", p.getId().getVocabId());
@@ -78,6 +73,22 @@ public class ProgressController {
                 item.put("lastReviewed", p.getLastReviewed());
                 return item;
             }).collect(Collectors.toList());
+
+            // Thêm các vocab chưa có progress (mặc định memoryLevel = 1)
+            Set<Integer> existingVocabIds = progressList.stream()
+                    .map(p -> p.getId().getVocabId())
+                    .collect(Collectors.toSet());
+
+            for (Integer vocabId : vocabIdList) {
+                if (!existingVocabIds.contains(vocabId)) {
+                    Map<String, Object> defaultItem = new HashMap<>();
+                    defaultItem.put("vocabId", vocabId);
+                    defaultItem.put("isLearned", false);
+                    defaultItem.put("memoryLevel", 1);
+                    defaultItem.put("lastReviewed", null);
+                    response.add(defaultItem);
+                }
+            }
 
             return ResponseEntity.ok(response);
 
@@ -102,9 +113,8 @@ public class ProgressController {
         }
 
         try {
-            // Lấy dữ liệu từ request
             Integer vocabId = (Integer) payload.get("vocabId");
-            Integer lessonId = (Integer) payload.get("lessonId");
+            Boolean isCorrect = (Boolean) payload.get("isCorrect");
             Boolean isLearned = (Boolean) payload.get("isLearned");
             Integer memoryLevel = (Integer) payload.get("memoryLevel");
 
@@ -112,29 +122,53 @@ public class ProgressController {
                 return ResponseEntity.badRequest().body(Map.of("error", "vocabId is required"));
             }
 
-            // Kiểm tra vocab có tồn tại không
             if (!vocabularyRepository.existsById(vocabId)) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Vocabulary not found"));
             }
 
-            // Tìm hoặc tạo mới Progress
-            Progress.ProgressId progressId = new Progress.ProgressId(currentUser.getId(), vocabId);
-            Progress progress = progressRepository.findById(progressId).orElse(new Progress());
+            Optional<Progress> existingProgress = progressRepository.findByUserIdAndVocabId(
+                    currentUser.getId(), vocabId);
 
-            if (progress.getId() == null) {
-                // Tạo mới
-                progress.setId(progressId);
-                progress.setUser(currentUser);
-                // Lấy vocabulary object (cần thiết cho mapping)
-                vocabularyRepository.findById(vocabId).ifPresent(progress::setVocab);
+            Progress progress;
+            if (existingProgress.isPresent()) {
+                progress = existingProgress.get();
+            } else {
+                progress = new Progress();
+                Progress.ProgressId id = new Progress.ProgressId(currentUser.getId(), vocabId);
+                progress.setId(id);
+                progress.setIsLearned(false);
+                progress.setMemoryLevel(1);
+                progress.setCorrectStreak(0);
             }
 
-            // Cập nhật giá trị
-            progress.setIsLearned(isLearned != null ? isLearned : false);
-            progress.setMemoryLevel(memoryLevel != null ? memoryLevel : 1);
-            progress.setLastReviewed(LocalDateTime.now());
+            // Nếu có isCorrect, cập nhật memory và streak theo cơ chế mới
+            if (isCorrect != null) {
+                int currentLevel = progress.getMemoryLevel();
+                int currentStreak = progress.getCorrectStreak() != null ? progress.getCorrectStreak() : 0;
+                int newLevel = currentLevel;
+                int newStreak = currentStreak;
 
-            // Lưu vào database
+                if (isCorrect) {
+                    newLevel = Math.min(5, currentLevel + 1);
+                    newStreak = currentStreak + 1;
+                } else {
+                    newLevel = Math.max(1, currentLevel - 1);
+                    newStreak = 0;
+                }
+
+                progress.setMemoryLevel(newLevel);
+                progress.setCorrectStreak(newStreak);
+
+                // isLearned = memory >= 4 AND streak >= 3
+                boolean newIsLearned = (newLevel >= 4 && newStreak >= 3);
+                progress.setIsLearned(newIsLearned);
+
+            } else {
+                if (isLearned != null) progress.setIsLearned(isLearned);
+                if (memoryLevel != null) progress.setMemoryLevel(memoryLevel);
+            }
+
+            progress.setLastReviewed(LocalDateTime.now());
             progressRepository.save(progress);
 
             Map<String, Object> response = new HashMap<>();
@@ -143,6 +177,7 @@ public class ProgressController {
             response.put("vocabId", vocabId);
             response.put("isLearned", progress.getIsLearned());
             response.put("memoryLevel", progress.getMemoryLevel());
+            response.put("correctStreak", progress.getCorrectStreak());
 
             return ResponseEntity.ok(response);
 
@@ -165,8 +200,8 @@ public class ProgressController {
         }
 
         try {
-            Progress.ProgressId progressId = new Progress.ProgressId(currentUser.getId(), vocabId);
-            Optional<Progress> progressOpt = progressRepository.findById(progressId);
+            Optional<Progress> progressOpt = progressRepository.findByUserIdAndVocabId(
+                    currentUser.getId(), vocabId);
 
             Map<String, Object> response = new HashMap<>();
             response.put("vocabId", vocabId);

@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: html_head(title='Quiz tương tác')}">
+    <title>Quiz tương tác</title>
+</head>
+<style>
+    .quiz-container {
+        background-color: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    .study-layout {
+        display: flex;
+        gap: 20px;
+        max-width: 1300px;
+        padding: 0 15px;
+        margin: 30px auto 0 auto;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .image-section {
+        flex: 0 0 calc(70% - 20px);
+        background: white;
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .sidebar-section {
+        flex: 0 0 30%;
+    }
+
+    .quiz-header-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .quiz-header-bar .lesson-info h3 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin: 0;
+        color: #2C3E50;
+    }
+
+    .quiz-header-bar .lesson-info i {
+        color: #fb873f;
+        margin-right: 8px;
+    }
+
+    .progress-wrapper {
+        background: #f8f9fa;
+        border-radius: 30px;
+        padding: 8px 15px;
+    }
+
+    .progress-wrapper span {
+        font-weight: 600;
+        color: #fb873f;
+    }
+
+    .btn-back {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+
+    .btn-back:hover {
+        background: #5a6268;
+        color: white;
+    }
+
+    .scene-wrapper {
+        position: relative;
+        border-radius: 15px;
+        overflow: hidden;
+        user-select: none;
+        border: 1px solid #eee;
+        background: #f5f5f5;
+    }
+
+    .scene-img {
+        width: 100%;
+        display: block;
+        height: auto;
+    }
+
+    .hotspot {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(251, 135, 63, 0.6);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 10;
+    }
+
+    .hotspot:hover {
+        background: rgba(251, 135, 63, 0.3);
+        border: 2px solid #fb873f;
+        box-shadow: 0 0 15px rgba(251, 135, 63, 0.4);
+    }
+
+    .hotspot.completed {
+        background: rgba(40, 167, 69, 0.2) !important;
+        border: 2px solid #28a745 !important;
+        cursor: pointer;
+    }
+
+    .hotspot.completed:hover {
+        background: rgba(40, 167, 69, 0.3) !important;
+    }
+
+
+    .hotspot.wrong {
+        background: rgba(220, 53, 69, 0.2) !important;
+        border: 2px solid #dc3545 !important;
+    }
+
+    .hotspot.wrong:hover {
+        background: rgba(220, 53, 69, 0.35) !important;
+    }
+
+    .question-card {
+        background: white;
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        position: sticky;
+        top: 20px;
+        border-top: 6px solid #fb873f;
+    }
+
+    .question-card h4 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        color: #2C3E50;
+    }
+
+    .options-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .option-btn {
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        background: white;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-align: left;
+        width: 100%;
+    }
+
+    .option-btn:hover:not(:disabled) {
+        border-color: #06BBCC;
+        background: #f0f9ff;
+    }
+
+    .option-btn.disabled,
+    .option-btn:disabled {
+        opacity: 0.8;
+        cursor: not-allowed;
+    }
+
+    .option-correct {
+        background: #d4edda !important;
+        border-color: #28a745 !important;
+        color: #155724 !important;
+    }
+
+    .option-wrong {
+        background: #f8d7da !important;
+        border-color: #dc3545 !important;
+        color: #721c24 !important;
+    }
+
+    .result-message {
+        text-align: center;
+        padding: 12px;
+        border-radius: 12px;
+        margin-top: 15px;
+        font-weight: 600;
+    }
+
+    .result-correct {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .result-wrong {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .next-btn {
+        background: #06BBCC;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 30px;
+        font-weight: 600;
+        width: 100%;
+        margin-top: 15px;
+    }
+
+    .next-btn:hover {
+        background: #0598a6;
+    }
+
+    .empty-quiz-sidebar {
+        background: white;
+        border-radius: 20px;
+        padding: 40px 20px;
+        text-align: center;
+        color: #adb5bd;
+        border-top: 6px solid #fb873f;
+    }
+
+    .empty-quiz-sidebar i {
+        font-size: 48px;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+
+    .scene-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
+
+    .scene-nav-btn {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        border: none;
+        background: #fb873f;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .scene-nav-btn:hover:not(:disabled) {
+        background: #e6762c;
+        transform: scale(1.1);
+    }
+
+    .scene-nav-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .scene-info {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2C3E50;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .page-header.hidden {
+        display: none;
+    }
+
+    /* Progress bar cho scene */
+    .scene-progress-container {
+        margin-bottom: 15px;
+    }
+
+    .scene-progress-bar {
+        height: 8px;
+        background-color: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .scene-progress-fill {
+        height: 100%;
+        background-color: #fb873f;
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+</style>
+
+<body class="quiz-container">
+<th:block th:replace="~{layout :: spinner}"></th:block>
+<th:block th:replace="~{layout :: navbar}" th:with="currentPage='quiz'"></th:block>
+
+<!-- Header -->
+<div class="container-fluid bg-primary py-3 mb-5 page-header" id="pageHeader">
+    <div class="container py-5 text-center">
+        <h1 class="display-3 text-white animated slideInDown">Quiz tương tác</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center">
+                <li class="breadcrumb-item"><a class="text-white" th:href="@{/}">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a class="text-white" th:href="@{/study/categories}">Học tập</a></li>
+                <li class="breadcrumb-item text-white active" aria-current="page">Quiz tương tác</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Categories Section -->
+<div class="container-xxl py-5" id="categorySelection">
+    <div class="container">
+        <div class="text-center">
+            <h6 class="section-title bg-white text-center px-3 mb-4">Quiz tương tác</h6>
+            <h1 class="mb-5">Hãy chọn chủ đề bạn muốn học</h1>
+        </div>
+
+        <div class="row g-4 mb-5 justify-content-center">
+            <div class="col-12 text-center">
+                <div class="filter-container d-inline-flex p-2 bg-light rounded-pill shadow-sm">
+                    <button type="button" class="btn-filter active" data-filter="all" onclick="filterCategories('all')">
+                        Tất cả
+                    </button>
+                    <button type="button" class="btn-filter" data-filter="n5" onclick="filterCategories('n5')">N5
+                    </button>
+                    <button type="button" class="btn-filter" data-filter="n4" onclick="filterCategories('n4')">N4
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4" id="categoryGrid">
+            <div class="col-12 text-center py-5">
+                <div class="loading-state"><i class="fas fa-spinner fa-spin me-2"></i> Đang tải chủ đề...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quiz Area -->
+<div id="quizArea" class="hidden">
+    <div class="study-layout">
+        <div class="image-section">
+            <div class="quiz-header-bar">
+                <div class="lesson-info">
+                    <h3><i class="fas fa-book-open"></i> <span id="lessonName">Bài học tương tác</span></h3>
+                </div>
+                <div class="progress-wrapper">
+                    <span id="progressText"><i class="fas fa-chart-line me-1"></i> Tiến độ: 0/0</span>
+                </div>
+                <a href="#" class="btn-back" id="backToCategoriesBtn">
+                    <i class="fas fa-arrow-left me-2"></i>Chọn chủ đề khác
+                </a>
+            </div>
+
+            <div class="scene-wrapper" id="sceneWrapper">
+                <img id="sceneImage" class="scene-img" alt="Scene">
+                <div id="hotspotsContainer"></div>
+            </div>
+
+            <div class="scene-nav">
+                <button class="scene-nav-btn" id="prevSceneBtn" onclick="changeScene(-1)"><i
+                        class="fas fa-chevron-left"></i></button>
+                <span class="scene-info" id="sceneIndicator">Cảnh 1 / 1</span>
+                <button class="scene-nav-btn" id="nextSceneBtn" onclick="changeScene(1)"><i
+                        class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <div id="questionSidebar" class="question-card" style="display: none;">
+                <h4><i class="fas fa-question-circle me-2" style="color: #fb873f;"></i> Chọn đáp án đúng</h4>
+                <div id="optionsList" class="options-list"></div>
+                <div id="resultMessage" class="result-message" style="display: none;"></div>
+                <button id="nextQuizBtn" class="next-btn" style="display: none;">Tiếp theo <i
+                        class="fas fa-arrow-right ms-2"></i></button>
+            </div>
+            <div id="emptySidebar" class="empty-quiz-sidebar">
+                <i class="fas fa-hand-pointer"></i>
+                <p>Click vào một vật thể trong ảnh<br>để trả lời câu hỏi</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{layout :: footer}"></th:block>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+
+    let currentSession = null;
+    let currentQuestionData = null;
+    let currentPointId = null;
+    let allCategories = [];
+
+    let scenesData = [];
+    let currentSceneIndex = 0;
+    let currentSceneId = null;
+    let pointsInCurrentScene = [];
+    let answeredPointsInScene = new Set();
+    let userAnswers = new Map(); // Lưu đáp án người dùng đã chọn cho mỗi point
+
+    let waitingForNextScene = false;
+
+    if (!token || !userId) {
+        window.location.href = '/login';
+    }
+
+    async function loadCategories() {
+    try {
+        const response = await fetch(`/api/quiz/interactive/categories-with-status?userId=${userId}`, {
+            headers: {'Authorization': 'Bearer ' + token}
+        });
+        allCategories = await response.json();
+        renderCategories(allCategories);
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function renderCategories(categories) {
+    const grid = document.getElementById('categoryGrid');
+    grid.innerHTML = categories.map(cat => {
+        let imageUrl = cat.iconUrl || 'https://placehold.co/400x200?text=No+Image';
+        if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
+            imageUrl = '/' + imageUrl;
+        }
+
+        const buttonText = cat.isCompleted ? 'Làm lại' : 'Làm quiz';
+        const completedBadge = cat.isCompleted ? '<span class="badge bg-success ms-2">Đã hoàn thành</span>' : '';
+
+        return `
+            <div class="col-lg-3 col-md-6">
+                <div class="card topic-item shadow" onclick="selectCategory(${cat.id}, '${escapeHtml(cat.name)}')">
+                    <div class="topic-img-wrapper">
+                        <span class="badge bg-success topic-badge">${cat.jlptLevel}</span>
+                        <img src="${imageUrl}" onerror="this.src='https://placehold.co/400x200?text=No+Image'" alt="${escapeHtml(cat.name)}">
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <h5 class="fw-bold mb-1">${escapeHtml(cat.name)}${completedBadge}</h5>
+                            <small class="text-muted">
+                                <i class="fa fa-image me-2"></i>
+                                <span>Hình ảnh tương tác</span>
+                            </small>
+                        </div>
+
+                        <div class="progress-container mb-3">
+                            <div class="d-flex justify-content-between mb-1" style="font-size: 12px;">
+                                <span class="fw-bold">Tiến độ</span>
+                                <span class="text-primary fw-bold">${cat.progressPercent}%</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar progress-bar-ganbatte" style="width: ${cat.progressPercent}%"></div>
+                            </div>
+                        </div>
+
+                        <div class="btn btn-ganbatte w-100 rounded-pill py-2">
+                            ${buttonText} <i class="fa fa-chevron-right ms-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+    function filterCategories(level) {
+        if (level === 'all') {
+            renderCategories(allCategories);
+        } else {
+            const filtered = allCategories.filter(cat => cat.jlptLevel?.toLowerCase() === level.toLowerCase());
+            renderCategories(filtered);
+        }
+        document.querySelectorAll('.btn-filter').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-filter') === level) btn.classList.add('active');
+        });
+    }
+
+    // Tính toán progress cho category (dựa trên số scene đã hoàn thành toàn bộ point)
+async function updateCategoryProgress(categoryId) {
+    try {
+        // Lấy session hiện tại
+        const sessionResponse = await fetch(`/api/quiz/interactive/session?userId=${userId}&categoryId=${categoryId}`, {
+            method: 'POST',
+            headers: {'Authorization': 'Bearer ' + token}
+        });
+        const session = await sessionResponse.json();
+
+        // Lấy danh sách scenes
+        const scenesResponse = await fetch(`/api/admin/interactive/scenes/${categoryId}`, {
+            headers: {'Authorization': 'Bearer ' + token}
+        });
+        const scenes = await scenesResponse.json();
+
+        // Tính tổng số point trong category
+        let totalPoints = 0;
+        scenes.forEach(scene => {
+            totalPoints += scene.points?.length || 0;
+        });
+
+        // Tính số point đã trả lời
+        const answeredPoints = session.answeredPoints ? JSON.parse(session.answeredPoints) : [];
+        const answeredCount = answeredPoints.length;
+
+        // Tính phần trăm dựa trên số point đã trả lời / tổng số point
+        const percent = totalPoints > 0 ? Math.round((answeredCount / totalPoints) * 100) : 0;
+
+        // Lưu vào localStorage
+        const progressKey = `quiz_progress_${categoryId}`;
+        localStorage.setItem(progressKey, JSON.stringify({
+            percent: percent,
+            answeredCount: answeredCount,
+            totalPoints: totalPoints,
+            lastUpdated: new Date().toISOString()
+        }));
+
+        // Cập nhật giao diện nếu đang ở trang categories
+        const categoryGrid = document.getElementById('categoryGrid');
+        if (categoryGrid && !document.getElementById('quizArea').classList.contains('hidden')) {
+            // Nếu đang ở trang quiz, không cập nhật
+            return;
+        }
+
+        // Refresh lại danh sách categories để cập nhật progress bar
+        renderCategories(allCategories);
+
+    } catch (error) {
+        console.error('Error updating category progress:', error);
+    }
+}
+
+// Lưu trạng thái hoàn thành category
+function markCategoryCompleted(categoryId, correctCount, totalCount, wrongCount) {
+    const completedKey = `quiz_completed_${categoryId}`;
+    localStorage.setItem(completedKey, 'true');
+
+    // Lưu kết quả chi tiết
+    const resultKey = `quiz_result_${categoryId}`;
+    localStorage.setItem(resultKey, JSON.stringify({
+        correctCount: correctCount,
+        wrongCount: wrongCount,
+        totalCount: totalCount,
+        completedAt: new Date().toISOString()
+    }));
+
+    // Cập nhật progress lên 100%
+    const progressKey = `quiz_progress_${categoryId}`;
+    localStorage.setItem(progressKey, JSON.stringify({
+        percent: 100,
+        answeredCount: totalCount,
+        totalPoints: totalCount,
+        lastUpdated: new Date().toISOString()
+    }));
+}
+
+    async function selectCategory(categoryId, categoryName) {
+        document.getElementById('pageHeader').classList.add('hidden');
+        document.getElementById('categorySelection').classList.add('hidden');
+        document.getElementById('quizArea').classList.remove('hidden');
+        document.getElementById('lessonName').innerText = categoryName;
+
+        try {
+            const sessionResponse = await fetch(`/api/quiz/interactive/session?userId=${userId}&categoryId=${categoryId}`, {
+                method: 'POST', headers: {'Authorization': 'Bearer ' + token}
+            });
+            currentSession = await sessionResponse.json();
+
+            await loadAllScenes(categoryId);
+
+            // Kiểm tra xem có session đang dở không
+            const hasAnsweredPoints = currentSession.answeredPoints && JSON.parse(currentSession.answeredPoints).length > 0;
+
+            if (hasAnsweredPoints) {
+                // Hỏi người dùng có muốn tiếp tục không
+                const result = await Swal.fire({
+                    title: 'Tiếp tục học?',
+                    text: 'Bạn đang có một phiên học chưa hoàn thành. Bạn có muốn tiếp tục không?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Tiếp tục',
+                    cancelButtonText: 'Bắt đầu lại',
+                    confirmButtonColor: '#06BBCC',
+                    cancelButtonColor: '#dc3545'
+                });
+
+                if (!result.isConfirmed) {
+                    // Bắt đầu lại - xóa session cũ
+                    await fetch(`/api/quiz/interactive/session/reset?userId=${userId}&categoryId=${categoryId}`, {
+                        method: 'DELETE',
+                        headers: {'Authorization': 'Bearer ' + token}
+                    });
+
+                    // Tạo session mới
+                    const newSessionResponse = await fetch(`/api/quiz/interactive/session?userId=${userId}&categoryId=${categoryId}`, {
+                        method: 'POST', headers: {'Authorization': 'Bearer ' + token}
+                    });
+                    await loadCategories();
+                    currentSession = await newSessionResponse.json();
+                    answeredPointsInScene.clear();
+                    userAnswers.clear();
+                }
+            }
+
+            // Load dữ liệu đã trả lời từ session
+            if (currentSession.answeredPoints) {
+                const answered = JSON.parse(currentSession.answeredPoints);
+                answered.forEach(pointId => {
+                    answeredPointsInScene.add(pointId);
+                });
+            }
+
+            // Load câu hỏi đã trả lời từ backend (nếu có)
+            if (currentSession.userAnswers) {
+                userAnswers = new Map(Object.entries(JSON.parse(currentSession.userAnswers || '{}')));
+            }
+
+            if (currentSession.answeredQuestions) {
+    try {
+        const answeredQ = JSON.parse(currentSession.answeredQuestions);
+        Object.keys(answeredQ).forEach(pointId => {
+            const data = answeredQ[pointId];
+            userAnswers.set(pointId, {
+                isCorrect: data.isCorrect,
+                selectedAnswer: data.selectedAnswer,
+                correctAnswer: data.correctAnswer
+            });
+        });
+    } catch(e) {}
+}
+
+            // Khôi phục vị trí từ session
+            if (currentSession.currentSceneId && currentSession.currentPointId) {
+                const sceneIndex = scenesData.findIndex(s => s.id === currentSession.currentSceneId);
+                if (sceneIndex !== -1) {
+                    currentSceneIndex = sceneIndex;
+                }
+                await loadScene(currentSceneIndex);
+
+                if (answeredPointsInScene.has(currentSession.currentPointId)) {
+                    await showAnsweredQuestion(currentSession.currentPointId);
+                }
+            } else if (scenesData.length > 0) {
+                await loadScene(0);
+            }
+        } catch (error) {
+            console.error(error);
+            Swal.fire('Lỗi', 'Không thể tạo phiên học', 'error');
+            resetToCategorySelection();
+        }
+    }
+
+    async function loadAllScenes(categoryId) {
+        const response = await fetch(`/api/admin/interactive/scenes/${categoryId}`, {
+            headers: {'Authorization': 'Bearer ' + token}
+        });
+        scenesData = await response.json();
+        updateSceneNavButtons();
+    }
+
+    async function loadScene(index) {
+        if (index < 0 || index >= scenesData.length) return;
+
+        currentSceneIndex = index;
+        const scene = scenesData[currentSceneIndex];
+        currentSceneId = scene.id;
+
+        document.getElementById('sceneImage').src = scene.imageUrl;
+        createHotspots(scene.points);
+
+        pointsInCurrentScene = scene.points || [];
+        updateSceneProgress();
+
+        document.getElementById('sceneIndicator').innerHTML = `Cảnh ${currentSceneIndex + 1} / ${scenesData.length}`;
+
+        document.getElementById('questionSidebar').style.display = 'none';
+        document.getElementById('emptySidebar').style.display = 'block';
+        document.getElementById('nextQuizBtn').style.display = 'none';
+
+        waitingForNextScene = false;
+        updateSceneNavButtons();
+    }
+
+    function createHotspots(points) {
+        const container = document.getElementById('hotspotsContainer');
+        container.innerHTML = '';
+
+        points.forEach(point => {
+            const hotspot = document.createElement('div');
+            hotspot.className = 'hotspot';
+            if (answeredPointsInScene.has(point.id)) {
+            const answer = userAnswers.get(point.id.toString());
+            if (answer && !answer.isCorrect) {
+                hotspot.classList.add('wrong');
+            } else {
+                hotspot.classList.add('completed');
+            }
+        }
+            hotspot.style.left = `${point.coordX}%`;
+            hotspot.style.top = `${point.coordY}%`;
+            hotspot.style.width = `${point.width}%`;
+            hotspot.style.height = `${point.height}%`;
+            hotspot.dataset.pointId = point.id;
+            hotspot.dataset.vocabId = point.vocabId;
+            hotspot.onclick = () => showQuestion(point.id);
+            container.appendChild(hotspot);
+        });
+    }
+
+    function updateSceneProgress() {
+        const total = pointsInCurrentScene.length;
+        const completed = Array.from(answeredPointsInScene).filter(id =>
+            pointsInCurrentScene.some(p => p.id === id)
+        ).length;
+
+        document.getElementById('progressText').innerHTML = `<i class="fas fa-chart-line me-1"></i> Tiến độ: ${completed}/${total}`;
+
+        if (completed === total && total > 0) {
+            waitingForNextScene = true;
+            document.getElementById('nextQuizBtn').style.display = 'block';
+            document.getElementById('nextQuizBtn').innerHTML = 'Tiếp theo <i class="fas fa-arrow-right ms-2"></i>';
+        }
+    }
+
+    async function showQuestion(pointId) {
+    if (answeredPointsInScene.has(pointId)) {
+        await showAnsweredQuestion(pointId);
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/quiz/interactive/question?pointId=${pointId}&categoryId=${currentSession.categoryId}&sessionId=${currentSession.id}`, {
+            headers: {'Authorization': 'Bearer ' + token}
+        });
+        currentQuestionData = await response.json();
+        currentPointId = pointId;
+
+        document.getElementById('questionSidebar').style.display = 'block';
+        document.getElementById('emptySidebar').style.display = 'none';
+        document.getElementById('resultMessage').style.display = 'none';
+
+        // Hiển thị options với kana nếu có
+        const optionsHtml = currentQuestionData.options.map(opt => {
+            // opt là object {expression, kana} từ backend
+            const expression = opt.expression || opt;
+            const kana = opt.kana || '';
+            const displayText = kana ? `${expression} (${kana})` : expression;
+            return `
+                <button class="option-btn" onclick="submitAnswer('${escapeHtml(expression).replace(/'/g, "\\'")}')">
+                    ${escapeHtml(displayText)}
+                </button>
+            `;
+        }).join('');
+
+        document.getElementById('optionsList').innerHTML = optionsHtml;
+
+    } catch (error) {
+        console.error(error);
+        Swal.fire('Lỗi', 'Không thể tải câu hỏi', 'error');
+    }
+}
+
+    async function showAnsweredQuestion(pointId) {
+    try {
+        const response = await fetch(`/api/quiz/interactive/question?pointId=${pointId}&categoryId=${currentSession.categoryId}&sessionId=${currentSession.id}`, {
+            headers: {'Authorization': 'Bearer ' + token}
+        });
+        const questionData = await response.json();
+
+        document.getElementById('questionSidebar').style.display = 'block';
+        document.getElementById('emptySidebar').style.display = 'none';
+
+        // GỌI HÀM displayAnsweredQuestion
+        displayAnsweredQuestion(questionData);
+
+    } catch (error) {
+        console.error(error);
+        Swal.fire('Lỗi', 'Không thể tải câu hỏi', 'error');
+    }
+}
+
+    async function submitAnswer(selectedAnswer) {
+    const btns = document.querySelectorAll('.option-btn');
+    btns.forEach(btn => { btn.disabled = true; btn.classList.add('disabled'); });
+
+    // Lấy options hiện tại (đang hiển thị trên màn hình)
+    const currentOptions = currentQuestionData.options;
+
+    try {
+        const response = await fetch('/api/quiz/interactive/answer', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                sessionId: currentSession.id,
+                pointId: currentPointId,
+                selectedAnswer: selectedAnswer,
+                userId: parseInt(userId),
+                options: currentOptions
+            })
+        });
+
+        // THÊM 3 DÒNG NÀY
+console.log('HTTP Status:', response.status);
+const rawText = await response.text();
+console.log('Raw response:', rawText);
+const result = JSON.parse(rawText); // thay vì response.json()
+
+        // Highlight đúng/sai
+        btns.forEach(btn => {
+            const btnText = btn.innerText;
+            if (btnText.includes(result.correctAnswer) || btnText === result.correctAnswer) {
+                btn.classList.add('option-correct');
+            }
+            if ((btnText.includes(selectedAnswer) || btnText === selectedAnswer) && !result.isCorrect) {
+                btn.classList.add('option-wrong');
+            }
+        });
+
+        const resultDiv = document.getElementById('resultMessage');
+        resultDiv.innerHTML = result.isCorrect ?
+            `<i class="fas fa-check-circle me-2"></i> Chính xác!` :
+            `<i class="fas fa-times-circle me-2"></i> Sai rồi! Đáp án đúng: ${result.correctAnswer}`;
+        resultDiv.className = `result-message ${result.isCorrect ? 'result-correct' : 'result-wrong'}`;
+        resultDiv.style.display = 'block';
+
+        // Đánh dấu hotspot
+        const hotspot = document.querySelector(`.hotspot[data-point-id="${currentPointId}"]`);
+        if (hotspot) {
+            hotspot.classList.remove('completed', 'wrong');
+            if (result.isCorrect) {
+                hotspot.classList.add('completed');
+            } else {
+                hotspot.classList.add('wrong');
+            }
+        }
+
+        answeredPointsInScene.add(currentPointId);
+
+        if (result.nextPoint) {
+            currentSession.currentSceneId = result.nextPoint.sceneId;
+            currentSession.currentPointId = result.nextPoint.pointId;
+        }
+
+        updateSceneProgress();
+
+    } catch (error) {
+        console.error(error);
+        Swal.fire('Lỗi', 'Không thể gửi đáp án', 'error');
+    }
+}
+
+    function displayNewQuestion(questionData) {
+    document.getElementById('resultMessage').style.display = 'none';
+
+    const optionsHtml = questionData.options.map(opt => {
+        const displayText = opt.kana ? `${opt.expression} (${opt.kana})` : opt.expression;
+        return `
+            <button class="option-btn" onclick="submitAnswer('${escapeHtml(opt.expression).replace(/'/g, "\\'")}')">
+                ${escapeHtml(displayText)}
+            </button>
+        `;
+    }).join('');
+
+    document.getElementById('optionsList').innerHTML = optionsHtml;
+}
+
+function displayAnsweredQuestion(questionData) {
+    const userAnswer = questionData.selectedAnswer;
+    const correctAns = questionData.correctAnswer || questionData.correctExpression;
+    const options = questionData.options || [];
+
+    const optionsHtml = options.map(opt => {
+        // opt có thể là string hoặc object
+        const expression = opt.expression || opt;
+        const kana = opt.kana || '';
+        const isCorrect = expression === correctAns;
+        const isUserSelected = expression === userAnswer;
+        let additionalClass = '';
+        if (isCorrect) additionalClass = 'option-correct';
+        if (isUserSelected && !isCorrect) additionalClass = 'option-wrong';
+
+        const displayText = kana ? `${expression} (${kana})` : expression;
+
+        return `
+            <button class="option-btn disabled ${additionalClass}" disabled>
+                ${escapeHtml(displayText)}
+            </button>
+        `;
+    }).join('');
+
+    document.getElementById('optionsList').innerHTML = optionsHtml;
+    document.getElementById('resultMessage').style.display = 'block';
+
+    if (userAnswer === correctAns) {
+        document.getElementById('resultMessage').innerHTML = '<i class="fas fa-check-circle me-2"></i> Chính xác!';
+        document.getElementById('resultMessage').className = 'result-message result-correct';
+    } else {
+        document.getElementById('resultMessage').innerHTML = `<i class="fas fa-times-circle me-2"></i> Sai rồi! Đáp án đúng: ${correctAns}`;
+        document.getElementById('resultMessage').className = 'result-message result-wrong';
+    }
+
+    const total = pointsInCurrentScene.length;
+    const completed = Array.from(answeredPointsInScene).filter(id =>
+        pointsInCurrentScene.some(p => p.id === id)
+    ).length;
+
+    if (completed !== total || total === 0) {
+        document.getElementById('nextQuizBtn').style.display = 'none';
+    }
+}
+
+    document.getElementById('nextQuizBtn').onclick = async function() {
+        if (waitingForNextScene && currentSceneIndex + 1 < scenesData.length) {
+            await loadScene(currentSceneIndex + 1);
+        } else if (waitingForNextScene && currentSceneIndex + 1 >= scenesData.length) {
+            showComplete();
+        }
+    };
+
+    function changeScene(direction) {
+        const newIndex = currentSceneIndex + direction;
+        if (newIndex >= 0 && newIndex < scenesData.length) {
+            loadScene(newIndex);
+        }
+    }
+
+    function updateSceneNavButtons() {
+        const prevBtn = document.getElementById('prevSceneBtn');
+        const nextBtn = document.getElementById('nextSceneBtn');
+        if (prevBtn) prevBtn.disabled = currentSceneIndex === 0;
+        if (nextBtn) nextBtn.disabled = currentSceneIndex >= scenesData.length - 1;
+    }
+
+    async function showComplete() {
+    // Tính số câu đúng và sai
+    let correctCount = 0;
+    let wrongCount = 0;
+
+    userAnswers.forEach((answer, pointId) => {
+        if (answer.isCorrect) {
+            correctCount++;
+        } else {
+            wrongCount++;
+        }
+    });
+
+    const totalCount = correctCount + wrongCount;
+
+
+    resetToCategorySelection();
+
+    // Hiển thị thông báo chi tiết
+    Swal.fire({
+        icon: 'success',
+        title: 'Chúc mừng!',
+        html: `
+            <div class="text-center">
+                <p class="mb-3">Bạn đã hoàn thành bài học!</p>
+                <div class="d-flex justify-content-center gap-4 mb-3">
+                    <div class="text-center">
+                        <div class="fs-1 text-success">✓ ${correctCount}</div>
+                        <div class="small text-muted">Đúng</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="fs-1 text-danger">✗ ${wrongCount}</div>
+                        <div class="small text-muted">Sai</div>
+                    </div>
+                </div>
+                <div class="progress mb-2" style="height: 10px;">
+                    <div class="progress-bar bg-success" style="width: ${(correctCount/totalCount)*100}%"></div>
+                    <div class="progress-bar bg-danger" style="width: ${(wrongCount/totalCount)*100}%"></div>
+                </div>
+                <div class="small text-muted">Tổng số: ${totalCount} câu hỏi</div>
+            </div>
+        `,
+        confirmButtonColor: '#06BBCC',
+        confirmButtonText: 'Tiếp tục'
+    });
+}
+
+    function resetToCategorySelection() {
+        document.getElementById('pageHeader').classList.remove('hidden');
+        document.getElementById('categorySelection').classList.remove('hidden');
+        document.getElementById('quizArea').classList.add('hidden');
+        document.getElementById('hotspotsContainer').innerHTML = '';
+
+        waitingForNextScene = false;
+        currentSession = null;
+        currentQuestionData = null;
+        currentPointId = null;
+        scenesData = [];
+        currentSceneIndex = 0;
+        answeredPointsInScene.clear();
+        userAnswers.clear();
+        loadCategories();
+
+    }
+
+    document.getElementById('backToCategoriesBtn').onclick = function(e) {
+        e.preventDefault();
+        resetToCategorySelection();
+    };
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    loadCategories();
+
+</script>
+</body>
+</html>
