@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: html_head(title='Bài kiểm tra')}"></head>
+<style>
+    .test-container {
+        background-color: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    .test-card {
+        background: white;
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.3s;
+        border: 1px solid #eee;
+        cursor: pointer;
+    }
+
+    .test-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .test-card.passed {
+        border-left: 5px solid #28a745;
+        background: #f0fff4;
+    }
+
+    .test-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #2C3E50;
+    }
+
+    .test-info {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 15px;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .test-info i {
+        margin-right: 5px;
+        color: #fb873f;
+    }
+
+    .btn-start {
+        background: #fb873f;
+        color: white;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 30px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-start:hover {
+        background: #e6762c;
+        transform: scale(1.05);
+    }
+
+    .btn-start:disabled {
+        background: #28a745;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .badge-pass {
+        background: #28a745;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+
+    .loading-state {
+        text-align: center;
+        padding: 50px;
+    }
+</style>
+
+<body class="test-container">
+<th:block th:replace="~{layout :: spinner}"></th:block>
+<th:block th:replace="~{layout :: navbar}" th:with="currentPage='test'"></th:block>
+
+<!-- Header -->
+<div class="container-fluid bg-primary py-3 mb-5">
+    <div class="container py-5 text-center">
+        <h1 class="display-3 text-white animated slideInDown">Bài kiểm tra</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center">
+                <li class="breadcrumb-item"><a class="text-white" th:href="@{/}">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a class="text-white" th:href="@{/study/categories}">Học tập</a></li>
+                <li class="breadcrumb-item"><a class="text-white" id="backToTestsLink" href="/test/tests">Chọn chủ
+                    đề</a></li>
+                <li class="breadcrumb-item text-white active" aria-current="page" id="categoryName">Đang tải...</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold" id="pageTitle">Đang tải...</h2>
+        <a href="/test/tests" class="btn btn-ganbatte rounded-pill px-4">
+            <i class="fas fa-arrow-left me-2"></i>Chọn chủ đề khác
+        </a>
+    </div>
+
+    <div id="testsList" class="row">
+        <div class="col-12 text-center py-5">
+            <div class="loading-state"><i class="fas fa-spinner fa-spin me-2"></i> Đang tải bài kiểm tra...</div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{layout :: footer}"></th:block>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryId = urlParams.get('categoryId');
+
+    if (!token || !userId) {
+        window.location.href = '/login';
+    }
+
+    if (!categoryId) {
+        window.location.href = '/test/tests';
+    }
+
+    async function loadTests() {
+        try {
+            const response = await fetch(`/api/tests/category/${categoryId}`, {
+                headers: {'Authorization': 'Bearer ' + token}
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                renderTests(data.tests);
+            } else {
+                showError(data.error);
+            }
+        } catch (error) {
+            console.error(error);
+            showError('Không thể tải danh sách bài kiểm tra');
+        }
+    }
+
+    function renderTests(tests) {
+    const container = document.getElementById('testsList');
+
+    if (!tests || tests.length === 0) {
+        container.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-file-alt fa-4x mb-3" style="color: #adb5bd;"></i>
+                <h4 class="text-muted">Chưa có bài kiểm tra nào</h4>
+                <p class="text-muted">Hãy quay lại sau nhé!</p>
+                <a href="/test/tests" class="btn btn-ganbatte rounded-pill px-4">
+                    <i class="fas fa-arrow-left me-2"></i>Chọn chủ đề khác
+                </a>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = tests.map(test => `
+        <div class="col-md-6 col-lg-4">
+            <div class="test-card ${test.hasPassed ? 'passed' : ''}">
+                <div class="test-title">
+                    ${escapeHtml(test.title)}
+                    ${test.hasPassed ? '<span class="badge-pass ms-2"><i class="fas fa-check-circle me-1"></i>Đã hoàn thành</span>' : ''}
+                </div>
+                <div class="test-info">
+                    <span><i class="fas fa-clock"></i> ${test.durationMinutes} phút</span>
+                    <span><i class="fas fa-star"></i> Điểm tối đa: ${test.maxScore}</span>
+                    <span><i class="fas fa-question-circle"></i> ${test.questionCount} câu</span>
+                </div>
+                <div class="test-info">
+                    <span><i class="fas fa-trophy"></i> Điểm đạt: ${test.passScore}</span>
+                    ${test.hasPassed ? `<span><i class="fas fa-star text-warning"></i> Điểm cao nhất: ${test.bestScore || 0}</span>` : ''}
+                </div>
+                <button class="btn-start w-100" onclick="startTest(${test.id})">
+                    ${test.hasPassed ? '<i class="fas fa-redo me-2"></i>Làm lại' : '<i class="fas fa-play me-2"></i>Làm bài'}
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+    async function startTest(testId) {
+        try {
+            sessionStorage.removeItem('currentTest');
+            const response = await fetch(`/api/tests/${testId}/start`, {
+                method: 'POST',
+                headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'}
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                const testData = data.data;
+                const newAttemptId = testData.attemptId;
+                testData.categoryId = categoryId;
+
+                sessionStorage.setItem('currentTest', JSON.stringify(testData));
+
+                sessionStorage.removeItem(`test_answers_${newAttemptId}`);
+                sessionStorage.removeItem('currentIndex');
+
+                window.location.href = `/test/take?attemptId=${newAttemptId}`;
+            } else {
+                Swal.fire('Lỗi', data.error, 'error');
+            }
+        } catch (error) {
+            Swal.fire('Lỗi', 'Không thể bắt đầu bài kiểm tra', 'error');
+        }
+    }
+
+    function showError(message) {
+        document.getElementById('testsList').innerHTML = `
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-exclamation-triangle fa-4x mb-3" style="color: #dc3545;"></i>
+                <h4 class="text-danger">Lỗi</h4>
+                <p>${escapeHtml(message)}</p>
+                <a href="/test/tests" class="btn btn-ganbatte rounded-pill px-4">
+                    <i class="fas fa-arrow-left me-2"></i>Chọn chủ đề khác
+                </a>
+            </div>
+        `;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Load tên category
+function loadCategoryName() {
+    // Lấy tên category từ sessionStorage (đã lưu khi chọn category ở trang tests.html)
+    const categoryName = sessionStorage.getItem('selectedCategoryName');
+
+    if (categoryName) {
+        document.getElementById('categoryName').innerText = categoryName;
+        document.getElementById('pageTitle').innerText = `📋 ${categoryName}`;
+    } else {
+        document.getElementById('categoryName').innerText = 'Bài kiểm tra';
+        document.getElementById('pageTitle').innerText = '📋 Bài kiểm tra';
+    }
+}
+
+    loadTests();
+    loadCategoryName();
+</script>
+</body>
+</html>

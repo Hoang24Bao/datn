@@ -573,101 +573,130 @@ function markCategoryCompleted(categoryId, correctCount, totalCount, wrongCount)
     }));
 }
 
-    async function selectCategory(categoryId, categoryName) {
-        document.getElementById('pageHeader').classList.add('hidden');
-        document.getElementById('categorySelection').classList.add('hidden');
-        document.getElementById('quizArea').classList.remove('hidden');
-        document.getElementById('lessonName').innerText = categoryName;
+async function selectCategory(categoryId, categoryName) {
+    document.getElementById('pageHeader').classList.add('hidden');
+    document.getElementById('categorySelection').classList.add('hidden');
+    document.getElementById('quizArea').classList.remove('hidden');
+    document.getElementById('lessonName').innerText = categoryName;
 
-        try {
-            const sessionResponse = await fetch(`/api/quiz/interactive/session?userId=${userId}&categoryId=${categoryId}`, {
-                method: 'POST', headers: {'Authorization': 'Bearer ' + token}
-            });
-            currentSession = await sessionResponse.json();
-
-            await loadAllScenes(categoryId);
-
-            // Kiểm tra xem có session đang dở không
-            const hasAnsweredPoints = currentSession.answeredPoints && JSON.parse(currentSession.answeredPoints).length > 0;
-
-            if (hasAnsweredPoints) {
-                // Hỏi người dùng có muốn tiếp tục không
-                const result = await Swal.fire({
-                    title: 'Tiếp tục học?',
-                    text: 'Bạn đang có một phiên học chưa hoàn thành. Bạn có muốn tiếp tục không?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Tiếp tục',
-                    cancelButtonText: 'Bắt đầu lại',
-                    confirmButtonColor: '#06BBCC',
-                    cancelButtonColor: '#dc3545'
-                });
-
-                if (!result.isConfirmed) {
-                    // Bắt đầu lại - xóa session cũ
-                    await fetch(`/api/quiz/interactive/session/reset?userId=${userId}&categoryId=${categoryId}`, {
-                        method: 'DELETE',
-                        headers: {'Authorization': 'Bearer ' + token}
-                    });
-
-                    // Tạo session mới
-                    const newSessionResponse = await fetch(`/api/quiz/interactive/session?userId=${userId}&categoryId=${categoryId}`, {
-                        method: 'POST', headers: {'Authorization': 'Bearer ' + token}
-                    });
-                    await loadCategories();
-                    currentSession = await newSessionResponse.json();
-                    answeredPointsInScene.clear();
-                    userAnswers.clear();
-                }
-            }
-
-            // Load dữ liệu đã trả lời từ session
-            if (currentSession.answeredPoints) {
-                const answered = JSON.parse(currentSession.answeredPoints);
-                answered.forEach(pointId => {
-                    answeredPointsInScene.add(pointId);
-                });
-            }
-
-            // Load câu hỏi đã trả lời từ backend (nếu có)
-            if (currentSession.userAnswers) {
-                userAnswers = new Map(Object.entries(JSON.parse(currentSession.userAnswers || '{}')));
-            }
-
-            if (currentSession.answeredQuestions) {
     try {
-        const answeredQ = JSON.parse(currentSession.answeredQuestions);
-        Object.keys(answeredQ).forEach(pointId => {
-            const data = answeredQ[pointId];
-            userAnswers.set(pointId, {
-                isCorrect: data.isCorrect,
-                selectedAnswer: data.selectedAnswer,
-                correctAnswer: data.correctAnswer
-            });
+        const sessionResponse = await fetch(`/api/quiz/interactive/session?userId=${userId}&categoryId=${categoryId}`, {
+            method: 'POST', headers: {'Authorization': 'Bearer ' + token}
         });
-    } catch(e) {}
+        currentSession = await sessionResponse.json();
+
+        await loadAllScenes(categoryId);
+
+        // Kiểm tra xem có session đang dở không
+        const hasAnsweredPoints = currentSession.answeredPoints && JSON.parse(currentSession.answeredPoints).length > 0;
+
+        if (hasAnsweredPoints) {
+            // Hỏi người dùng có muốn tiếp tục không
+            const result = await Swal.fire({
+                title: 'Tiếp tục học?',
+                text: 'Bạn đang có một phiên học chưa hoàn thành. Bạn có muốn tiếp tục không?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Tiếp tục',
+                cancelButtonText: 'Bắt đầu lại',
+                confirmButtonColor: '#06BBCC',
+                cancelButtonColor: '#dc3545'
+            });
+
+            if (!result.isConfirmed) {
+                // Bắt đầu lại - xóa session cũ
+                await fetch(`/api/quiz/interactive/session/reset?userId=${userId}&categoryId=${categoryId}`, {
+                    method: 'DELETE',
+                    headers: {'Authorization': 'Bearer ' + token}
+                });
+
+                // Tạo session mới
+                const newSessionResponse = await fetch(`/api/quiz/interactive/session?userId=${userId}&categoryId=${categoryId}`, {
+                    method: 'POST', headers: {'Authorization': 'Bearer ' + token}
+                });
+                await loadCategories();
+                currentSession = await newSessionResponse.json();
+                answeredPointsInScene.clear();
+                userAnswers.clear();
+            } else {
+                // Nếu người dùng chọn "Tiếp tục", gọi API lấy chi tiết answers
+                await loadSessionAnswers(currentSession.id);
+            }
+        }
+
+        // Load dữ liệu đã trả lời từ session (nếu có và chưa load qua API)
+        if (currentSession.answeredPoints && !hasAnsweredPoints) {
+            const answered = JSON.parse(currentSession.answeredPoints);
+            answered.forEach(pointId => {
+                answeredPointsInScene.add(pointId);
+            });
+        }
+
+        // Load câu hỏi đã trả lời từ backend (nếu có và chưa load qua API)
+        if (currentSession.answeredQuestions && !hasAnsweredPoints) {
+            try {
+                const answeredQ = JSON.parse(currentSession.answeredQuestions);
+                Object.keys(answeredQ).forEach(pointId => {
+                    const data = answeredQ[pointId];
+                    userAnswers.set(pointId, {
+                        isCorrect: data.isCorrect,
+                        selectedAnswer: data.selectedAnswer,
+                        correctAnswer: data.correctAnswer
+                    });
+                });
+            } catch(e) {}
+        }
+
+        // Khôi phục vị trí từ session
+        if (currentSession.currentSceneId && currentSession.currentPointId) {
+            const sceneIndex = scenesData.findIndex(s => s.id === currentSession.currentSceneId);
+            if (sceneIndex !== -1) {
+                currentSceneIndex = sceneIndex;
+            }
+            await loadScene(currentSceneIndex);
+
+            if (answeredPointsInScene.has(currentSession.currentPointId)) {
+                await showAnsweredQuestion(currentSession.currentPointId);
+            }
+        } else if (scenesData.length > 0) {
+            await loadScene(0);
+        }
+    } catch (error) {
+        console.error(error);
+        Swal.fire('Lỗi', 'Không thể tạo phiên học', 'error');
+        resetToCategorySelection();
+    }
 }
 
-            // Khôi phục vị trí từ session
-            if (currentSession.currentSceneId && currentSession.currentPointId) {
-                const sceneIndex = scenesData.findIndex(s => s.id === currentSession.currentSceneId);
-                if (sceneIndex !== -1) {
-                    currentSceneIndex = sceneIndex;
-                }
-                await loadScene(currentSceneIndex);
+// ✅ Định nghĩa hàm loadSessionAnswers (đặt ở đâu cũng được, cùng cấp với các hàm khác)
+async function loadSessionAnswers(sessionId) {
+    try {
+        const response = await fetch(`/api/quiz/interactive/session/answers/${sessionId}`, {
+            headers: {'Authorization': 'Bearer ' + token}
+        });
+        const data = await response.json();
 
-                if (answeredPointsInScene.has(currentSession.currentPointId)) {
-                    await showAnsweredQuestion(currentSession.currentPointId);
-                }
-            } else if (scenesData.length > 0) {
-                await loadScene(0);
-            }
-        } catch (error) {
-            console.error(error);
-            Swal.fire('Lỗi', 'Không thể tạo phiên học', 'error');
-            resetToCategorySelection();
-        }
+        // Cập nhật answeredPointsInScene
+        answeredPointsInScene.clear();
+        data.answeredPoints.forEach(pointId => {
+            answeredPointsInScene.add(pointId);
+        });
+
+        // Cập nhật userAnswers
+        userAnswers.clear();
+        Object.keys(data.answeredQuestions).forEach(pointId => {
+            const q = data.answeredQuestions[pointId];
+            userAnswers.set(pointId, {
+                isCorrect: q.isCorrect,
+                selectedAnswer: q.selectedAnswer,
+                correctAnswer: q.correctAnswer
+            });
+        });
+
+    } catch (error) {
+        console.error('Error loading session answers:', error);
     }
+}
 
     async function loadAllScenes(categoryId) {
         const response = await fetch(`/api/admin/interactive/scenes/${categoryId}`, {
@@ -701,30 +730,35 @@ function markCategoryCompleted(categoryId, correctCount, totalCount, wrongCount)
     }
 
     function createHotspots(points) {
-        const container = document.getElementById('hotspotsContainer');
-        container.innerHTML = '';
+    const container = document.getElementById('hotspotsContainer');
+    container.innerHTML = '';
 
-        points.forEach(point => {
-            const hotspot = document.createElement('div');
-            hotspot.className = 'hotspot';
-            if (answeredPointsInScene.has(point.id)) {
+    points.forEach(point => {
+        const hotspot = document.createElement('div');
+        hotspot.className = 'hotspot';
+
+        // Kiểm tra point đã được trả lời chưa
+        if (answeredPointsInScene.has(point.id)) {
+            // Lấy thông tin từ userAnswers
             const answer = userAnswers.get(point.id.toString());
-            if (answer && !answer.isCorrect) {
+
+            if (answer && answer.isCorrect === false) {
                 hotspot.classList.add('wrong');
             } else {
                 hotspot.classList.add('completed');
             }
         }
-            hotspot.style.left = `${point.coordX}%`;
-            hotspot.style.top = `${point.coordY}%`;
-            hotspot.style.width = `${point.width}%`;
-            hotspot.style.height = `${point.height}%`;
-            hotspot.dataset.pointId = point.id;
-            hotspot.dataset.vocabId = point.vocabId;
-            hotspot.onclick = () => showQuestion(point.id);
-            container.appendChild(hotspot);
-        });
-    }
+
+        hotspot.style.left = `${point.coordX}%`;
+        hotspot.style.top = `${point.coordY}%`;
+        hotspot.style.width = `${point.width}%`;
+        hotspot.style.height = `${point.height}%`;
+        hotspot.dataset.pointId = point.id;
+        hotspot.dataset.vocabId = point.vocabId;
+        hotspot.onclick = () => showQuestion(point.id);
+        container.appendChild(hotspot);
+    });
+}
 
     function updateSceneProgress() {
         const total = pointsInCurrentScene.length;
@@ -821,13 +855,30 @@ function markCategoryCompleted(categoryId, correctCount, totalCount, wrongCount)
             })
         });
 
-        // THÊM 3 DÒNG NÀY
-console.log('HTTP Status:', response.status);
-const rawText = await response.text();
-console.log('Raw response:', rawText);
-const result = JSON.parse(rawText); // thay vì response.json()
+        const rawText = await response.text();
+        const result = JSON.parse(rawText);
 
-        // Highlight đúng/sai
+        // Cập nhật userAnswers
+        userAnswers.set(currentPointId.toString(), {
+            isCorrect: result.isCorrect,
+            selectedAnswer: selectedAnswer,
+            correctAnswer: result.correctAnswer
+        });
+
+        // ✅ CHỈ KHỞI TẠO hotspot MỘT LẦN
+        const hotspot = document.querySelector(`.hotspot[data-point-id="${currentPointId}"]`);
+        if (hotspot) {
+            hotspot.classList.remove('completed', 'wrong');
+            if (result.isCorrect) {
+                hotspot.classList.add('completed');
+            } else {
+                hotspot.classList.add('wrong');
+            }
+        }
+
+        answeredPointsInScene.add(currentPointId);
+
+        // Highlight đúng/sai cho các option buttons
         btns.forEach(btn => {
             const btnText = btn.innerText;
             if (btnText.includes(result.correctAnswer) || btnText === result.correctAnswer) {
@@ -844,19 +895,6 @@ const result = JSON.parse(rawText); // thay vì response.json()
             `<i class="fas fa-times-circle me-2"></i> Sai rồi! Đáp án đúng: ${result.correctAnswer}`;
         resultDiv.className = `result-message ${result.isCorrect ? 'result-correct' : 'result-wrong'}`;
         resultDiv.style.display = 'block';
-
-        // Đánh dấu hotspot
-        const hotspot = document.querySelector(`.hotspot[data-point-id="${currentPointId}"]`);
-        if (hotspot) {
-            hotspot.classList.remove('completed', 'wrong');
-            if (result.isCorrect) {
-                hotspot.classList.add('completed');
-            } else {
-                hotspot.classList.add('wrong');
-            }
-        }
-
-        answeredPointsInScene.add(currentPointId);
 
         if (result.nextPoint) {
             currentSession.currentSceneId = result.nextPoint.sceneId;

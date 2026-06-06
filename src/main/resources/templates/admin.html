@@ -42,6 +42,10 @@
             <div class="nav-icon"><i class="fas fa-spell-check"></i></div>
             <span class="nav-label">Từ vựng</span>
         </button>
+        <button class="nav-item" onclick="loadSection('tests', this, event)">
+            <div class="nav-icon"><i class="fas fa-file-alt"></i></div>
+            <span class="nav-label">Bài kiểm tra</span>
+        </button>
     </nav>
 
     <div class="sidebar-footer">
@@ -1206,6 +1210,183 @@ function loadSection(section, element, event) {
             loadVocabWithPagination(0);
             updateCategoryFilter();
             break;
+
+
+        case 'tests':
+    mainTitle.innerText = "Quản Lý Bài Kiểm Tra";
+    mainContent.innerHTML = `
+<div class="table-section table-tests">
+    <div class="table-header">
+        <div class="table-header-left">
+            <div class="search-box" style="display:flex; gap:10px; flex-wrap: wrap;">
+                <input type="text" id="testSearch" class="form-control"
+                       placeholder="Tìm kiếm test..."
+                       style="width:250px; border-radius:10px;"
+                       oninput="loadTestsWithFilters(0)">
+                <select id="testFilterCategory" class="form-select" style="width:200px; border-radius:10px;" onchange="loadTestsWithFilters(0)">
+                    <option value="">Tất cả chủ đề</option>
+                </select>
+                <select id="testFilterStatus" class="form-select" style="width:140px; border-radius:10px;" onchange="loadTestsWithFilters(0)">
+                    <option value="">Tất cả</option>
+                    <option value="true">Đang hoạt động</option>
+                    <option value="false">Đã ẩn</option>
+                </select>
+            </div>
+        </div>
+        <div class="table-header-right">
+            <span class="status-pill count-pill" style="font-size: 16px; gap:0px;" id="testCountBadge">Đang tải...</span>
+        </div>
+        <button class="btn-home" onclick="openCreateTestModal()">
+            <i class="fas fa-plus" style="margin-right:5px"></i> Tạo test mới
+        </button>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width: 50px; text-align: center;">STT</th>
+                    <th style="width: 70px; text-align: center;">ID</th>
+                    <th style="width: 25%;">Tiêu đề</th>
+                    <th style="width: 20%;">Chủ đề</th>
+                    <th style="width: 100px; text-align: center;">Thời gian</th>
+                    <th style="width: 100px; text-align: center;">Điểm tối đa</th>
+                    <th style="width: 100px; text-align: center;">Điểm đạt</th>
+                    <th style="width: 80px; text-align: center;">Số câu</th>
+                    <th style="width: 100px; text-align: center;">Trạng thái</th>
+                    <th style="width: 120px; text-align: center;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="testsTableBody">
+                <tr><td colspan="10" class="text-center py-5">Đang tải dữ liệu...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="pagination-wrapper mt-4">
+        <div class="pagination-left" id="testsPaginationInfo">Đang tải...</div>
+        <div class="pagination-center" id="testsPagination"></div>
+        <div class="pagination-right">
+            <span class="pagination-jump-label">Đi đến trang:</span>
+            <input type="number" id="jumpPageInputTests" min="1" class="form-control pagination-input" placeholder="...">
+            <button class="btn-go" onclick="paginationManager['testsPagination'].jumpToPage()">Đi</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal tạo test -->
+<div class="modal fade" id="createTestModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px;">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="fas fa-plus-circle me-2" style="color: var(--teal);"></i>Tạo bài kiểm tra mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <form id="createTestForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Chủ đề <span class="text-danger">*</span></label>
+                        <select id="testCategoryId" class="form-select" required>
+                            <option value="">-- Chọn chủ đề --</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tiêu đề <span class="text-danger">*</span></label>
+                        <input type="text" id="testTitle" class="form-control" placeholder="VD: Kiểm tra N5 - Bài 1">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Thời gian (phút)</label>
+                            <input type="number" id="testDuration" class="form-control" value="15" min="1">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Số câu hỏi</label>
+                            <input type="number" id="testQuestionCount" class="form-control" value="10" min="1">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Điểm tối đa</label>
+                            <input type="number" id="testMaxScore" class="form-control" value="100" min="1">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Điểm đạt</label>
+                            <input type="number" id="testPassScore" class="form-control" value="60" min="1">
+                        </div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Câu hỏi sẽ được tự động sinh từ từ vựng trong chủ đề đã chọn.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-custom btn-red" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn-custom btn-teal" onclick="createTest()">Tạo test</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal sửa test -->
+<div class="modal fade" id="editTestModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px;">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="fas fa-edit me-2" style="color: var(--teal);"></i>Sửa bài kiểm tra</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <input type="hidden" id="editTestId">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Tiêu đề</label>
+                    <input type="text" id="editTestTitle" class="form-control">
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Thời gian (phút)</label>
+                        <input type="number" id="editTestDuration" class="form-control">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Điểm tối đa</label>
+                        <input type="number" id="editTestMaxScore" class="form-control">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Điểm đạt</label>
+                        <input type="number" id="editTestPassScore" class="form-control" step="0.1">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Trạng thái</label>
+                        <select id="editTestIsActive" class="form-select">
+                            <option value="true">Hoạt động</option>
+                            <option value="false">Ẩn</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-custom btn-red" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn-custom btn-teal" onclick="updateTest()">Cập nhật</button>
+            </div>
+        </div>
+    </div>
+</div>
+    `;
+
+    // Khởi tạo pagination cho tests
+    if (!paginationManager['testsPagination']) {
+        paginationManager['testsPagination'] = new PaginationManager({
+            containerId: 'testsPagination',
+            infoContainerId: 'testsPaginationInfo',
+            parentSelector: '.table-tests',
+            loadFunction: (page) => loadTestsWithFilters(page),
+            pageSize: 15
+        });
+    }
+
+    // Load danh sách category cho filter
+    loadTestCategoryFilter();
+    loadTestsWithFilters(0);
+    break;
 
         default:
             mainTitle.innerText = "Quản lý nội dung";
@@ -5759,6 +5940,271 @@ function goBackToVocabulary() {
         if (item.innerText.trim() === 'Từ vựng') {
             loadSection('vocabulary', item, new Event('click'));
             break;
+        }
+    }
+}
+
+
+
+
+    // ==================== QUẢN LÝ TEST ====================
+
+// Load danh sách category cho filter test
+async function loadTestCategoryFilter() {
+    const token = localStorage.getItem('token');
+    try {
+        const res = await fetch('/api/admin/tests/categories', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const categories = await res.json();
+        const select = document.getElementById('testFilterCategory');
+        if (select) {
+            select.innerHTML = '<option value="">Tất cả chủ đề</option>' +
+                categories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+        }
+
+        // Load cho modal tạo test
+        const createSelect = document.getElementById('testCategoryId');
+        if (createSelect) {
+            createSelect.innerHTML = '<option value="">-- Chọn chủ đề --</option>' +
+                categories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+        }
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+// Load danh sách test với filter
+async function loadTestsWithFilters(page = 0) {
+    const token = localStorage.getItem('token');
+    const search = document.getElementById('testSearch')?.value || "";
+    const categoryId = document.getElementById('testFilterCategory')?.value || "";
+    const isActive = document.getElementById('testFilterStatus')?.value || "";
+    const pageSize = paginationManager['testsPagination']?.pageSize || 15;
+
+    try {
+        let url = `/api/admin/tests/paging?page=${page}&size=${pageSize}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        if (categoryId) url += `&categoryId=${categoryId}`;
+        if (isActive !== "") url += `&isActive=${isActive}`;
+
+        const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+        const data = await res.json();
+
+        const tbody = document.getElementById('testsTableBody');
+        const countBadge = document.getElementById('testCountBadge');
+
+        if (countBadge) {
+            countBadge.innerText = `${data.totalElements || 0} bài test`;
+        }
+
+        if (!data.content || data.content.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="10" class="text-center py-5 text-muted">Không tìm thấy bài test nào</td></tr>`;
+            if (paginationManager['testsPagination']) {
+                paginationManager['testsPagination'].reset();
+            }
+            return;
+        }
+
+        tbody.innerHTML = data.content.map((test, index) => {
+            const rowClass = !test.isActive ? 'row-hidden' : '';
+            const statusBadge = test.isActive
+                ? '<span class="status-pill active-pill">Hoạt động</span>'
+                : '<span class="status-pill locked-pill">Đã ẩn</span>';
+
+            return `
+            <tr class="${rowClass}">
+                <td style="text-align: center;">${(page * pageSize) + index + 1}</td>
+                <td style="text-align: center;"><span class="id-badge">#${test.id}</span></td>
+                <td><strong>${escapeHtml(test.title)}</strong></td>
+                <td><span style="color: var(--teal-dark);">${escapeHtml(test.categoryName || 'N/A')}</span></td>
+                <td style="text-align: center;">${test.durationMinutes} phút</td>
+                <td style="text-align: center;">${test.maxScore}</td>
+                <td style="text-align: center;">${test.passScore}</td>
+                <td style="text-align: center;">${test.questionCount || 0}</td>
+                <td style="text-align: center;">${statusBadge}</td>
+                <td style="text-align: center;">
+                    <button class="btn-action btn-edit me-1" title="Sửa" onclick="openEditTestModal(${test.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-action btn-trash" title="Xóa" onclick="deleteTest(${test.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>`;
+        }).join('');
+
+        if (paginationManager['testsPagination']) {
+            paginationManager['testsPagination'].render(data.totalPages, data.number);
+        }
+    } catch(e) {
+        console.error(e);
+        document.getElementById('testsTableBody').innerHTML = `<tr><td colspan="10" class="text-center text-danger">Lỗi tải dữ liệu</td></tr>`;
+    }
+}
+
+// Mở modal tạo test
+function openCreateTestModal() {
+    document.getElementById('createTestForm').reset();
+    document.getElementById('testDuration').value = 15;
+    document.getElementById('testQuestionCount').value = 10;
+    document.getElementById('testMaxScore').value = 100;
+    document.getElementById('testPassScore').value = 60;
+    new bootstrap.Modal(document.getElementById('createTestModal')).show();
+}
+
+// Tạo test mới
+async function createTest() {
+    const token = localStorage.getItem('token');
+    const categoryId = document.getElementById('testCategoryId').value;
+    const title = document.getElementById('testTitle').value.trim();
+    const durationMinutes = parseInt(document.getElementById('testDuration').value);
+    const questionCount = parseInt(document.getElementById('testQuestionCount').value);
+    const maxScore = parseInt(document.getElementById('testMaxScore').value);
+    const passScore = parseFloat(document.getElementById('testPassScore').value);
+
+    if (!categoryId || !title) {
+        Swal.fire('Lỗi', 'Vui lòng điền đầy đủ thông tin!', 'error');
+        return;
+    }
+
+    Swal.fire({ title: 'Đang tạo test...', didOpen: () => Swal.showLoading() });
+
+    try {
+        const res = await fetch('/api/admin/tests/create', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                categoryId: parseInt(categoryId),
+                title: title,
+                durationMinutes: durationMinutes,
+                questionCount: questionCount,
+                maxScore: maxScore,
+                passScore: passScore
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('createTestModal')).hide();
+            Swal.fire('Thành công', 'Đã tạo bài test mới!', 'success');
+            loadTestsWithFilters(0);
+        } else {
+            Swal.fire('Lỗi', data.error || 'Không thể tạo test', 'error');
+        }
+    } catch(e) {
+        console.error(e);
+        Swal.fire('Lỗi', 'Không thể kết nối server', 'error');
+    }
+}
+
+// Mở modal sửa test
+async function openEditTestModal(testId) {
+    const token = localStorage.getItem('token');
+
+    try {
+        const res = await fetch(`/api/admin/tests/${testId}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const test = await res.json();
+
+        document.getElementById('editTestId').value = test.id;
+        document.getElementById('editTestTitle').value = test.title;
+        document.getElementById('editTestDuration').value = test.durationMinutes;
+        document.getElementById('editTestMaxScore').value = test.maxScore;
+        document.getElementById('editTestPassScore').value = test.passScore;
+        document.getElementById('editTestIsActive').value = test.isActive ? 'true' : 'false';
+
+        new bootstrap.Modal(document.getElementById('editTestModal')).show();
+    } catch(e) {
+        console.error(e);
+        Swal.fire('Lỗi', 'Không thể tải thông tin test', 'error');
+    }
+}
+
+// Cập nhật test
+async function updateTest() {
+    const token = localStorage.getItem('token');
+    const testId = document.getElementById('editTestId').value;
+    const title = document.getElementById('editTestTitle').value.trim();
+    const durationMinutes = parseInt(document.getElementById('editTestDuration').value);
+    const maxScore = parseInt(document.getElementById('editTestMaxScore').value);
+    const passScore = parseFloat(document.getElementById('editTestPassScore').value);
+    const isActive = document.getElementById('editTestIsActive').value === 'true';
+
+    if (!title) {
+        Swal.fire('Lỗi', 'Tiêu đề không được để trống!', 'error');
+        return;
+    }
+
+    Swal.fire({ title: 'Đang cập nhật...', didOpen: () => Swal.showLoading() });
+
+    try {
+        const res = await fetch(`/api/admin/tests/${testId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                title: title,
+                durationMinutes: durationMinutes,
+                maxScore: maxScore,
+                passScore: passScore,
+                isActive: isActive
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('editTestModal')).hide();
+            Swal.fire('Thành công', 'Đã cập nhật bài test!', 'success');
+            loadTestsWithFilters(0);
+        } else {
+            Swal.fire('Lỗi', data.error || 'Không thể cập nhật', 'error');
+        }
+    } catch(e) {
+        console.error(e);
+        Swal.fire('Lỗi', 'Không thể kết nối server', 'error');
+    }
+}
+
+// Xóa test
+async function deleteTest(testId) {
+    const result = await Swal.fire({
+        title: 'Xác nhận xóa?',
+        text: 'Bài test và tất cả câu hỏi sẽ bị xóa vĩnh viễn!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
+        const token = localStorage.getItem('token');
+
+        try {
+            const res = await fetch(`/api/admin/tests/${testId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                Swal.fire('Thành công', 'Đã xóa bài test!', 'success');
+                loadTestsWithFilters(0);
+            } else {
+                Swal.fire('Lỗi', data.error || 'Không thể xóa', 'error');
+            }
+        } catch(e) {
+            console.error(e);
+            Swal.fire('Lỗi', 'Không thể kết nối server', 'error');
         }
     }
 }

@@ -172,4 +172,29 @@ public class InteractiveQuizController {
         }
         return total;
     }
+
+    private Map<Integer, Map<String, Object>> parseAnsweredQuestions(String json) {
+        if (json == null || json.isEmpty()) return new HashMap<>();
+        try {
+            return objectMapper.readValue(json, new TypeReference<Map<Integer, Map<String, Object>>>() {
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new HashMap<>();
+        }
+    }
+
+    @GetMapping("/session/answers/{sessionId}")
+    public ResponseEntity<?> getSessionAnswers(@PathVariable Integer sessionId) {
+        Optional<InteractiveQuizSession> sessionOpt = sessionRepository.findById(sessionId);
+        if (sessionOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("answeredPoints", parseAnsweredPoints(sessionOpt.get().getAnsweredPoints()));
+        result.put("answeredQuestions", parseAnsweredQuestions(sessionOpt.get().getAnsweredQuestions()));
+
+        return ResponseEntity.ok(result);
+    }
 }

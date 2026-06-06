@@ -92,6 +92,7 @@ public class InteractiveQuizService {
                 Map<String, Object> saved = answeredQuestions.get(pointId);
                 saved.put("isAnswered", true);
                 saved.put("pointId", pointId);
+                saved.put("isCorrect", saved.get("isCorrect"));
 
                 // Lấy thông tin scene
                 Optional<InteractivePoint> pointOpt = pointRepository.findById(pointId);
@@ -219,6 +220,7 @@ public class InteractiveQuizService {
         questionDetail.put("options", options);  // Lưu options dạng object
         questionDetail.put("isCorrect", isCorrect);
         questionDetail.put("correctAnswer", vocab != null ? vocab.getExpression() : "");
+        questionDetail.put("pointId", pointId);
         answeredQuestions.put(pointId, questionDetail);
 
         try {
