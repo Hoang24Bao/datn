@@ -1,0 +1,6 @@
+[providers]
+providers = ["java"]
+
+# Yêu cầu cài đặt thêm Python vào hệ thống
+[phases.setup]
+nixPkgs = ["...", "python3"]
