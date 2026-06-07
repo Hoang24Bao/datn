@@ -62,8 +62,8 @@ public class TestService {
 
         test = testRepository.save(test);
 
-        // Tự động sinh câu hỏi từ vocabulary trong category
-        generateQuestionsForTest(test.getId(), dto.getCategoryId(), dto.getQuestionCount());
+        generateQuestionsForTest(test.getId(), dto.getCategoryId(), dto.getQuestionCount(), dto.getQuestionType());
+
 
         // Cập nhật số lượng câu hỏi thực tế
         Integer actualCount = testQuestionRepository.countByTestId(test.getId());
@@ -73,58 +73,103 @@ public class TestService {
         return convertToResponseDTO(test, category.getCategoryName());
     }
 
-    // Tự động sinh câu hỏi
-    private void generateQuestionsForTest(Integer testId, Integer categoryId, Integer questionCount) {
-        // Lấy danh sách từ vựng trong category
+    // Tự động sinh câu hỏi (có thể random 2 dạng)
+    private void generateQuestionsForTest(Integer testId, Integer categoryId, Integer questionCount, String questionType) {
         List<Vocabulary> vocabs = vocabularyRepository.findByCategoryId(categoryId);
 
         if (vocabs.isEmpty()) {
             throw new RuntimeException("Chủ đề không có từ vựng nào");
         }
 
-        // Random số lượng câu hỏi
         int numberOfQuestions = Math.min(questionCount, vocabs.size());
         Collections.shuffle(vocabs);
         List<Vocabulary> selectedVocabs = vocabs.subList(0, numberOfQuestions);
 
         int order = 0;
+        Random random = new Random();
+
         for (Vocabulary vocab : selectedVocabs) {
             TestQuestions question = new TestQuestions();
             question.setTestId(testId);
             question.setVocabId(vocab.getId());
-            question.setQuestionText("Từ \"" + vocab.getExpression() + "\" có nghĩa là gì?");
-            question.setCorrectAnswer(vocab.getMeaning());
 
-            // Tạo 4 đáp án (1 đúng + 3 sai random)
-            List<String> options = new ArrayList<>();
-            options.add(vocab.getMeaning());
-
-            // Lấy 3 từ vựng khác để làm đáp án nhiễu
-            List<Vocabulary> otherVocabs = vocabs.stream()
-                    .filter(v -> !v.getId().equals(vocab.getId()))
-                    .collect(Collectors.toList());
-            Collections.shuffle(otherVocabs);
-
-            for (int i = 0; i < Math.min(3, otherVocabs.size()); i++) {
-                options.add(otherVocabs.get(i).getMeaning());
+            // Xác định dạng câu hỏi
+            int questionTypeInt;
+            if ("meaning".equals(questionType)) {
+                questionTypeInt = 0; // Chỉ hỏi nghĩa
+            } else if ("word".equals(questionType)) {
+                questionTypeInt = 1; // Chỉ hỏi từ
+            } else {
+                questionTypeInt = random.nextInt(2); // Hỗn hợp
             }
 
-            // Nếu không đủ 3 đáp án nhiễu, thêm placeholder
-            while (options.size() < 4) {
-                options.add("???");
+            String displayText = vocab.getExpression();
+            if (vocab.getKana() != null && !vocab.getKana().isEmpty()) {
+                displayText = vocab.getExpression() + "（" + vocab.getKana() + "）";
             }
 
-            Collections.shuffle(options);
+            if (questionTypeInt == 0) {
+                // Dạng 1: Cho từ, hỏi nghĩa
+                question.setQuestionText("Từ \"" + displayText + "\" có nghĩa là gì?");
+                question.setCorrectAnswer(vocab.getMeaning());
 
-            // ✅ SỬA: Thêm try-catch cho writeValueAsString
-            try {
-                question.setOptions(objectMapper.writeValueAsString(options));
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException("Lỗi khi tạo options cho câu hỏi: " + e.getMessage());
+                List<String> options = new ArrayList<>();
+                options.add(vocab.getMeaning());
+
+                List<Vocabulary> otherVocabs = vocabs.stream()
+                        .filter(v -> !v.getId().equals(vocab.getId()))
+                        .collect(Collectors.toList());
+                Collections.shuffle(otherVocabs);
+
+                for (int i = 0; i < Math.min(3, otherVocabs.size()); i++) {
+                    options.add(otherVocabs.get(i).getMeaning());
+                }
+
+                while (options.size() < 4) {
+                    options.add("???");
+                }
+                Collections.shuffle(options);
+
+                try {
+                    question.setOptions(objectMapper.writeValueAsString(options));
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException("Lỗi khi tạo options: " + e.getMessage());
+                }
+            } else {
+                // Dạng 2: Cho nghĩa, hỏi từ
+                question.setQuestionText("Từ nào có nghĩa là \"" + vocab.getMeaning() + "\"?");
+                question.setCorrectAnswer(displayText);
+
+                List<String> options = new ArrayList<>();
+                options.add(displayText);
+
+                List<Vocabulary> otherVocabs = vocabs.stream()
+                        .filter(v -> !v.getId().equals(vocab.getId()))
+                        .collect(Collectors.toList());
+                Collections.shuffle(otherVocabs);
+
+                for (int i = 0; i < Math.min(3, otherVocabs.size()); i++) {
+                    Vocabulary other = otherVocabs.get(i);
+                    String otherText = other.getExpression();
+                    if (other.getKana() != null && !other.getKana().isEmpty()) {
+                        otherText = other.getExpression() + "（" + other.getKana() + "）";
+                    }
+                    options.add(otherText);
+                }
+
+                while (options.size() < 4) {
+                    options.add("???");
+                }
+                Collections.shuffle(options);
+
+                try {
+                    question.setOptions(objectMapper.writeValueAsString(options));
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException("Lỗi khi tạo options: " + e.getMessage());
+                }
             }
 
             question.setOrderIndex(order++);
-
             testQuestionRepository.save(question);
         }
     }

@@ -3,14 +3,18 @@ package com.example.Controller;
 import com.example.Dto.Request.CreateTestDTO;
 import com.example.Dto.Response.TestResponseDTO;
 import com.example.Entity.Categories;
+import com.example.Entity.TestQuestions;
 import com.example.Entity.Tests;
 import com.example.Repository.CategoriesRepository;
+import com.example.Repository.TestQuestionsRepository;
 import com.example.Repository.TestRepository;
 import com.example.Service.TestService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +32,11 @@ public class AdminTestController {
 
     @Autowired
     private CategoriesRepository categoriesRepository;
+
+    @Autowired
+    private TestQuestionsRepository testQuestionRepository;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     // Lấy danh sách tất cả test (cho admin)
     @GetMapping("/all")
@@ -77,20 +86,42 @@ public class AdminTestController {
     // Lấy chi tiết test
     @GetMapping("/{id}")
     public ResponseEntity<?> getTestDetail(@PathVariable Integer id) {
-        return testRepository.findById(id)
-                .map(test -> {
-                    Map<String, Object> result = new HashMap<>();
-                    result.put("id", test.getId());
-                    result.put("title", test.getTitle());
-                    result.put("categoryId", test.getCategoryId());
-                    result.put("durationMinutes", test.getDurationMinutes());
-                    result.put("maxScore", test.getMaxScore());
-                    result.put("passScore", test.getPassScore());
-                    result.put("questionCount", test.getQuestionCount());
-                    result.put("isActive", test.getIsActive());
-                    return ResponseEntity.ok(result);
-                })
-                .orElse(ResponseEntity.notFound().build());
+        try {
+            Tests test = testRepository.findById(id).orElse(null);
+            if (test == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Lấy danh sách câu hỏi của test
+            List<TestQuestions> questions = testQuestionRepository.findByTestIdOrderByOrderIndexAsc(id);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("id", test.getId());
+            result.put("title", test.getTitle());
+            result.put("categoryId", test.getCategoryId());
+            result.put("durationMinutes", test.getDurationMinutes());
+            result.put("maxScore", test.getMaxScore());
+            result.put("passScore", test.getPassScore());
+            result.put("questionCount", test.getQuestionCount());
+            result.put("isActive", test.getIsActive());
+
+            // Thêm danh sách câu hỏi
+            List<Map<String, Object>> questionList = new ArrayList<>();
+            for (TestQuestions q : questions) {
+                Map<String, Object> qMap = new HashMap<>();
+                qMap.put("id", q.getId());
+                qMap.put("questionText", q.getQuestionText());
+                qMap.put("options", objectMapper.readValue(q.getOptions(), List.class));
+                qMap.put("correctAnswer", q.getCorrectAnswer());
+                qMap.put("orderIndex", q.getOrderIndex());
+                questionList.add(qMap);
+            }
+            result.put("questions", questionList);
+
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     // Cập nhật test

@@ -87,13 +87,12 @@
 <th:block th:replace="~{layout :: navbar}" th:with="currentPage='test'"></th:block>
 
 <!-- Header -->
-<div class="container-fluid bg-primary py-3 mb-5">
+<div class="container-fluid bg-primary py-3 mb-5 page-header">
     <div class="container py-5 text-center">
         <h1 class="display-3 text-white animated slideInDown">Bài kiểm tra</h1>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb justify-content-center">
                 <li class="breadcrumb-item"><a class="text-white" th:href="@{/}">Trang chủ</a></li>
-                <li class="breadcrumb-item"><a class="text-white" th:href="@{/study/categories}">Học tập</a></li>
                 <li class="breadcrumb-item"><a class="text-white" id="backToTestsLink" href="/test/tests">Chọn chủ
                     đề</a></li>
                 <li class="breadcrumb-item text-white active" aria-current="page" id="categoryName">Đang tải...</li>

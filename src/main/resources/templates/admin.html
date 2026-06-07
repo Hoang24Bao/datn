@@ -566,7 +566,7 @@
     </div>
 </div>
 
-<!-- Modal tạo cảnh tương tác (THÊM MỚI) - ĐẶT CỐ ĐỊNH -->
+<!-- Modal tạo cảnh tương tác -->
 <div class="modal fade" id="createSceneModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content" style="border-radius: 20px;">
@@ -1301,6 +1301,20 @@ function loadSection(section, element, event) {
                             <label class="form-label fw-bold">Số câu hỏi</label>
                             <input type="number" id="testQuestionCount" class="form-control" value="10" min="1">
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Dạng câu hỏi</label>
+                            <select class="form-select" id="testQuestionType">
+                                <option value="mixed">Hỗn hợp (cả 2 dạng)</option>
+                                <option value="meaning">Hỏi nghĩa của từ</option>
+                                <option value="word">Hỏi từ dựa vào nghĩa</option>
+                            </select>
+                            <div class="form-text text-muted">
+                                <i class="fas fa-info-circle"></i></br>
+                                    - Hỏi nghĩa: "Từ X có nghĩa là gì?"<br>
+                                    - Hỏi từ: "Từ nào có nghĩa là Y?"<br>
+                                    - Hỗn hợp: Random cả 2 dạng
+                            </div>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -1327,7 +1341,7 @@ function loadSection(section, element, event) {
 
 <!-- Modal sửa test -->
 <div class="modal fade" id="editTestModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content" style="border-radius: 20px;">
             <div class="modal-header">
                 <h5 class="modal-title fw-bold"><i class="fas fa-edit me-2" style="color: var(--teal);"></i>Sửa bài kiểm tra</h5>
@@ -1358,9 +1372,15 @@ function loadSection(section, element, event) {
                         <label class="form-label fw-bold">Trạng thái</label>
                         <select id="editTestIsActive" class="form-select">
                             <option value="true">Hoạt động</option>
-                            <option value="false">Ẩn</option>
+                            <option value="false">Đã ẩn</option>
                         </select>
                     </div>
+                    <div class="mt-4">
+                    <h6 class="fw-bold mb-3">Danh sách câu hỏi</h6>
+                    <div id="editQuestionsContainer">
+                        <!-- Câu hỏi sẽ hiển thị ở đây -->
+                    </div>
+                </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -6050,6 +6070,7 @@ function openCreateTestModal() {
     document.getElementById('testQuestionCount').value = 10;
     document.getElementById('testMaxScore').value = 100;
     document.getElementById('testPassScore').value = 60;
+    document.getElementById('testQuestionType').value = 'mixed';
     new bootstrap.Modal(document.getElementById('createTestModal')).show();
 }
 
@@ -6062,6 +6083,7 @@ async function createTest() {
     const questionCount = parseInt(document.getElementById('testQuestionCount').value);
     const maxScore = parseInt(document.getElementById('testMaxScore').value);
     const passScore = parseFloat(document.getElementById('testPassScore').value);
+    const questionType = document.getElementById('testQuestionType').value;
 
     if (!categoryId || !title) {
         Swal.fire('Lỗi', 'Vui lòng điền đầy đủ thông tin!', 'error');
@@ -6083,7 +6105,8 @@ async function createTest() {
                 durationMinutes: durationMinutes,
                 questionCount: questionCount,
                 maxScore: maxScore,
-                passScore: passScore
+                passScore: passScore,
+                questionType: questionType
             })
         });
 
@@ -6119,11 +6142,149 @@ async function openEditTestModal(testId) {
         document.getElementById('editTestPassScore').value = test.passScore;
         document.getElementById('editTestIsActive').value = test.isActive ? 'true' : 'false';
 
+        displayQuestionsInModal(test.questions || []);
+
         new bootstrap.Modal(document.getElementById('editTestModal')).show();
     } catch(e) {
         console.error(e);
         Swal.fire('Lỗi', 'Không thể tải thông tin test', 'error');
     }
+}
+
+// Hàm hiển thị danh sách câu hỏi trong modal (chỉ xem, không sửa)
+function displayQuestionsInModal(questions) {
+    const container = document.getElementById('editQuestionsContainer');
+    if (!container) return;
+
+    if (!questions || questions.length === 0) {
+        container.innerHTML = '<div class="alert alert-info">Chưa có câu hỏi nào cho bài test này. Câu hỏi sẽ được tự động tạo khi tạo test.</div>';
+        return;
+    }
+
+    container.innerHTML = `
+        <style>
+            .question-item {
+                background: #fff;
+                border: 1px solid #e9ecef;
+                border-radius: 12px;
+                margin-bottom: 20px;
+                padding: 20px;
+                transition: all 0.2s;
+            }
+            .question-item:hover {
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                border-color: #06BBCC;
+            }
+            .question-header {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #f0f0f0;
+            }
+            .question-number {
+                background: #06BBCC;
+                color: white;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 14px;
+            }
+            .question-text {
+                font-weight: 600;
+                font-size: 16px;
+                color: #2c3e50;
+                flex: 1;
+            }
+            .options-list {
+                list-style: none;
+                padding-left: 0;
+                margin: 15px 0;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            .option-item {
+                padding: 10px 15px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                border: 1px solid #e9ecef;
+            }
+            .option-item.correct {
+                background: #d1fae5;
+                border-color: #10b981;
+            }
+            .option-prefix {
+                font-weight: bold;
+                width: 30px;
+                color: #6c757d;
+            }
+            .option-item.correct .option-prefix {
+                color: #059669;
+            }
+            .option-text {
+                flex: 1;
+                color: #495057;
+            }
+            .option-item.correct .option-text {
+                color: #059669;
+                font-weight: 500;
+            }
+            @media (max-width: 768px) {
+                .question-item {
+                    padding: 15px;
+                }
+                .question-text {
+                    font-size: 14px;
+                }
+                .option-item {
+                    padding: 8px 12px;
+                    font-size: 13px;
+                }
+            }
+        </style>
+        <div class="questions-list">
+            ${questions.map((q, idx) => {
+                let options = q.options;
+                if (typeof options === 'string') {
+                    try {
+                        options = JSON.parse(options);
+                    } catch(e) {
+                        options = [];
+                    }
+                }
+                const optionLetters = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+                return `
+                    <div class="question-item">
+                        <div class="question-header">
+                            <span class="question-number">${idx + 1}</span>
+                            <span class="question-text">${escapeHtml(q.questionText || '')}</span>
+                        </div>
+
+                        <ul class="options-list">
+                            ${Array.isArray(options) && options.length > 0 ?
+                                options.map((opt, optIdx) => `
+                                    <li class="option-item ${q.correctAnswer === opt ? 'correct' : ''}">
+                                        <span class="option-prefix">${optionLetters[optIdx]}.</span>
+                                        <span class="option-text">${escapeHtml(opt)}</span>
+                                    </li>
+                                `).join('')
+                                : '<li class="text-muted">Không có đáp án</li>'
+                            }
+                        </ul>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
 }
 
 // Cập nhật test
@@ -6174,40 +6335,73 @@ async function updateTest() {
     }
 }
 
-// Xóa test
+
+
+ // Hàm deleteTest - chuyển thành khóa/mở khóa bằng API PUT có sẵn
 async function deleteTest(testId) {
-    const result = await Swal.fire({
-        title: 'Xác nhận xóa?',
-        text: 'Bài test và tất cả câu hỏi sẽ bị xóa vĩnh viễn!',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        confirmButtonText: 'Xóa',
-        cancelButtonText: 'Hủy'
-    });
+    const token = localStorage.getItem('token');
 
-    if (result.isConfirmed) {
-        const token = localStorage.getItem('token');
+    try {
+        // Lấy thông tin test hiện tại
+        const res = await fetch(`/api/admin/tests/${testId}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const test = await res.json();
 
-        try {
-            const res = await fetch(`/api/admin/tests/${testId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            const data = await res.json();
+        const isCurrentlyActive = test.isActive;
+        const action = isCurrentlyActive ? 'khóa' : 'mở khóa';
+        const confirmText = isCurrentlyActive ? 'Bài test sẽ bị khóa và không hiển thị nữa!' : 'Bài test sẽ được mở khóa và hiển thị lại!';
 
-            if (data.success) {
-                Swal.fire('Thành công', 'Đã xóa bài test!', 'success');
-                loadTestsWithFilters(0);
-            } else {
-                Swal.fire('Lỗi', data.error || 'Không thể xóa', 'error');
+        const result = await Swal.fire({
+            title: `Xác nhận ${action}?`,
+            text: confirmText,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#06BBCC',
+            cancelButtonColor: '#ef4444',
+            confirmButtonText: action === 'khóa' ? 'Khóa' : 'Mở khóa',
+            cancelButtonText: 'Hủy'
+        });
+
+        if (result.isConfirmed) {
+            Swal.fire({ title: `Đang ${action}...`, didOpen: () => Swal.showLoading() });
+
+            try {
+                // Gọi API PUT có sẵn - chỉ cập nhật isActive, giữ nguyên các giá trị khác
+                const updateRes = await fetch(`/api/admin/tests/${testId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: test.title,
+                        durationMinutes: test.durationMinutes,
+                        maxScore: test.maxScore,
+                        passScore: test.passScore,
+                        isActive: !isCurrentlyActive  // Đảo ngược trạng thái
+                    })
+                });
+
+                const data = await updateRes.json();
+
+                if (data.success) {
+                    Swal.fire('Thành công', `Đã ${action} bài test!`, 'success');
+                    loadTestsWithFilters(0);
+                } else {
+                    Swal.fire('Lỗi', data.error || `Không thể ${action} test`, 'error');
+                }
+            } catch(e) {
+                console.error(e);
+                Swal.fire('Lỗi', 'Không thể kết nối server', 'error');
             }
-        } catch(e) {
-            console.error(e);
-            Swal.fire('Lỗi', 'Không thể kết nối server', 'error');
         }
+    } catch(e) {
+        console.error(e);
+        Swal.fire('Lỗi', 'Không thể lấy thông tin test', 'error');
     }
 }
+
 
 </script>
 

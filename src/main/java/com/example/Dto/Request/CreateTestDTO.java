@@ -10,4 +10,5 @@ public class CreateTestDTO {
     private Integer maxScore;
     private Float passScore;
     private Integer questionCount;
+    private String questionType;
 }
