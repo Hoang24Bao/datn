@@ -10,7 +10,7 @@ WORKDIR /app
 
 # Cài đặt Python 3 và thư viện gTTS để xử lý âm thanh tiếng Nhật
 RUN apt-get update && apt-get install -y python3 python3-pip && rm -rf /var/lib/apt/lists/*
-RUN pip3 install gtts --break-system-packages
+RUN pip3 install gtts
 
 # Copy file .jar đã build thành công vào môi trường chạy
 COPY --from=build /app/target/*.jar app.jar
