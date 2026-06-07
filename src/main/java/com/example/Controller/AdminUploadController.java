@@ -18,9 +18,8 @@ public class AdminUploadController {
     @Autowired
     private CloudinaryService cloudinaryService;
 
-    /**
-     * Upload ảnh từ vựng lên Cloudinary (folder vocabs)
-     */
+    //Upload ảnh từ vựng lên Cloudinary (folder vocabs)
+
     @PostMapping("/image")
     public ResponseEntity<?> uploadImage(
             @RequestParam("file") MultipartFile file,

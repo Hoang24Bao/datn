@@ -287,4 +287,5 @@ public class InteractiveController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+    
 }

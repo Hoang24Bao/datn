@@ -1,4 +1,38 @@
-// ==================== USER MANAGEMENT ====================
+// ===== USER ===== //
+function getLevelName(levelId) {
+    if (levelId === 1) return 'N5';
+    if (levelId === 2) return 'N4';
+    if (levelId === 3) return 'N3';
+    if (levelId === 4) return 'N2';
+    if (levelId === 5) return 'N1';
+    return 'N5';
+}
+
+async function loadLatestUsers(token) {
+    try {
+        const res = await fetch('/api/admin/users/latest', { headers: { 'Authorization': 'Bearer ' + token } });
+        let users = await res.json();
+        const tbody = document.getElementById('userTableBody');
+        tbody.innerHTML = users.map((user, index) => {
+            const createdDate = new Date(user.created);
+            const today = new Date();
+            const d1 = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate());
+            const d2 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+            let time = diff === 0 ? "Hôm nay" : (diff === 1 ? "Hôm qua" : `${diff} ngày trước`);
+
+            return `<tr>
+                <td>${index + 1}</td>
+                <td><span class="id-badge">#${user.id}</span></td>
+                <td><div class="user-cell"><img src="${getAvatarPath(user.avatarUrl, user.fullname)}">
+                    <div><div class="name">${user.fullname}</div><div class="joined" style="font-size: 11px;">${time}</div></div></div></td>
+                <td>${user.email}</td>
+                <td style="text-align: center;"><span class="level-badge">${getLevelName(user.levelId)}</span></td>
+                <td style="text-align: center;"><span class="status-pill ${user.active ? 'active-pill' : 'locked-pill'}">${user.active ? 'Hoạt động' : 'Bị khóa'}</span></td>
+            </tr>`;
+        }).join('');
+    } catch (e) { console.error(e); }
+}
 
 async function loadAllUsersWithFilter(page = 0) {
     const token = localStorage.getItem('token');
@@ -6,7 +40,7 @@ async function loadAllUsersWithFilter(page = 0) {
     const levelId = document.getElementById('userFilterLevel')?.value || "";
     const active = document.getElementById('userFilterStatus')?.value || "";
     const timeFilter = document.getElementById('userFilterTime')?.value || "";
-    const pageSize = 5;
+    const pageSize = paginationManager['userPagination'].pageSize;
 
     try {
         let url = `/api/admin/users/all-paging?page=${page}&size=${pageSize}&search=${encodeURIComponent(search)}&levelId=${levelId}&active=${active}&timeFilter=${timeFilter}`;
@@ -19,6 +53,7 @@ async function loadAllUsersWithFilter(page = 0) {
 
         if (!data.content || data.content.length === 0) {
             tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">Không tìm thấy học viên phù hợp</td></tr>`;
+
             if (paginationManager['userPagination']) {
                 paginationManager['userPagination'].reset();
             }
@@ -52,9 +87,9 @@ async function loadAllUsersWithFilter(page = 0) {
                         <i class="fas fa-eye"></i>
                     </button>
                     ${isLocked
-                        ? `<button class="btn-action btn-restore" onclick="deleteUser(${user.id}, false)"><i class="fas fa-user-check"></i></button>`
-                        : `<button class="btn-action btn-trash" onclick="deleteUser(${user.id}, true)"><i class="fas fa-user-slash"></i></button>`
-                    }
+                    ? `<button class="btn-action btn-restore" onclick="deleteUser(${user.id}, false)"><i class="fas fa-user-check"></i></button>`
+                    : `<button class="btn-action btn-trash" onclick="deleteUser(${user.id}, true)"><i class="fas fa-user-slash"></i></button>`
+                }
                 </td>
             </tr>`;
         }).join('');
@@ -77,8 +112,10 @@ async function viewUser(id) {
 
         document.getElementById('viewUserAvatar').src = getAvatarPath(user.avatarUrl, user.fullname);
         document.getElementById('viewFullnameTitle').innerText = user.fullname;
+
         document.getElementById('viewId').value = `#${user.id}`;
         document.getElementById('viewUsername').value = user.userName;
+
         document.getElementById('viewEmail').value = user.email || 'Chưa cập nhật';
         document.getElementById('viewLevel').value = getLevelName(user.levelId);
         document.getElementById('viewPoints').value = `${user.totalPoints || 0} điểm`;
@@ -98,6 +135,11 @@ async function viewUser(id) {
         console.error(e);
         Swal.fire('Lỗi', 'Không thể lấy thông tin chi tiết học viên', 'error');
     }
+}
+
+function navigateToUsers() {
+    const btn = document.querySelectorAll('.nav-item')[1];
+    loadSection('users', btn);
 }
 
 async function deleteUser(id, isLocking) {
@@ -140,3 +182,4 @@ async function deleteUser(id, isLocking) {
         }
     }
 }
+
