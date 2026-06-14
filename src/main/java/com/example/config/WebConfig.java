@@ -9,6 +9,6 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/img/**")
-                .addResourceLocations("classpath:/static/img/"); // Sử dụng classpath thay vì file hệ thống
+                .addResourceLocations("classpath:/static/img/");
     }
 }

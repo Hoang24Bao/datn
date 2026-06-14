@@ -1,6 +1,7 @@
 package com.example.Controller;
 
 import com.example.Entity.Users;
+import com.example.Repository.UserTestResultRepository;
 import com.example.Repository.UsersRepository;
 import com.example.Service.CloudinaryService;
 import jakarta.transaction.Transactional;
@@ -28,6 +29,9 @@ public class UserController {
 
     @Autowired
     private CloudinaryService cloudinaryService;
+
+    @Autowired
+    private UserTestResultRepository userTestResultRepository;
 
 
     @PostMapping("/api/user/upload-avatar")
@@ -113,6 +117,28 @@ public class UserController {
             return ResponseEntity.internalServerError().body(Map.of("error", "Cập nhật thất bại: " + e.getMessage()));
         }
     }
+
+    @GetMapping("/api/user/profile-stats")
+    public ResponseEntity<?> getUserStats() {
+        try {
+            Users currentUser = getCurrentUser();
+            if (currentUser == null) {
+                return ResponseEntity.status(401).body(Map.of("error", "Chưa đăng nhập"));
+            }
+
+            // Đếm số bài test đã đạt (is_passed = true)
+            int passedTestsCount = userTestResultRepository.countPassedTestsByUser(currentUser.getId());
+
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("totalPoints", currentUser.getTotalPoints() != null ? currentUser.getTotalPoints() : 0);
+            stats.put("passedTestsCount", passedTestsCount);
+
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
 
     private Users getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

@@ -23,7 +23,6 @@ public class AudioGenerationService {
     public String generateAudio(String romaji, Integer vocabId) throws Exception {
         logger.info("Đang sinh audio cho romaji: {}, vocabId: {}", romaji, vocabId);
 
-        // Làm sạch romaji để làm tên file
         String cleanRomaji = romaji.trim().toLowerCase().replaceAll("[^a-z0-9]", "_");
 
         ProcessBuilder processBuilder = new ProcessBuilder(
@@ -36,7 +35,6 @@ public class AudioGenerationService {
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
 
-        // Đọc cả stdout và stderr
         StringBuilder stdout = new StringBuilder();
         StringBuilder stderr = new StringBuilder();
 
@@ -75,7 +73,6 @@ public class AudioGenerationService {
                     ". Error: " + errorOutput + ". Output: " + output);
         }
 
-        // Tìm URL trong output (dòng bắt đầu bằng http)
         String audioUrl = null;
         for (String line : output.split("\n")) {
             line = line.trim();

@@ -44,13 +44,13 @@ public class WebSecurityConfig {
                         .authenticationEntryPoint(unauthorizedHandler)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // Public resources - ai cũng xem được
+                        // Public resources
                         .requestMatchers("/css/**", "/js/**", "/img/**", "/lib/**", "/favicon.ico").permitAll()
 
                         // Public APIs - không cần đăng nhập
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // Public pages - ai cũng xem được
+                        // Public pages
                         .requestMatchers("/", "/home", "/signup", "/login", "/about",
                                 "/contact", "/privacy", "/terms", "/faq",
                                 "/instructor", "/team", "/testimonial").permitAll()
@@ -58,19 +58,18 @@ public class WebSecurityConfig {
                         // Admin only
                         .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
 
-                        // ⭐ QUAN TRỌNG: Các API cần xác thực
+                        // Các API cần xác thực
                         .requestMatchers("/api/study-session/**").authenticated()
                         .requestMatchers("/api/progress/**").authenticated()
                         .requestMatchers("/study/**").authenticated()
                         .requestMatchers("/profile", "/settings").authenticated()
 
-                        // Mặc định cho phép tất cả các request còn lại
                         .anyRequest().permitAll()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable);
 
-        // Thêm filter JWT vào trước UsernamePasswordAuthenticationFilter
+
         http.addFilterBefore(authenticationJwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

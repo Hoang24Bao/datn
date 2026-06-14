@@ -76,9 +76,8 @@ public class AdminVocabController {
             @RequestParam(required = false) Integer cateId,
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size) {
+            @RequestParam(defaultValue = "100") int size) {
 
-        // Nếu JS gửi chuỗi rỗng, hãy coi nó là null
         String cleanLevel = (level != null && level.isEmpty()) ? null : level;
         String cleanSearch = (search != null && search.isEmpty()) ? null : search;
 
@@ -108,13 +107,11 @@ public class AdminVocabController {
     @Transactional
     public ResponseEntity<?> addVocab(@RequestBody Map<String, Object> payload) {
         try {
-            // Kiểm tra trùng expression (tuỳ chọn)
             String expression = (String) payload.get("expression");
             if (vocabularyRepository.existsByExpression(expression)) {
                 return ResponseEntity.badRequest().body("Từ vựng này đã tồn tại!");
             }
 
-            // 1. Tạo đối tượng Vocabulary
             Vocabulary v = new Vocabulary();
             v.setExpression(expression);
             v.setKana((String) payload.get("kana"));
@@ -127,11 +124,8 @@ public class AdminVocabController {
             v.setAudioUrl((String) payload.get("audioUrl"));
             v.setIsActive(true);
 
-            // Lưu vào bảng Vocabulary trước để có ID
             Vocabulary savedVocab = vocabularyRepository.save(v);
 
-
-            // ← CHỈ gán vào bài học nếu lessonId được truyền lên
             Object lessonIdRaw = payload.get("lessonId");
             if (lessonIdRaw != null && !lessonIdRaw.toString().isBlank()
                     && !lessonIdRaw.toString().equals("0")) {
@@ -199,16 +193,13 @@ public class AdminVocabController {
     @Transactional
     public ResponseEntity<?> updateVocab(@PathVariable Integer id, @RequestBody Map<String, Object> payload) {
         try {
-            // Tìm từ vựng cần cập nhật
             Vocabulary existingVocab = vocabularyRepository.findById(id).orElse(null);
             if (existingVocab == null) {
                 return ResponseEntity.notFound().build();
             }
 
-            // Cập nhật các trường
             String expression = (String) payload.get("expression");
             if (expression != null && !expression.trim().isEmpty()) {
-                // Kiểm tra trùng tên (trừ chính nó)
                 if (vocabularyRepository.existsByExpression(expression) &&
                         !expression.equals(existingVocab.getExpression())) {
                     return ResponseEntity.badRequest().body("Từ vựng này đã tồn tại!");
@@ -244,7 +235,6 @@ public class AdminVocabController {
                 existingVocab.setIsActive((Boolean) payload.get("isActive"));
             }
 
-            // Lưu lại
             vocabularyRepository.save(existingVocab);
 
             Map<String, String> response = new HashMap<>();
@@ -258,14 +248,12 @@ public class AdminVocabController {
     }
 
 
-    /**
-     * Kiểm tra từ vựng có đang được dùng trong InteractivePoint không
-     */
+    //Kiểm tra từ vựng có đang được dùng trong InteractivePoint không
+
     @GetMapping("/{id}/check-usage")
     public ResponseEntity<?> checkVocabUsage(@PathVariable Integer id) {
         return vocabularyRepository.findById(id)
                 .map(vocab -> {
-                    // Đếm số lượng interactive points dùng từ này
                     int pointCount = interactivePointRepository.countByVocabId(id);
 
                     Map<String, Object> response = new HashMap<>();
@@ -274,7 +262,6 @@ public class AdminVocabController {
                     response.put("expression", vocab.getExpression());
 
                     if (pointCount > 0) {
-                        // Lấy thông tin các scene để hiển thị
                         List<Map<String, Object>> scenes = interactivePointRepository.findSceneUsageByVocabId(id);
                         response.put("scenes", scenes);
                         if (!scenes.isEmpty()) {
@@ -287,9 +274,8 @@ public class AdminVocabController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * Kiểm tra từ vựng có đang được dùng trong InteractivePoint của một bài học cụ thể không
-     */
+    //Kiểm tra từ vựng có đang được dùng trong InteractivePoint của một bài học cụ thể không
+
     @GetMapping("/{id}/check-usage-in-category")
     public ResponseEntity<?> checkVocabUsageInCategory(@PathVariable Integer id, @RequestParam Integer categoryId) {
         int pointCount = interactivePointRepository.countByVocabIdAndCategoryId(id, categoryId);
@@ -306,12 +292,10 @@ public class AdminVocabController {
     @GetMapping("/by-category/{categoryId}")
     public ResponseEntity<?> getVocabByCategory(@PathVariable Integer categoryId) {
         try {
-            // Lấy tất cả lessons trong category
             List<Lessons> lessons = lessonRepository.findByCategoryId(categoryId);
 
             List<Map<String, Object>> result = new ArrayList<>();
             for (Lessons lesson : lessons) {
-                // Lấy vocabulary theo từng lesson
                 List<Vocabulary> vocabList = vocabularyRepository.findByLessonId(lesson.getId());
                 for (Vocabulary vocab : vocabList) {
                     Map<String, Object> item = new HashMap<>();

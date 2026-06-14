@@ -42,12 +42,10 @@ public class StudySessionController {
     private UsersRepository userRepository;
 
     @Autowired
-    private EntityManager entityManager;  // ← THAY THẾ LessonVocabRepository
+    private EntityManager entityManager;
 
-    // ==================== API 1: BẮT ĐẦU PHIÊN HỌC ====================
     @PostMapping("/start")
     public ResponseEntity<?> startSession(@RequestBody Map<String, Object> payload) {
-        // TODO: Lấy user hiện tại từ SecurityContext
         Users currentUser = getCurrentUser();
         if (currentUser == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Chưa đăng nhập"));
@@ -58,7 +56,6 @@ public class StudySessionController {
             return ResponseEntity.badRequest().body(Map.of("error", "lessonId là bắt buộc"));
         }
 
-        // Lấy danh sách vocab_id trong bài học - DÙNG NATIVE QUERY
         @SuppressWarnings("unchecked")
         List<Integer> vocabIds = entityManager.createNativeQuery(
                         "SELECT vocab_id FROM Lesson_Vocab WHERE lesson_id = :lessonId ORDER BY display_order ASC"
@@ -70,7 +67,6 @@ public class StudySessionController {
             return ResponseEntity.badRequest().body(Map.of("error", "Bài học không có từ vựng nào"));
         }
 
-        // Lấy snapshot memory gốc từ database
         List<Progress> existingProgress = progressRepository.findByUserIdAndVocabIdIn(
                 currentUser.getId(), vocabIds
         );
@@ -84,17 +80,14 @@ public class StudySessionController {
             if (prog.isPresent()) {
                 originalMemoryMap.put(vocabId, prog.get().getMemoryLevel());
             } else {
-                originalMemoryMap.put(vocabId, 1); // Mặc định level 1 cho từ mới
+                originalMemoryMap.put(vocabId, 1);
             }
         }
 
-        // Khởi tạo phiên học
         sessionService.startSession(currentUser.getId(), lessonId, vocabIds, originalMemoryMap);
 
-        // Lấy thông tin chi tiết các từ vựng để trả về frontend
         List<Vocabulary> vocabularies = vocabularyRepository.findAllById(vocabIds);
 
-        // Sắp xếp theo đúng thứ tự trong bài học
         Map<Integer, Vocabulary> vocabMap = vocabularies.stream()
                 .collect(Collectors.toMap(Vocabulary::getId, v -> v));
 
@@ -127,7 +120,6 @@ public class StudySessionController {
         ));
     }
 
-    // ==================== API 2: LƯU KẾT QUẢ TẠM ====================
     @PostMapping("/temp-result")
     public ResponseEntity<?> saveTempResult(@RequestBody Map<String, Object> payload) {
         Users currentUser = getCurrentUser();
@@ -140,13 +132,12 @@ public class StudySessionController {
         }
 
         Integer vocabId = (Integer) payload.get("vocabId");
-        Boolean isLearned = (Boolean) payload.get("isLearned"); // true = đã thuộc, false = chưa thuộc
+        Boolean isLearned = (Boolean) payload.get("isLearned");
 
         if (vocabId == null || isLearned == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Thiếu thông tin vocabId hoặc isLearned"));
         }
 
-        // Chỉ lưu vào bộ nhớ tạm, KHÔNG update database
         sessionService.setTempResult(vocabId, isLearned);
 
         return ResponseEntity.ok(Map.of(
@@ -159,7 +150,7 @@ public class StudySessionController {
         ));
     }
 
-    // ==================== API 3: KẾT THÚC PHIÊN HỌC ====================
+
     @PostMapping("/end")
     public ResponseEntity<?> endSession() {
         Users currentUser = getCurrentUser();
@@ -247,7 +238,6 @@ public class StudySessionController {
 
             updates.add(progress);
 
-            // SỬA ĐOẠN NÀY - dùng HashMap thay vì Map.of()
             Map<String, Object> vocabDetail = new HashMap<>();
             vocabDetail.put("originalLevel", originalLevel);
             vocabDetail.put("newLevel", newLevel);
@@ -281,7 +271,7 @@ public class StudySessionController {
         return ResponseEntity.ok(response);
     }
 
-    // ==================== API 4: HỦY PHIÊN (KHÔNG LƯU) ====================
+
     @PostMapping("/cancel")
     public ResponseEntity<?> cancelSession() {
         Users currentUser = getCurrentUser();
@@ -293,7 +283,6 @@ public class StudySessionController {
             return ResponseEntity.badRequest().body(Map.of("error", "Không có phiên học đang active"));
         }
 
-        // Xóa toàn bộ dữ liệu tạm mà không lưu
         sessionService.endSession();
 
         return ResponseEntity.ok(Map.of(
@@ -302,7 +291,7 @@ public class StudySessionController {
         ));
     }
 
-    // ==================== API 5: LẤY TRẠNG THÁI PHIÊN HIỆN TẠI ====================
+
     @GetMapping("/status")
     public ResponseEntity<?> getSessionStatus() {
         Users currentUser = getCurrentUser();

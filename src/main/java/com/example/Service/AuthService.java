@@ -15,7 +15,7 @@ public class AuthService {
     private UsersRepository userRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;  // Dùng interface, không dùng class cụ thể
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private RoleRepository roleRepository;

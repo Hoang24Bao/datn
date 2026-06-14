@@ -31,12 +31,10 @@ public interface TestRepository extends JpaRepository<Tests, Integer> {
                               @Param("search") String search,
                               Pageable pageable);
 
-    // Helper method cho trường hợp không có search
     default Page<Tests> findByFilters(Integer categoryId, Boolean isActive, Pageable pageable) {
         return findByFilters(categoryId, isActive, null, pageable);
     }
 
-    // Helper method cho trường hợp có search
     default Page<Tests> findByTitleContainingIgnoreCaseAndFilters(String search, Integer categoryId, Boolean isActive, Pageable pageable) {
         return findByFilters(categoryId, isActive, search, pageable);
     }

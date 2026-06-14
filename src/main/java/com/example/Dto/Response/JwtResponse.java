@@ -12,7 +12,6 @@ public class JwtResponse {
     private String role;
     private String avatar;
 
-    // Constructor để tạo nhanh đối tượng trả về
     public JwtResponse(String accessToken, Integer id, String userName, String fullname, String role, String avatar) {
         this.token = accessToken;
         this.id = id;

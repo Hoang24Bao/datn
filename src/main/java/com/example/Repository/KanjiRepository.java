@@ -13,10 +13,10 @@ public interface KanjiRepository extends JpaRepository<Kanji, Integer> {
             "(:level IS NULL OR k.jlptLevel = :level) AND " +
             "(:search IS NULL OR LOWER(k.character) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
             "LOWER(k.meaning) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-            "LOWER(k.sinoVietnamese) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +  // Đổi tên
+            "LOWER(k.sinoVietnamese) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
             "k.isActive = true")
     Page<Kanji> findWithFilters(@Param("level") String level,
                                 @Param("search") String search,
                                 Pageable pageable);
-    
+
 }

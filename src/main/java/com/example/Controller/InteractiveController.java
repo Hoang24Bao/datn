@@ -33,12 +33,11 @@ public class InteractiveController {
     private InteractivePointRepository pointRepository;
 
     @Autowired
-    private CategoriesRepository categoriesRepository;  // Đổi từ LessonsRepository
+    private CategoriesRepository categoriesRepository;
 
     @Autowired
     private VocabularyRepository vocabularyRepository;
 
-    // Tạo scene mới (theo category, không theo lesson)
     @PostMapping("/scene")
     public ResponseEntity<?> createScene(
             @RequestParam("file") MultipartFile file,
@@ -98,7 +97,7 @@ public class InteractiveController {
         }
     }
 
-    // Lấy danh sách scenes theo category (cho admin)
+    // Lấy danh sách scenes theo category
     @GetMapping("/scenes/{categoryId}")
     public ResponseEntity<?> getScenesByCategory(@PathVariable Integer categoryId) {
         List<InteractiveScene> scenes = sceneRepository.findByCategoryIdOrderByOrderIndexAsc(categoryId);
@@ -150,8 +149,7 @@ public class InteractiveController {
         }
     }
 
-    // Tạo scene từ URL (cho admin)
-    // Sửa method createSceneFromUrl
+    // Tạo scene từ URL
     @PostMapping("/scene-from-url")
     public ResponseEntity<?> createSceneFromUrl(@RequestBody Map<String, Object> payload) {
         try {
@@ -169,7 +167,6 @@ public class InteractiveController {
             Integer categoryId = Integer.parseInt(categoryIdObj.toString());
             String description = (String) payload.get("description");
 
-            // Kiểm tra category tồn tại
             Categories category = categoriesRepository.findById(categoryId)
                     .orElse(null);
 
@@ -287,5 +284,5 @@ public class InteractiveController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-    
+
 }

@@ -43,13 +43,11 @@ public class TestService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // ==================== ADMIN: TẠO TEST ====================
+    // TẠO TEST
     public TestResponseDTO createTest(CreateTestDTO dto) throws Exception {
-        // Kiểm tra category tồn tại
         Categories category = categoriesRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy chủ đề"));
 
-        // Tạo test mới
         Tests test = new Tests();
         test.setCategoryId(dto.getCategoryId());
         test.setTitle(dto.getTitle());
@@ -64,8 +62,6 @@ public class TestService {
 
         generateQuestionsForTest(test.getId(), dto.getCategoryId(), dto.getQuestionCount(), dto.getQuestionType());
 
-
-        // Cập nhật số lượng câu hỏi thực tế
         Integer actualCount = testQuestionRepository.countByTestId(test.getId());
         test.setQuestionCount(actualCount);
         test = testRepository.save(test);
@@ -73,7 +69,7 @@ public class TestService {
         return convertToResponseDTO(test, category.getCategoryName());
     }
 
-    // Tự động sinh câu hỏi (có thể random 2 dạng)
+    // Tự động sinh câu hỏi
     private void generateQuestionsForTest(Integer testId, Integer categoryId, Integer questionCount, String questionType) {
         List<Vocabulary> vocabs = vocabularyRepository.findByCategoryId(categoryId);
 
@@ -93,7 +89,6 @@ public class TestService {
             question.setTestId(testId);
             question.setVocabId(vocab.getId());
 
-            // Xác định dạng câu hỏi
             int questionTypeInt;
             if ("meaning".equals(questionType)) {
                 questionTypeInt = 0; // Chỉ hỏi nghĩa
@@ -174,7 +169,7 @@ public class TestService {
         }
     }
 
-    // ==================== USER: LẤY DANH SÁCH TEST ====================
+    //USER: LẤY DANH SÁCH TEST
     public List<TestResponseDTO> getTestsByCategory(Integer categoryId, Integer userId) {
         List<Tests> tests = testRepository.findByCategoryIdAndIsActiveTrue(categoryId);
 
@@ -184,7 +179,6 @@ public class TestService {
                     .orElse("");
             TestResponseDTO dto = convertToResponseDTO(test, categoryName);
 
-            // Kiểm tra user đã pass test này chưa
             boolean hasPassed = userTestResultRepository.hasUserPassedTest(userId, test.getId());
             dto.setHasPassed(hasPassed);
             int bestScore = userTestBestRepository.findBestScoreByUserAndTest(userId, test.getId()).orElse(0);
@@ -194,7 +188,7 @@ public class TestService {
         }).collect(Collectors.toList());
     }
 
-    // ==================== USER: BẮT ĐẦU LÀM TEST ====================
+    // LÀM TEST
     public Map<String, Object> startTest(Integer testId, Integer userId) throws Exception {
         Tests test = testRepository.findByIdAndIsActiveTrue(testId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bài test"));
@@ -206,10 +200,8 @@ public class TestService {
             System.out.println("Đã xóa " + incompleteAttempts.size() + " attempt chưa hoàn thành");
         }
 
-        // Lấy danh sách câu hỏi
         List<TestQuestions> questions = testQuestionRepository.findByTestIdOrderByOrderIndexAsc(testId);
 
-        // Tạo attempt mới
         UserTestResults attempt = new UserTestResults();
         attempt.setUserId(userId);
         attempt.setTestId(testId);
@@ -221,14 +213,12 @@ public class TestService {
 
         attempt = userTestResultRepository.save(attempt);
 
-        // Chuẩn bị câu hỏi cho frontend (ẩn đáp án đúng)
         List<Map<String, Object>> questionList = new ArrayList<>();
         for (TestQuestions q : questions) {
             Map<String, Object> qMap = new HashMap<>();
             qMap.put("id", q.getId());
             qMap.put("questionText", q.getQuestionText());
 
-            // ✅ SỬA: Thêm try-catch cho readValue
             try {
                 qMap.put("options", objectMapper.readValue(q.getOptions(), List.class));
             } catch (JsonProcessingException e) {
@@ -251,7 +241,7 @@ public class TestService {
         return result;
     }
 
-    // ==================== USER: NỘP BÀI ====================
+    //NỘP BÀI
     public TestResultDTO submitTest(Integer attemptId, List<Integer> selectedAnswers) throws Exception {
         UserTestResults attempt = userTestResultRepository.findById(attemptId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy attempt"));
@@ -269,7 +259,6 @@ public class TestService {
             throw new RuntimeException("Số lượng câu trả lời không khớp");
         }
 
-        // Tính điểm
         int correctCount = 0;
         List<Map<String, Object>> answersData = new ArrayList<>();
 
@@ -312,25 +301,21 @@ public class TestService {
         int newScore = (correctCount * test.getMaxScore()) / totalCount;
         boolean isPassed = newScore >= test.getPassScore();
 
-        // ========== LẤY ĐIỂM CAO NHẤT ĐÃ ĐẠT (CHỈ TÍNH ĐIỂM PASS) ==========
         int currentBestPassed = userTestResultRepository.findBestPassedScoreByUserAndTest(attempt.getUserId(), test.getId()).orElse(0);
 
         int pointsEarned = 0;
         boolean isNewBest = newScore > currentBestPassed;
 
-        // ✅ CHỈ CỘNG ĐIỂM NẾU ĐẠT (PASS)
+
         if (isPassed) {
             if (currentBestPassed == 0) {
-                // Lần đầu tiên đạt → cộng TOÀN BỘ điểm
                 pointsEarned = newScore;
                 System.out.println("✅ Lần đầu đạt! Cộng " + pointsEarned + " điểm cho user");
             } else if (isNewBest) {
-                // Đã đạt trước đó, lần này cao hơn → cộng chênh lệch
                 pointsEarned = newScore - currentBestPassed;
                 System.out.println("✅ Cộng chênh lệch " + pointsEarned + " điểm cho user (từ " + currentBestPassed + " lên " + newScore + ")");
             }
 
-            // Cộng điểm vào total_points
             if (pointsEarned > 0) {
                 Users user = usersRepository.findById(attempt.getUserId()).orElse(null);
                 if (user != null) {
@@ -339,7 +324,6 @@ public class TestService {
                 }
             }
 
-            // Cập nhật bảng User_Test_Best (chỉ lưu điểm cao nhất đã pass)
             if (isNewBest) {
                 Optional<UserTestBest> existingBest = userTestBestRepository
                         .findByUserIdAndTestId(attempt.getUserId(), test.getId());
@@ -361,8 +345,6 @@ public class TestService {
         } else {
             System.out.println("⚠️ Chưa đạt (" + newScore + "/" + test.getPassScore() + "), không cộng điểm");
 
-            // ✅ VẪN CẬP NHẬT best_score nếu điểm mới cao hơn (dù chưa pass)
-            // Để lần sau nếu pass sẽ tính chênh lệch đúng
             if (isNewBest) {
                 Optional<UserTestBest> existingBest = userTestBestRepository
                         .findByUserIdAndTestId(attempt.getUserId(), test.getId());
@@ -384,7 +366,6 @@ public class TestService {
             }
         }
 
-        // ========== CẬP NHẬT ATTEMPT ==========
         attempt.setCompletedAt(LocalDateTime.now());
         attempt.setScore((float) newScore);
         attempt.setCorrectCount(correctCount);
@@ -399,7 +380,6 @@ public class TestService {
 
         userTestResultRepository.save(attempt);
 
-        // Chuẩn bị kết quả trả về
         TestResultDTO result = new TestResultDTO();
         result.setTestId(test.getId());
         result.setTestTitle(test.getTitle());
@@ -424,7 +404,6 @@ public class TestService {
         return result;
     }
 
-    // ==================== HELPER ====================
     private TestResponseDTO convertToResponseDTO(Tests test, String categoryName) {
         TestResponseDTO dto = new TestResponseDTO();
         dto.setId(test.getId());

@@ -26,15 +26,13 @@ public class StudyInteractiveController {
     private InteractivePointRepository pointRepository;
 
     @Autowired
-    private CategoriesRepository categoriesRepository;  // Đổi từ LessonsRepository
+    private CategoriesRepository categoriesRepository;
 
     @GetMapping("/interactive")
     public String interactiveStudy(@RequestParam("categoryId") Integer categoryId, Model model) {
-        // Lấy TẤT CẢ scenes của category theo categoryId
         List<InteractiveScene> scenes = sceneRepository.findByCategoryIdOrderByOrderIndexAsc(categoryId);
 
         if (scenes.isEmpty()) {
-            // Lấy category để có thông tin
             categoriesRepository.findById(categoryId).ifPresent(category -> {
                 model.addAttribute("currentCateId", category.getId());
                 model.addAttribute("category", category);
@@ -46,11 +44,10 @@ public class StudyInteractiveController {
             return "study/interactive";
         }
 
-        // Load points cho từng scene
         scenes.forEach(scene -> {
             var points = pointRepository.findBySceneId(scene.getId());
             points.forEach(point -> {
-                point.getVocabulary().getExpression(); // Trigger lazy loading
+                point.getVocabulary().getExpression();
             });
             scene.setPoints(points);
         });

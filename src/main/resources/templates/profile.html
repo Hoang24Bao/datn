@@ -49,21 +49,8 @@
                     <div class="profile-stat-lbl">Tổng điểm</div>
                 </div>
                 <div class="profile-stat-box">
-                    <div class="profile-stat-num" th:text="${lessonCount != null ? lessonCount : 0}">0</div>
-                    <div class="profile-stat-lbl">Bài đã học</div>
-                </div>
-            </div>
-
-            <!-- Progress -->
-            <div class="profile-progress-section">
-                <div class="profile-progress-label">
-                    <span>Tiến độ lên cấp tiếp theo</span>
-                    <span th:text="${levelProgress != null ? levelProgress + '%' : '0%'}">0%</span>
-                </div>
-                <div class="profile-progress-bar">
-                    <div class="profile-progress-fill"
-                         th:style="'width: ' + (${levelProgress != null ? levelProgress : 0}) + '%'">
-                    </div>
+                    <div class="profile-stat-num" id="passedTestsCount">0</div>
+                    <div class="profile-stat-lbl">Bài test đã đạt</div>
                 </div>
             </div>
 
@@ -192,6 +179,25 @@
 <script>
     let selectedAvatarFile = null;
 
+    /* ── Load stats from API ── */
+    async function loadUserStats() {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        try {
+            const res = await fetch('/api/user/profile-stats', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('passedTestsCount').innerText = data.passedTestsCount || 0;
+            }
+        } catch (e) {
+            console.error('Failed to load stats:', e);
+        }
+    }
+
     /* ── Tab switching ── */
     function switchTab(tabName, btn) {
         document.querySelectorAll('.profile-tab-body').forEach(el => el.style.display = 'none');
@@ -313,6 +319,10 @@
             if (el) el.value = '';
         });
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadUserStats();
+    });
 </script>
 </body>
 </html>

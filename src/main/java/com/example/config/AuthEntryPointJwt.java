@@ -18,14 +18,11 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 
         String requestURI = request.getRequestURI();
 
-        // Nếu là request API (bắt đầu bằng /api/), trả về JSON lỗi
         if (requestURI.startsWith("/api/")) {
             response.setContentType("application/json");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"Vui lòng đăng nhập để tiếp tục\"}");
-        }
-        // Nếu là request trang web, redirect về login
-        else {
+        } else {
             response.sendRedirect("/login");
         }
     }

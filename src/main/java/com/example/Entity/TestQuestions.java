@@ -34,7 +34,6 @@ public class TestQuestions {
     @Column(name = "order_index", nullable = false)
     private Integer orderIndex = 0;
 
-    // Relationships
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "test_id", insertable = false, updatable = false)
     private Tests test;

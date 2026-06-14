@@ -38,7 +38,7 @@ public class AdminTestController {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // Lấy danh sách tất cả test (cho admin)
+    // Lấy danh sách tất cả test
     @GetMapping("/all")
     public ResponseEntity<?> getAllTests() {
         List<Tests> tests = testRepository.findAll();
@@ -65,7 +65,7 @@ public class AdminTestController {
         return ResponseEntity.ok(result);
     }
 
-    // Tạo test mới (admin)
+    // Tạo test mới
     @PostMapping("/create")
     public ResponseEntity<?> createTest(@RequestBody CreateTestDTO dto) {
         try {
@@ -92,7 +92,6 @@ public class AdminTestController {
                 return ResponseEntity.notFound().build();
             }
 
-            // Lấy danh sách câu hỏi của test
             List<TestQuestions> questions = testQuestionRepository.findByTestIdOrderByOrderIndexAsc(id);
 
             Map<String, Object> result = new HashMap<>();
@@ -105,7 +104,6 @@ public class AdminTestController {
             result.put("questionCount", test.getQuestionCount());
             result.put("isActive", test.getIsActive());
 
-            // Thêm danh sách câu hỏi
             List<Map<String, Object>> questionList = new ArrayList<>();
             for (TestQuestions q : questions) {
                 Map<String, Object> qMap = new HashMap<>();
@@ -167,7 +165,7 @@ public class AdminTestController {
         }
     }
 
-    // Lấy danh sách category (cho dropdown)
+    // Lấy danh sách category
     @GetMapping("/categories")
     public ResponseEntity<?> getCategories() {
         List<Categories> categories = categoriesRepository.findAll();

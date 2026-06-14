@@ -37,7 +37,7 @@ public class InteractiveSceneService {
         return sceneRepository.findByCategoryIdOrderByOrderIndexAsc(categoryId);
     }
 
-    // Lấy danh sách từ vựng trong Category (cho màn hình interactive)
+    // Lấy danh sách từ vựng trong Category
     public List<Vocabulary> getVocabByCategory(Integer categoryId) {
         return vocabularyRepository.findByCategoryId(categoryId);
     }
@@ -74,7 +74,7 @@ public class InteractiveSceneService {
         }).collect(Collectors.toList());
     }
 
-    // Lấy danh sách tất cả points của scene (dạng entity)
+    // Lấy danh sách tất cả points của scene
     public List<InteractivePoint> getPointsByScene(Integer sceneId) {
         return pointRepository.findBySceneId(sceneId);
     }
@@ -82,7 +82,6 @@ public class InteractiveSceneService {
     // Tạo scene mới
     @Transactional
     public InteractiveScene createScene(InteractiveScene scene) {
-        // Đảm bảo isActive mặc định là true
         if (scene.getIsActive() == null) {
             scene.setIsActive(true);
         }
@@ -122,13 +121,12 @@ public class InteractiveSceneService {
         }
     }
 
-    // Xóa scene (cascade sẽ xóa luôn points)
+    // Xóa scene
     @Transactional
     public void deleteScene(Integer sceneId) {
         sceneRepository.deleteById(sceneId);
     }
 
-    // Lấy max order index cho category
     public int getMaxOrderIndex(Integer categoryId) {
         return sceneRepository.getMaxOrderIndex(categoryId);
     }

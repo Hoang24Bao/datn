@@ -32,7 +32,7 @@ public class AdminLessonController {
     @Autowired
     private CategoriesRepository categoryRepository;
 
-    // 1. Lấy tất cả bài học (Kèm tên danh mục) - GIỮ LẠI cho các chức năng cũ
+    // 1. Lấy tất cả bài học
     @GetMapping
     public ResponseEntity<?> getAllLessons() {
         List<Object[]> rows = lessonRepository.findAllLessonsWithStats();
@@ -47,7 +47,7 @@ public class AdminLessonController {
         return ResponseEntity.ok(response);
     }
 
-    // 1.1 API MỚI: Lấy danh sách lessons có phân trang và filter
+    // 1.1: Lấy danh sách lessons
     @GetMapping("/paging")
     public ResponseEntity<Page<Map<String, Object>>> getLessonsPaging(
             @RequestParam(required = false) String search,
@@ -76,7 +76,7 @@ public class AdminLessonController {
         return ResponseEntity.ok(new PageImpl<>(lessons, pageable, resultPage.getTotalElements()));
     }
 
-    // 2. Thêm bài học mới (từ trang Lessons - chọn cấp độ/chủ đề/trạng thái)
+    // 2. Thêm bài học mới
     @PostMapping
     @Transactional
     public ResponseEntity<?> createLesson(@RequestBody Map<String, Object> payload) {
@@ -98,14 +98,11 @@ public class AdminLessonController {
             lesson.setIsActive(isActive);
             lesson.setFree(true);
 
-
-            // Tính order_index: đếm số lesson hiện có trong category + 1
             int orderIndex = lessonRepository.countByCategoryId(categoryId);
             lesson.setOrderIndex(orderIndex + 1);
 
             lessonRepository.save(lesson);
 
-            // Cập nhật total_lessons trong bảng Categories
             syncTotalLessons(categoryId);
 
             return ResponseEntity.ok("Thêm bài học thành công!");
@@ -114,7 +111,7 @@ public class AdminLessonController {
         }
     }
 
-    // 2.1 Thêm bài học mới từ trang chi tiết Category (chỉ cần tên + trạng thái)
+    // 2.1 Thêm bài học mới từ trang chi tiết Category
     @PostMapping("/in-category/{catId}")
     @Transactional
     public ResponseEntity<?> createLessonInCategory(
@@ -132,7 +129,6 @@ public class AdminLessonController {
 
             Categories category = categoryRepository.findById(catId).orElse(null);
 
-            // Kiểm tra category tồn tại
             if (!categoryRepository.existsById(catId)) {
                 return ResponseEntity.badRequest().body("Không tìm thấy chủ đề!");
             }
@@ -147,13 +143,11 @@ public class AdminLessonController {
             lesson.setIsActive(isActive);
             lesson.setFree(true);
 
-            // Tính order_index
             int orderIndex = lessonRepository.countByCategoryId(catId);
             lesson.setOrderIndex(orderIndex + 1);
 
             lessonRepository.save(lesson);
 
-            // Cập nhật total_lessons trong bảng Categories
             syncTotalLessons(catId);
 
             return ResponseEntity.ok("Thêm bài học thành công!");
@@ -179,7 +173,6 @@ public class AdminLessonController {
                                 ? Integer.parseInt(payload.get("categoryId").toString())
                                 : lesson.getCategoryId();
 
-                        // Kiểm tra tên trùng trong cùng category (bỏ qua chính nó)
                         int dupCount = lessonRepository.countByLessonNameAndCategoryIdExcludeId(name.trim(), categoryId, id);
                         if (dupCount > 0) {
                             return ResponseEntity.badRequest().body("Tên bài học đã tồn tại trong chủ đề này!");
@@ -196,7 +189,6 @@ public class AdminLessonController {
 
                         lessonRepository.save(lesson);
 
-                        // Sync total_lessons cho category cũ và mới (nếu đổi category)
                         syncTotalLessons(categoryId);
                         if (!categoryId.equals(oldCategoryId)) {
                             syncTotalLessons(oldCategoryId);
@@ -210,7 +202,7 @@ public class AdminLessonController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 4. SOFT DELETE - Ẩn/hiện bài học (toggle isActive)
+    // 4. Ẩn/hiện bài học
     @PatchMapping("/{id}/toggle-status")
     @Transactional
     public ResponseEntity<?> toggleLessonStatus(@PathVariable Integer id) {
@@ -220,7 +212,6 @@ public class AdminLessonController {
                     lesson.setIsActive(newStatus);
                     lessonRepository.save(lesson);
 
-                    // Cập nhật total_lessons (chỉ đếm bài đang active)
                     syncTotalLessons(lesson.getCategoryId());
 
                     String message = newStatus ? "Đã khôi phục bài học" : "Đã ẩn bài học";
@@ -229,7 +220,7 @@ public class AdminLessonController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 4. Lọc bài học theo level (giữ nguyên)
+    // 5. Lọc bài học theo level
     @GetMapping("/filter")
     @Transactional(readOnly = true)
     public ResponseEntity<?> getLessonsByLevel(@RequestParam(required = false) String level) {
@@ -250,7 +241,7 @@ public class AdminLessonController {
         return ResponseEntity.ok(response);
     }
 
-    // 5. Lấy bài học theo category (có kèm trạng thái)
+    // 6. Lấy bài học theo category
     @GetMapping("/by-category/{catId}")
     public ResponseEntity<List<Map<String, Object>>> getByCate(@PathVariable Integer catId) {
         List<Object[]> rows = lessonRepository.findLessonsByCategoryIdWithStats(catId);
@@ -276,9 +267,7 @@ public class AdminLessonController {
 
     @GetMapping("/{id}/scenes")
     public ResponseEntity<?> getScenesByLesson(@PathVariable Integer id) {
-        // Lấy lesson để biết categoryId
         return lessonRepository.findById(id).map(lesson -> {
-            // Lấy scenes theo categoryId (không phải theo lessonId)
             List<InteractiveScene> scenes = interactiveSceneRepository.findByCategoryIdOrderByOrderIndexAsc(lesson.getCategoryId());
 
             List<InteractiveSceneDTO> response = scenes.stream()
@@ -296,7 +285,7 @@ public class AdminLessonController {
     }
 
 
-    // Thêm từ vựng vào bài học
+    // 8. Thêm từ vựng vào bài học
     @PostMapping("/lesson-vocab")
     @Transactional
     public ResponseEntity<?> addVocabToLesson(
@@ -320,7 +309,7 @@ public class AdminLessonController {
         }
     }
 
-    // Lấy danh sách từ vựng CHƯA có trong bài học (để thêm)
+    //9. Lấy danh sách từ vựng CHƯA có trong bài học (để thêm)
     @GetMapping("/{lessonId}/available-vocab")
     public ResponseEntity<?> getAvailableVocabForLesson(@PathVariable Integer lessonId) {
         List<Vocabulary> availableVocab = lessonRepository.findAvailableVocabForLesson(lessonId);
@@ -331,8 +320,6 @@ public class AdminLessonController {
     @Transactional
     public ResponseEntity<?> batchAddVocabToLesson(@RequestBody List<Map<String, Object>> payload) {
         try {
-            // payload: [{ lessonId, vocabId }, ...]
-            // Lấy max displayOrder hiện tại một lần duy nhất
             if (payload.isEmpty()) return ResponseEntity.badRequest().body("Danh sách rỗng!");
 
             Integer lessonId = Integer.parseInt(payload.get(0).get("lessonId").toString());
@@ -354,7 +341,7 @@ public class AdminLessonController {
         }
     }
 
-    // Xóa từ vựng khỏi bài học
+    //10. Xóa từ vựng khỏi bài học
     @DeleteMapping("/lesson-vocab")
     @Transactional
     public ResponseEntity<?> removeVocabFromLesson(
@@ -372,13 +359,12 @@ public class AdminLessonController {
         }
     }
 
-    // Kiểm tra từ vựng có đang được dùng trong InteractivePoint của lesson không
+    //11.  Kiểm tra từ vựng có đang được dùng trong InteractivePoint không
     @GetMapping("/vocab/{vocabId}/check-usage-in-lesson")
     public ResponseEntity<?> checkVocabUsageInLesson(
             @PathVariable Integer vocabId,
             @RequestParam Integer lessonId) {
         try {
-            // Đếm số interactive points có sử dụng từ vựng này trong các scene của lesson
             int pointCount = lessonRepository.countInteractivePointsByVocabAndLesson(vocabId, lessonId);
 
             Map<String, Object> result = new HashMap<>();
@@ -395,7 +381,6 @@ public class AdminLessonController {
     @Transactional
     public ResponseEntity<?> removeAllVocabFromLesson(@PathVariable Integer lessonId) {
         try {
-            // Kiểm tra xem có từ vựng nào đang được dùng trong InteractivePoint không
             int usageCount = lessonRepository.countInteractivePointsByLesson(lessonId);
 
             if (usageCount > 0) {
@@ -411,7 +396,6 @@ public class AdminLessonController {
     }
 
 
-    // Helper: Đồng bộ total_lessons cho một category
     private void syncTotalLessons(Integer categoryId) {
         if (categoryId == null) return;
         categoryRepository.findById(categoryId).ifPresent(cat -> {
@@ -422,7 +406,6 @@ public class AdminLessonController {
     }
 
 
-    // 6. API lấy danh sách lesson theo category (chỉ id + name, chỉ active) - Dùng cho dropdown thêm từ vựng
     @GetMapping("/active/by-category/{catId}")
     public ResponseEntity<List<Map<String, Object>>> getActiveLessonsByCategory(@PathVariable Integer catId) {
         List<Lessons> lessons = lessonRepository.findByCategoryIdAndIsActiveTrue(catId);

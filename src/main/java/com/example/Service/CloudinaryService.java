@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -54,9 +55,7 @@ public class CloudinaryService {
         }
     }
 
-    /**
-     * Upload ảnh lên Cloudinary vào folder "vocabs" nhưng URL không chứa tên folder
-     */
+    //Upload ảnh lên Cloudinary vào folder "vocabs"
     public String uploadVocabImage(MultipartFile file, String romaji) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("File không được để trống!");
@@ -71,12 +70,6 @@ public class CloudinaryService {
             String uniqueId = UUID.randomUUID().toString().substring(0, 8);
             String publicId = baseName + "_" + uniqueId;
 
-            // Upload vào folder vocabs (để quản lý), nhưng URL sẽ tự động không hiển thị folder?
-            // Thực tế Cloudinary URL vẫn hiển thị folder. Để ẩn folder, cần upload vào root.
-            // Giải pháp: Upload vào root nhưng đặt public_id có dạng vocabs/filename
-            // Hoặc chấp nhận URL có folder.
-
-            // Cách 1: Upload vào root (không folder) - URL sẽ không có folder
             Map<?, ?> uploadResult = cloudinary.uploader().upload(
                     file.getBytes(),
                     ObjectUtils.asMap(
@@ -97,12 +90,8 @@ public class CloudinaryService {
         }
     }
 
-    /**
-     * Upload ảnh lên Cloudinary (không cần romaji - dùng cho ảnh tương tác)
-     *
-     * @param file File ảnh cần upload
-     * @return URL của ảnh đã upload
-     */
+    // Upload ảnh lên Cloudinary
+
     public String uploadImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("File không được để trống!");
@@ -113,14 +102,13 @@ public class CloudinaryService {
         }
 
         try {
-            // Tạo tên file ngẫu nhiên
             String uniqueId = UUID.randomUUID().toString();
             String publicId = "scene_" + uniqueId;
 
             Map<?, ?> uploadResult = cloudinary.uploader().upload(
                     file.getBytes(),
                     ObjectUtils.asMap(
-                            "folder", "interactive",  // Upload vào folder interactive
+                            "folder", "interactive",
                             "public_id", publicId,
                             "resource_type", "image",
                             "allowed_formats", new String[]{"jpg", "jpeg", "png", "gif", "webp"}
@@ -137,9 +125,7 @@ public class CloudinaryService {
         }
     }
 
-    /**
-     * Upload audio lên Cloudinary
-     */
+    //Upload audio lên Cloudinary
     public String uploadAudio(byte[] audioData, String romaji) {
         try {
             String baseName = romaji.trim().toLowerCase().replaceAll("[^a-z0-9]", "_");
@@ -163,6 +149,62 @@ public class CloudinaryService {
         } catch (IOException e) {
             logger.error("Lỗi upload audio lên Cloudinary: {}", e.getMessage());
             throw new RuntimeException("Lỗi upload audio: " + e.getMessage());
+        }
+    }
+
+    public String uploadKanjiGif(MultipartFile file, Integer kanjiId) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File không được để trống!");
+        }
+
+        try {
+            String publicId = String.format("kanji_%04d", kanjiId);
+
+            Map<?, ?> uploadResult = cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap(
+                            "folder", "kanji-gif",
+                            "public_id", publicId,
+                            "resource_type", "image",
+                            "allowed_formats", new String[]{"gif"}
+                    )
+            );
+
+            String url = uploadResult.get("secure_url").toString();
+            logger.info("Upload Kanji GIF thành công: ID {} -> {}", kanjiId, url);
+            return url;
+
+        } catch (IOException e) {
+            logger.error("Lỗi upload Kanji GIF: {}", e.getMessage());
+            throw new RuntimeException("Lỗi upload Kanji GIF: " + e.getMessage());
+        }
+    }
+
+    // Batch upload từ URL (từ GitHub)
+    public String uploadKanjiGifFromUrl(String gitUrl, Integer kanjiId) {
+        try {
+            byte[] gifBytes = new RestTemplate().getForObject(gitUrl, byte[].class);
+
+            if (gifBytes == null || gifBytes.length == 0) {
+                throw new RuntimeException("Không thể tải GIF từ URL: " + gitUrl);
+            }
+
+            String publicId = String.format("kanji_%04d", kanjiId);
+
+            Map<?, ?> uploadResult = cloudinary.uploader().upload(
+                    gifBytes,
+                    ObjectUtils.asMap(
+                            "folder", "kanji-gif",
+                            "public_id", publicId,
+                            "resource_type", "image"
+                    )
+            );
+
+            return uploadResult.get("secure_url").toString();
+
+        } catch (Exception e) {
+            logger.error("Lỗi upload từ URL cho kanji {}: {}", kanjiId, e.getMessage());
+            return null;
         }
     }
 }

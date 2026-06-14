@@ -42,13 +42,11 @@ public class TestController {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // Lấy user hiện tại
     private Users getCurrentUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return usersRepository.findByUserName(username).orElse(null);
     }
 
-    // ==================== ADMIN APIs ====================
 
     @PostMapping("/admin/create")
     public ResponseEntity<?> createTest(@RequestBody CreateTestDTO dto) {
@@ -67,9 +65,7 @@ public class TestController {
         }
     }
 
-    // ==================== USER APIs ====================
 
-    // Lấy danh sách test theo category
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<?> getTestsByCategory(@PathVariable Integer categoryId) {
         try {
@@ -167,11 +163,9 @@ public class TestController {
                         map.put("thumbnailUrl", c.getThumbnailUrl());
                         map.put("jlptLevel", c.getJlptLevel());
 
-                        // Kiểm tra user đã hoàn thành ít nhất 1 test trong category chưa
                         boolean hasCompleted = userTestResultRepository.hasUserCompletedAnyTestInCategory(currentUser.getId(), c.getId());
                         map.put("isCompleted", hasCompleted);
 
-                        // Tính progress dựa trên số test đã hoàn thành / tổng số test
                         int totalTests = testRepository.countByCategoryId(c.getId());
                         int completedTests = userTestResultRepository.countCompletedTestsByUserAndCategory(currentUser.getId(), c.getId());
                         int progressPercent = totalTests > 0 ? (completedTests * 100 / totalTests) : 0;

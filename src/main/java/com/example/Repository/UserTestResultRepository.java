@@ -42,4 +42,21 @@ public interface UserTestResultRepository extends JpaRepository<UserTestResults,
             "WHERE utr.userId = :userId AND utr.testId = :testId AND utr.isPassed = true")
     Optional<Integer> findBestPassedScoreByUserAndTest(@Param("userId") Integer userId,
                                                        @Param("testId") Integer testId);
+
+    @Query("SELECT COUNT(DISTINCT t.testId) FROM UserTestResults t WHERE t.userId = :userId AND t.isPassed = true")
+    int countPassedTestsByUser(@Param("userId") Integer userId);
+
+    List<UserTestResults> findByUserIdAndCompletedAtIsNotNullOrderByCompletedAtDesc(Integer userId);
+
+    @Query("SELECT utr.id, utr.testId, " +
+            "t.title, c.categoryName, " +
+            "utr.totalCount, utr.durationSeconds, " +
+            "utr.score, t.maxScore, " +
+            "utr.completedAt, utr.isPassed " +
+            "FROM UserTestResults utr " +
+            "JOIN Tests t ON utr.testId = t.id " +
+            "JOIN Categories c ON t.categoryId = c.id " +
+            "WHERE utr.userId = :userId AND utr.completedAt IS NOT NULL " +
+            "ORDER BY utr.completedAt DESC")
+    List<Object[]> findHistoryWithDetails(@Param("userId") Integer userId);
 }

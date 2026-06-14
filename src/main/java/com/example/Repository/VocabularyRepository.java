@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface VocabularyRepository extends JpaRepository<Vocabulary, Integer> {
 
-    // 1. Filter + phân trang (dùng cho bảng admin)
+    // 1. Filter + phân trang
     @Query(value = "SELECT v.* FROM Vocabulary v " +
             "LEFT JOIN Lesson_Vocab lv ON v.id = lv.vocab_id " +
             "LEFT JOIN Lessons l ON lv.lesson_id = l.id " +
@@ -48,7 +48,7 @@ public interface VocabularyRepository extends JpaRepository<Vocabulary, Integer>
             @Param("search") String search,
             Pageable pageable);
 
-    // 2. Lấy danh sách từ vựng theo bài học (dùng API /by-lesson/{lessonId})
+    // 2. Lấy danh sách từ vựng theo bài học
     @Query(value = "SELECT v.* FROM Vocabulary v " +
             "INNER JOIN Lesson_Vocab lv ON v.id = lv.vocab_id " +
             "WHERE lv.lesson_id = :lessonId " +
@@ -56,7 +56,7 @@ public interface VocabularyRepository extends JpaRepository<Vocabulary, Integer>
             nativeQuery = true)
     List<Vocabulary> findByLessonId(@Param("lessonId") Integer lessonId);
 
-    // 3. Thêm từ vựng vào bài học (bảng trung gian)
+    // 3. Thêm từ vựng vào bài học
     @Modifying
     @Query(value = "INSERT INTO Lesson_Vocab (lesson_id, vocab_id, display_order) " +
             "VALUES (:lessonId, :vocabId, (SELECT COALESCE(MAX(display_order), 0) + 1 FROM Lesson_Vocab WHERE lesson_id = :lessonId))",
@@ -67,15 +67,13 @@ public interface VocabularyRepository extends JpaRepository<Vocabulary, Integer>
     @Query(value = "SELECT COUNT(*) FROM Lesson_Vocab WHERE lesson_id = :lessonId AND vocab_id = :vocabId", nativeQuery = true)
     int countVocabInLesson(@Param("lessonId") Integer lessonId, @Param("vocabId") Integer vocabId);
 
-    // 5. Tìm từ vựng theo expression (kiểm tra trùng)
+    // 5. Tìm từ vựng theo expression
     boolean existsByExpression(String expression);
 
     // 6. Lấy tất cả từ vựng đang active
     List<Vocabulary> findByIsActiveTrue();
 
-    // =====================================================
-    // 7. Lấy danh sách từ vựng theo Category (sửa lại - dùng native query)
-    // =====================================================
+    // 7. Lấy danh sách từ vựng theo Category
     @Query(value = "SELECT DISTINCT v.* FROM Vocabulary v " +
             "INNER JOIN Lesson_Vocab lv ON v.id = lv.vocab_id " +
             "INNER JOIN Lessons l ON lv.lesson_id = l.id " +

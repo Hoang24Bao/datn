@@ -223,6 +223,8 @@
     const urlParams = new URLSearchParams(window.location.search);
     const attemptId = urlParams.get('attemptId');
 
+    const winSound = new Audio('/sound/win.mp3');
+
     let testData = null;
     let questions = [];
     let userAnswers = [];
@@ -460,6 +462,7 @@ if (storedTest) {
                             <p class="text-success">✨ Đã nhận +${result.pointsEarned} điểm ✨</p>
                         </div>
                     `;
+                    winSound.play();
                 } else {
                     messageHtml = `
                         <div class="text-center">

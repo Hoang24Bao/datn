@@ -33,7 +33,6 @@ public class Quizzes {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // THÊM RELATIONSHIP NÀY
     @OneToMany(mappedBy = "quiz", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<QuizCategories> quizCategories;
 

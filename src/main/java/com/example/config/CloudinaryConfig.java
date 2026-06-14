@@ -20,12 +20,11 @@ public class CloudinaryConfig {
 
     @Bean
     public Cloudinary cloudinary() {
-        // Dùng ObjectUtils.asMap() - cleaner và có thêm secure option
         return new Cloudinary(ObjectUtils.asMap(
                 "cloud_name", cloudName,
                 "api_key", apiKey,
                 "api_secret", apiSecret,
-                "secure", true  // Đảm bảo dùng HTTPS
+                "secure", true
         ));
     }
 }

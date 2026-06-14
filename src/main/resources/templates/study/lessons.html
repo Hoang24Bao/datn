@@ -30,6 +30,17 @@
         color: white !important;
     }
 
+    .btn-matching {
+    background-color: #dc3545;
+    color: white;
+    border: 2px solid transparent;
+    transition: 0.3s;
+}
+.btn-matching:hover {
+    background-color: #c82333 !important;
+    color: white !important;
+}
+
     /* Card scene cấp category */
     .scene-category-card {
         display: flex;
@@ -123,15 +134,15 @@
                 Luyện tập toàn bộ từ vựng trong chủ đề
                 <strong th:text="${categories != null ? categories.categoryName : ''}"></strong>
             </p>
-            <div class="d-flex align-items-center gap-2" style="max-width: 340px;">
-                <div class="scene-category-progress flex-grow-1">
-                    <div class="bar"
-                         th:style="'width: ' + ${categories != null && categories.progress != null ? categories.progress : 0} + '%;'">
-                    </div>
-                </div>
-                <span class="fw-bold small" style="color: #dc3545; min-width: 36px;"
-                      th:text="${categories != null && categories.progress != null ? categories.progress : 0} + '%'">0%</span>
-            </div>
+            <!--            <div class="d-flex align-items-center gap-2" style="max-width: 340px;">-->
+            <!--                <div class="scene-category-progress flex-grow-1">-->
+            <!--                    <div class="bar"-->
+            <!--                         th:style="'width: ' + ${categories != null && categories.progress != null ? categories.progress : 0} + '%;'">-->
+            <!--                    </div>-->
+            <!--                </div>-->
+            <!--                <span class="fw-bold small" style="color: #dc3545; min-width: 36px;"-->
+            <!--                      th:text="${categories != null && categories.progress != null ? categories.progress : 0} + '%'">0%</span>-->
+            <!--            </div>-->
         </div>
         <a th:href="@{/study/interactive(categoryId=${categories?.id})}"
            class="btn-interactive fw-bold rounded-pill px-4 py-2 shadow-sm text-decoration-none">
@@ -195,6 +206,20 @@
                         <a th:href="@{/study/flashcards(id=${lesson?.id})}"
                            class="btn-flash fw-bold rounded-pill px-4 py-2 shadow-sm text-decoration-none"
                         >Vào học</a>
+                    </div>
+
+                    <div class="lesson-item shadow-sm p-2 bg-white border"
+                         style="min-height: 50px; border-radius: 15px; margin-bottom: 0;">
+                        <div class="lesson-icon icon-current shadow-none"
+                             style="width: 50px; height: 50px; min-width: 50px; background: #dc3545;">
+                            <i class="fas fa-puzzle-piece fs-5 text-white"></i>
+                        </div>
+                        <div class="ms-3 flex-grow-1">
+                            <h6 class="fw-bold mb-0" style="font-size: 1rem;">Nối nghĩa</h6>
+                        </div>
+                        <a th:href="@{/study/matching(id=${lesson?.id})}"
+                           class="btn-matching fw-bold rounded-pill px-4 py-2 shadow-sm text-decoration-none">Vào
+                            học</a>
                     </div>
 
                 </div>

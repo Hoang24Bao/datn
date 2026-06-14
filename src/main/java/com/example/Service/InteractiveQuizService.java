@@ -67,7 +67,7 @@ public class InteractiveQuizService {
         session.setLastUpdated(LocalDateTime.now());
         session.setIsCompleted(false);
         session.setAnsweredPoints("[]");
-        session.setAnsweredQuestions("{}"); // Khởi tạo JSON rỗng
+        session.setAnsweredQuestions("{}");
 
         List<InteractiveScene> scenes = sceneRepository.findActiveScenesByCategory(categoryId);
         if (!scenes.isEmpty()) {
@@ -81,20 +81,16 @@ public class InteractiveQuizService {
         return sessionRepository.save(session);
     }
 
-    // Sửa method getQuestion - trả về options kèm kana
     public Map<String, Object> getQuestion(Integer pointId, Integer categoryId, Integer sessionId) {
-        // Kiểm tra session có lưu câu hỏi này chưa
         Optional<InteractiveQuizSession> sessionOpt = sessionRepository.findById(sessionId);
         if (sessionOpt.isPresent()) {
             Map<Integer, Map<String, Object>> answeredQuestions = parseAnsweredQuestions(sessionOpt.get().getAnsweredQuestions());
             if (answeredQuestions.containsKey(pointId)) {
-                // Đã trả lời, trả về đúng options cũ
                 Map<String, Object> saved = answeredQuestions.get(pointId);
                 saved.put("isAnswered", true);
                 saved.put("pointId", pointId);
                 saved.put("isCorrect", saved.get("isCorrect"));
 
-                // Lấy thông tin scene
                 Optional<InteractivePoint> pointOpt = pointRepository.findById(pointId);
                 if (pointOpt.isPresent()) {
                     Optional<InteractiveScene> sceneOpt = sceneRepository.findById(pointOpt.get().getSceneId());
@@ -110,7 +106,6 @@ public class InteractiveQuizService {
             }
         }
 
-        // Chưa trả lời, tạo options mới
         Optional<InteractivePoint> pointOpt = pointRepository.findById(pointId);
         if (pointOpt.isEmpty()) return null;
 
@@ -122,23 +117,19 @@ public class InteractiveQuizService {
 
         List<Object[]> randomVocabs = quizRepository.findRandomVocabByCategory(categoryId, point.getVocabId());
 
-        // Tạo options với cả expression và kana
         List<Map<String, String>> optionsWithKana = new ArrayList<>();
 
-        // Thêm đáp án đúng
         Map<String, String> correctOption = new HashMap<>();
         correctOption.put("expression", correctVocab.getExpression());
         correctOption.put("kana", correctVocab.getKana() != null ? correctVocab.getKana() : "");
         optionsWithKana.add(correctOption);
 
-        // Thêm đáp án nhiễu (tối đa 3)
         int count = 0;
         for (Object[] v : randomVocabs) {
             if (count >= 3) break;
             Integer vocabId = (Integer) v[0];
             String expression = (String) v[1];
 
-            // Lấy kana cho vocab nhiễu
             Optional<Vocabulary> vocabOpt = vocabularyRepository.findById(vocabId);
             String kana = vocabOpt.map(Vocabulary::getKana).orElse("");
 
@@ -149,7 +140,6 @@ public class InteractiveQuizService {
             count++;
         }
 
-        // Nếu không đủ 3 đáp án nhiễu, bổ sung
         if (optionsWithKana.size() < 4) {
             List<String> fallbackExpressions = Arrays.asList("???", "???", "???");
             for (int i = optionsWithKana.size(); i < 4; i++) {
@@ -160,7 +150,6 @@ public class InteractiveQuizService {
             }
         }
 
-        // Xáo trộn thứ tự đáp án
         Collections.shuffle(optionsWithKana);
 
         Optional<InteractiveScene> sceneOpt = sceneRepository.findById(point.getSceneId());
@@ -169,7 +158,7 @@ public class InteractiveQuizService {
         Map<String, Object> result = new HashMap<>();
         result.put("pointId", pointId);
         result.put("correctExpression", correctVocab.getExpression());
-        result.put("options", optionsWithKana);  // Trả về list object thay vì list string
+        result.put("options", optionsWithKana);
         result.put("imageUrl", scene != null ? scene.getImageUrl() : null);
         result.put("coordX", point.getCoordX());
         result.put("coordY", point.getCoordY());
@@ -213,11 +202,10 @@ public class InteractiveQuizService {
         System.out.println("vocab bytes: " + (vocab != null ? java.util.Arrays.toString(vocab.getExpression().getBytes(java.nio.charset.StandardCharsets.UTF_8)) : "NULL"));
         System.out.println("selected bytes: " + java.util.Arrays.toString(selectedAnswer.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
 
-        // Lưu chi tiết câu hỏi đã trả lời
         Map<Integer, Map<String, Object>> answeredQuestions = parseAnsweredQuestions(session.getAnsweredQuestions());
         Map<String, Object> questionDetail = new HashMap<>();
         questionDetail.put("selectedAnswer", selectedAnswer);
-        questionDetail.put("options", options);  // Lưu options dạng object
+        questionDetail.put("options", options);
         questionDetail.put("isCorrect", isCorrect);
         questionDetail.put("correctAnswer", vocab != null ? vocab.getExpression() : "");
         questionDetail.put("pointId", pointId);
@@ -229,13 +217,10 @@ public class InteractiveQuizService {
             e.printStackTrace();
         }
 
-        // Cập nhật memory_level
         updateMemoryLevel(userId, point.getVocabId(), isCorrect);
 
-        // Lưu điểm đã trả lời
         updateAnsweredPoints(session, pointId);
 
-        // Tìm point/scene tiếp theo
         Map<String, Object> nextPoint = findNextPoint(session);
 
         Map<String, Object> result = new HashMap<>();
@@ -264,7 +249,6 @@ public class InteractiveQuizService {
         return result;
     }
 
-    // Helper: lấy options cho point (để lưu)
     private List<String> getOptionsForPoint(Integer pointId, Integer categoryId) {
         Optional<InteractivePoint> pointOpt = pointRepository.findById(pointId);
         if (pointOpt.isEmpty()) return new ArrayList<>();
@@ -304,7 +288,6 @@ public class InteractiveQuizService {
             progress = new Progress();
             Progress.ProgressId id = new Progress.ProgressId(userId, vocabId);
             progress.setId(id);
-            // KHÔNG set user và vocab
             progress.setMemoryLevel(isCorrect ? 2 : 1);
             progress.setIsLearned(false);
             progress.setLastReviewed(LocalDateTime.now());

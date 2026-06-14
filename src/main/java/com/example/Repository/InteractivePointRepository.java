@@ -15,9 +15,6 @@ public interface InteractivePointRepository extends JpaRepository<InteractivePoi
     @Query("SELECT p FROM InteractivePoint p WHERE p.sceneId = :sceneId")
     List<InteractivePoint> findPointsBySceneId(@Param("sceneId") Integer sceneId);
 
-    // ========== CÁC METHOD CHO AdminVocabController (cập nhật theo category) ==========
-
-    // Đếm số lượng interactive points theo vocab_id
     @Query("SELECT COUNT(p) FROM InteractivePoint p WHERE p.vocabId = :vocabId")
     int countByVocabId(@Param("vocabId") Integer vocabId);
 
@@ -29,8 +26,7 @@ public interface InteractivePointRepository extends JpaRepository<InteractivePoi
     int countByVocabIdAndCategoryId(@Param("vocabId") Integer vocabId,
                                     @Param("categoryId") Integer categoryId);
 
-    // Lấy thông tin các scene có chứa vocab này (theo category mới)
-    // Sửa lại query trong InteractivePointRepository.java
+    // Lấy thông tin các scene có chứa vocab này
     @Query(value = "SELECT ist.id as sceneId, ist.description as sceneName, " +
             "ist.category_id as categoryId, c.category_name as categoryName, " +
             "l.id as lessonId " +

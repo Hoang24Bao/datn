@@ -34,7 +34,6 @@ public class KanjiController {
     public ResponseEntity<Kanji> getKanjiById(@PathVariable Integer id) {
         return kanjiRepository.findById(id)
                 .map(kanji -> {
-                    // Force load examples để tránh lazy loading error
                     kanji.getExamples().size();
                     return ResponseEntity.ok(kanji);
                 })

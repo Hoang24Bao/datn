@@ -44,7 +44,6 @@ public interface ProgressRepository extends JpaRepository<Progress, ProgressId> 
                         @Param("correctStreak") Integer correctStreak,
                         @Param("isLearned") Boolean isLearned);
 
-    // Lấy average memory level của user (để tính trình độ tổng thể)
     @Query("SELECT AVG(p.memoryLevel) FROM Progress p WHERE p.id.userId = :userId")
     Double getAverageMemoryLevelByUserId(@Param("userId") Integer userId);
 }

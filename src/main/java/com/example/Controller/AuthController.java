@@ -29,12 +29,10 @@ public class AuthController {
             Users user = authService.login(loginRequest.getUserName(), loginRequest.getPassword());
             String jwt = jwtUtils.generateTokenFromUsername(user);
 
-            // Gắn JWT vào cookie HttpOnly
             Cookie jwtCookie = new Cookie("JWT_TOKEN", jwt);
-            jwtCookie.setHttpOnly(true);   // JS không đọc được → an toàn hơn
+            jwtCookie.setHttpOnly(true);
             jwtCookie.setPath("/");
-            jwtCookie.setMaxAge(86400);    // 1 ngày
-            // jwtCookie.setSecure(true);  // Bật khi dùng HTTPS
+            jwtCookie.setMaxAge(86400);
             httpResponse.addCookie(jwtCookie);
 
             String roleName = user.getRoles().stream()
@@ -65,7 +63,7 @@ public class AuthController {
         Cookie cookie = new Cookie("JWT_TOKEN", "");
         cookie.setHttpOnly(true);
         cookie.setPath("/");
-        cookie.setMaxAge(0); // Xóa cookie
+        cookie.setMaxAge(0);
         response.addCookie(cookie);
         return ResponseEntity.ok("Logged out");
     }

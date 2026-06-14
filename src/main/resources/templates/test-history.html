@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: html_head(title='Lịch sử làm bài')}">
+    <title>Lịch sử làm bài</title>
+</head>
+<style>
+    .history-header {
+        background: linear-gradient(135deg, #a8e6cf, #d4edda);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        color: white;
+    }
+
+    .stat-card {
+        background: rgba(255,255,255,0.2);
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .stat-card .number {
+        font-size: 32px;
+        font-weight: bold;
+    }
+
+    .filter-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 8px 20px;
+        border-radius: 30px;
+        border: none;
+        background: #f0f0f0;
+        transition: all 0.3s;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .filter-btn.active {
+        background: #fb873f;
+        color: white;
+    }
+
+    .history-table {
+        background: white;
+        border-radius: 16px;
+        overflow-x: auto;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    .history-table table {
+        width: 100%;
+        min-width: 800px;
+        border-collapse: collapse;
+    }
+
+    .history-table th {
+        background: #f8f9fa;
+        padding: 15px;
+        font-weight: 600;
+        text-align: left;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .history-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: middle;
+    }
+
+    .history-table tbody tr:hover {
+        background: #fef9f0;
+        cursor: default;
+    }
+
+    .badge-pass {
+        background: #28a745;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 30px;
+        font-size: 12px;
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    .badge-fail {
+        background: #dc3545;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 30px;
+        font-size: 12px;
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    .score-high {
+        color: #28a745;
+        font-weight: bold;
+    }
+
+    .score-low {
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px;
+        background: white;
+        border-radius: 20px;
+    }
+
+    .loading-overlay {
+        position: relative;
+    }
+
+    .loading {
+        text-align: center;
+        padding: 40px;
+        color: #fb873f;
+    }
+</style>
+
+<body>
+<th:block th:replace="~{layout :: navbar}"></th:block>
+
+<div class="container my-4">
+    <!-- Header -->
+    <div class="history-header">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">📊 Lịch sử làm bài</h2>
+                <p class="mb-0">Theo dõi quá trình học tập của bạn</p>
+            </div>
+            <a href="/study/categories" class="btn btn-light rounded-pill px-4">
+                <i class="fas fa-arrow-left me-2"></i>Tiếp tục học
+            </a>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="number" id="totalTests" th:text="${totalTests}">0</div>
+                    <div>Tổng số bài test</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="number" id="passedTests" th:text="${passedTests}">0</div>
+                    <div>Bài đã đạt</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="number" id="avgScore" th:text="${avgScore}">0</div>
+                    <div>Điểm trung bình</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-buttons">
+        <button class="filter-btn active" data-filter="all">
+            📋 Tất cả
+        </button>
+        <button class="filter-btn" data-filter="passed">
+            ✅ Đã đạt
+        </button>
+        <button class="filter-btn" data-filter="failed">
+            ❌ Chưa đạt
+        </button>
+    </div>
+
+    <!-- Bảng lịch sử -->
+    <div class="history-table">
+        <div id="table-container">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p class="mt-2">Đang tải dữ liệu...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{layout :: footer}"></th:block>
+
+<script>
+    let currentFilter = 'all';
+
+    // Hàm tải dữ liệu bằng AJAX
+    async function loadHistory(filter) {
+        currentFilter = filter;
+
+        // Hiển thị loading
+        document.getElementById('table-container').innerHTML = `
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p class="mt-2">Đang tải dữ liệu...</p>
+            </div>
+        `;
+
+        try {
+            const response = await fetch(`/api/user/test-history?filter=${filter}`);
+            if (response.ok) {
+                const data = await response.json();
+                renderTable(data.historyList, data.stats);
+            } else {
+                throw new Error('Lỗi tải dữ liệu');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('table-container').innerHTML = `
+                <div class="text-center py-5 text-danger">
+                    <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                    <p>Không thể tải dữ liệu. Vui lòng thử lại!</p>
+                </div>
+            `;
+        }
+    }
+
+    // Hàm render bảng
+    function renderTable(historyList, stats) {
+        // Cập nhật stats
+        document.getElementById('totalTests').textContent = stats.totalTests;
+        document.getElementById('passedTests').textContent = stats.passedTests;
+        document.getElementById('avgScore').textContent = Math.round(stats.avgScore);
+
+        // Render bảng
+        if (!historyList || historyList.length === 0) {
+            document.getElementById('table-container').innerHTML = `
+                <div class="text-center py-5 text-muted">
+                    <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                    Chưa có dữ liệu làm bài
+                    <div class="mt-3">
+                        <a href="/study/categories" class="btn btn-primary rounded-pill px-4">
+                            <i class="fas fa-play me-2"></i>Bắt đầu học
+                        </a>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        let html = `
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Tên bài test</th>
+                        <th>Chủ đề</th>
+                        <th>Tổng câu</th>
+                        <th>Thời gian làm</th>
+                        <th>Điểm đạt được</th>
+                        <th>Thời gian hoàn thành</th>
+                        <th>Kết quả</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        historyList.forEach((item, index) => {
+            const scoreClass = item.score >= 70 ? 'score-high' : 'score-low';
+            const badgeClass = item.isPassed ? 'badge-pass' : 'badge-fail';
+            const badgeText = item.isPassed ? 'Đạt' : 'Chưa đạt';
+
+            html += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td class="fw-bold">${escapeHtml(item.testTitle)}</td>
+                    <td>${escapeHtml(item.categoryName)}</td>
+                    <td>${item.questionCount}</td>
+                    <td>${item.durationFormatted}</td>
+                    <td><span class="${scoreClass}">${item.score} / ${item.maxScore}</span></td>
+                    <td>${formatDate(item.completedAt)}</td>
+                    <td><span class="${badgeClass}">${badgeText}</span></td>
+                </tr>
+            `;
+        });
+
+        html += `</tbody></table>`;
+        document.getElementById('table-container').innerHTML = html;
+    }
+
+    function formatDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Xử lý filter click
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Cập nhật active class
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            // Lấy filter value
+            const filter = this.dataset.filter;
+            loadHistory(filter);
+        });
+    });
+
+    // Khởi tạo với filter all
+    loadHistory('all');
+</script>
+</body>
+</html>

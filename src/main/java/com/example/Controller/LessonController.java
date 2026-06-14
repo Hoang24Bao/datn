@@ -29,7 +29,6 @@ public class LessonController {
 
     @GetMapping("/lessons")
     public String getLessons(@RequestParam("id") Integer categoryId, Model model) {
-        // Dùng native query để lấy dữ liệu
         List<Object[]> rows = lessonRepository.findActiveLessonsDTO(categoryId);
 
         List<LessonDTO> lessons = rows.stream()

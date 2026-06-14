@@ -36,13 +36,13 @@ public class AdminCategoriesController {
     @Autowired
     private LessonsRepository lessonsRepository;
 
-    //1. Lấy danh sách cho bảng Admin
+
     @GetMapping
     public ResponseEntity<List<Categories>> getAll() {
         return ResponseEntity.ok(categoriesRepository.findAll());
     }
 
-    //1.1 Lấy danh sách categories có phân trang và filter
+    //1 Lấy danh sách categories
     @GetMapping("/paging")
     public ResponseEntity<Page<Categories>> getCategoriesPaging(
             @RequestParam(required = false) String search,
@@ -58,7 +58,7 @@ public class AdminCategoriesController {
         return ResponseEntity.ok(categoriesPage);
     }
 
-    //2. Thêm mới danh mục kèm xử lý file ảnh
+    //2. Thêm mới cate
     @PostMapping("/add-with-file")
     @Transactional
     public ResponseEntity<?> addCategoryWithFile(
@@ -84,9 +84,8 @@ public class AdminCategoriesController {
             String finalIconUrl = iconUrl;
             String finalThumbnailUrl = null;
 
-            // Xử lý upload icon
             if (file != null && !file.isEmpty()) {
-                String uploadDir = "src/main/resources/static/img/categories/icon/";  // ← THÊM /icon/
+                String uploadDir = "src/main/resources/static/img/categories/icon/";
                 File dir = new File(uploadDir);
                 if (!dir.exists()) dir.mkdirs();
 
@@ -98,10 +97,9 @@ public class AdminCategoriesController {
                 String fileName = "category-" + savedCategory.getId() + extension;
                 Path filePath = Paths.get(uploadDir + fileName);
                 Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-                finalIconUrl = "img/categories/icon/" + fileName;  // ← THÊM /icon/
+                finalIconUrl = "img/categories/icon/" + fileName;
             }
 
-            // Xử lý upload thumbnail
             if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
                 String thumbnailDir = "src/main/resources/static/img/categories/thumbnail/";
                 File thumbnailDirFile = new File(thumbnailDir);
@@ -130,7 +128,7 @@ public class AdminCategoriesController {
         }
     }
 
-    //3. Xóa (ẩn/hiện) danh mục
+    //3. Xóa cate
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<?> toggleCategoryStatus(@PathVariable Integer id) {
@@ -145,7 +143,7 @@ public class AdminCategoriesController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    //4. Lọc danh mục theo Level
+    //4. Lọc cate theo Level
     @GetMapping("/filter")
     public ResponseEntity<?> getCategoriesByLevel(@RequestParam String level) {
         List<Categories> categories = categoriesRepository.findByJlptLevel(level);
@@ -195,7 +193,7 @@ public class AdminCategoriesController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    //7. Upload icon riêng cho category
+    //7. Upload icon cho category
     @PostMapping("/upload-icon")
     @Transactional
     public ResponseEntity<?> uploadCategoryIcon(
@@ -205,7 +203,7 @@ public class AdminCategoriesController {
             Categories category = categoriesRepository.findById(categoryId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy chủ đề"));
 
-            String uploadDir = "src/main/resources/static/img/categories/icon/";  // ← THÊM /icon/
+            String uploadDir = "src/main/resources/static/img/categories/icon/";
             File dir = new File(uploadDir);
             if (!dir.exists()) dir.mkdirs();
 
@@ -218,7 +216,7 @@ public class AdminCategoriesController {
             Path filePath = Paths.get(uploadDir + fileName);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            String iconUrl = "img/categories/icon/" + fileName;  // ← THÊM /icon/
+            String iconUrl = "img/categories/icon/" + fileName;
             category.setIconUrl(iconUrl);
             categoriesRepository.save(category);
 
@@ -275,7 +273,6 @@ public class AdminCategoriesController {
     }
 
 
-    // Hàm hỗ trợ tạo Slug từ tên tiếng Việt
     private String generateSlug(String input) {
         if (input == null) return "";
 
@@ -298,7 +295,7 @@ public class AdminCategoriesController {
     }
 
 
-    // 1. API lấy danh sách categories cho dropdown (chỉ active, chỉ id + name)
+    // 1. API lấy danh sách categories cho dropdown
     @GetMapping("/active")
     public ResponseEntity<List<Map<String, Object>>> getActiveCategoriesForDropdown() {
         List<Categories> categories = categoriesRepository.findByIsActiveTrue();
@@ -316,7 +313,7 @@ public class AdminCategoriesController {
         return ResponseEntity.ok(result);
     }
 
-    // 2. API lấy chi tiết category kèm lesson count
+    // 2. API lấy chi tiết category
     @GetMapping("/{id}/detail")
     public ResponseEntity<Map<String, Object>> getCategoryDetail(@PathVariable Integer id) {
         return categoriesRepository.findById(id)
@@ -330,7 +327,6 @@ public class AdminCategoriesController {
                     detail.put("thumbnailUrl", category.getThumbnailUrl());
                     detail.put("isActive", category.getIsActive());
 
-                    // Dùng method đã có sẵn: countActiveByCategory
                     int lessonCount = lessonsRepository.countActiveByCategory(id);
                     detail.put("lessonCount", lessonCount);
 

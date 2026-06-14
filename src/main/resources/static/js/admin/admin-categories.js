@@ -570,7 +570,7 @@ function clearSceneImagePreview() {
     }
 }
 
-// Xử lý ảnh
+// Xử lý cảnh interactive
 async function processSceneImage() {
     const processBtn = document.getElementById('processSceneBtn');
     const source = processBtn.getAttribute('data-source');

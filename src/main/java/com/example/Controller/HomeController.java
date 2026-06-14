@@ -34,12 +34,12 @@ public class HomeController {
 
     @GetMapping("/signup")
     public String signupPage() {
-        return "signup"; // Phải khớp với tên file signup.html trong templates
+        return "signup";
     }
 
     @GetMapping("/login")
     public String loginPage() {
-        return "login"; // Phải khớp với tên file login.html
+        return "login";
     }
 
     @GetMapping("/about")
@@ -68,7 +68,6 @@ public class HomeController {
     public String profile(Model model) {
         model.addAttribute("currentPage", "profile");
 
-        // Lấy thông tin user hiện tại
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !auth.getPrincipal().equals("anonymousUser")) {
             String username = auth.getName();
@@ -106,7 +105,7 @@ public class HomeController {
     @GetMapping("/study/kanji")
     public String studyKanji(Model model) {
         model.addAttribute("currentPage", "kanji");
-        return "study/kanji";  // Trả về view
+        return "study/kanji";
     }
 
 }

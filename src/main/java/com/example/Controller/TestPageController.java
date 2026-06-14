@@ -8,13 +8,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class TestPageController {
 
-    // Trang danh sách chủ đề test (không cần categoryId)
     @GetMapping("/test/tests")
     public String testsPage() {
         return "test/tests";
     }
 
-    // Trang danh sách test theo category (cần categoryId)
     @GetMapping("/test/category-tests")
     public String categoryTestsPage(@RequestParam Integer categoryId, Model model) {
         model.addAttribute("categoryId", categoryId);

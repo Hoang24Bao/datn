@@ -19,7 +19,7 @@ public class JwtUtils {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
-   
+
     public String generateTokenFromUsername(Users user) {
         String roleName = user.getRoles().stream()
                 .findFirst()
@@ -35,7 +35,7 @@ public class JwtUtils {
                 .compact();
     }
 
-    // THÊM HÀM NÀY: Để Filter có thể lấy Role ra kiểm tra quyền admin
+
     public String getRoleFromJwtToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key())
@@ -50,7 +50,7 @@ public class JwtUtils {
                 .parseClaimsJws(token).getBody().getSubject();
     }
 
-    // ✅ Sửa lại
+
     public boolean validateJwtToken(String authToken) {
         try {
             Jwts.parserBuilder().setSigningKey(key()).build().parseClaimsJws(authToken); // Đổi parse → parseClaimsJws

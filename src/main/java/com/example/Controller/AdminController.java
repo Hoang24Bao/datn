@@ -41,13 +41,10 @@ public class AdminController {
     public ResponseEntity<AdminStatsDTO> getStats() {
         AdminStatsDTO stats = new AdminStatsDTO();
 
-        // Đếm user có role_id = 2 (Dùng Native Query hoặc JPQL trong Repository)
         stats.setTotalUsers(userRepository.countUsersByRoleId(2));
 
-        // Đếm tổng bài học
         stats.setTotalLessons(lessonRepository.count());
 
-        // Đếm tổng từ vựng
         stats.setTotalVocab(vocabularyRepository.count());
 
         stats.setTotalCategories(categoriesRepository.count());
@@ -74,7 +71,6 @@ public class AdminController {
     public ResponseEntity<?> toggleUserStatus(@PathVariable Integer id) {
         return userRepository.findById(id)
                 .map(user -> {
-                    // Đảo ngược trạng thái active
                     boolean newStatus = !user.getActive();
                     user.setActive(newStatus);
                     userRepository.save(user);
@@ -85,12 +81,11 @@ public class AdminController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Lấy chi tiết học viên (Chế độ chỉ xem)
+    // Lấy chi tiết user
     @GetMapping("/users/{id}")
     public ResponseEntity<?> getUserDetail(@PathVariable Integer id) {
         return userRepository.findById(id)
                 .map(user -> {
-                    // Tạo một Map để lọc dữ liệu trả về, tránh gửi field password
                     Map<String, Object> details = new HashMap<>();
                     details.put("id", user.getId());
                     details.put("userName", user.getUserName());
@@ -140,7 +135,6 @@ public class AdminController {
             }
         }
 
-        // Sort
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
         Integer activeInt = (active == null) ? null : (active ? 1 : 0);
         Page<Users> usersPage = userRepository.findStudentsWithFilters(levelId, activeInt, search, dateLimit, pageable);

@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: html_head(title='Nối nghĩa')}">
+    <title>Nối nghĩa</title>
+</head>
+<style>
+    /* matching.css */
+#matching-game {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.game-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    background: #f8f9fa;
+    padding: 12px 24px;
+    border-radius: 40px;
+    font-weight: bold;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.stat-card i {
+    color: #fb873f;
+    font-size: 20px;
+}
+
+.game-board {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.game-column {
+    background: #f8f9fa;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.column-header {
+    background: #fb873f;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.cards-container {
+    padding: 16px;
+    min-height: 500px;
+    max-height: 600px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Thẻ bài */
+.card {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    font-weight: 500;
+    font-size: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    white-space: nowrap;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    border-color: #fb873f;
+    box-shadow: 0 4px 12px rgba(251,135,63,0.2);
+}
+
+.card.selected {
+    border-color: #fb873f;
+    background: #fff8f0;
+    transform: scale(1.02);
+}
+
+.card.matched {
+    visibility: hidden;
+    display: none;
+}
+
+.card.wrong {
+    background: #ffe0e0;
+    border-color: #dc3545;
+    animation: shake 0.3s ease;
+}
+
+.card.disabled {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.card .jp-word {
+    font-size: 1.1em;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.card .jp-furigana {
+    font-size: 0.75em;
+    color: #fb873f;
+    margin-left: 8px;
+    display: inline-block;
+    letter-spacing: 1px;
+}
+
+/* Riêng cho thẻ đã chọn */
+.card.selected .jp-furigana {
+    color: #e67e22;
+}
+
+/* Card khi hover */
+.card:hover .jp-furigana {
+    color: #e67e22;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.game-controls {
+    text-align: center;
+    padding-top: 10px;
+}
+
+/* Scrollbar đẹp */
+.cards-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.cards-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.cards-container::-webkit-scrollbar-thumb {
+    background: #fb873f;
+    border-radius: 10px;
+}
+
+/* Hiệu ứng đúng - border xanh lá, background xanh lá nhạt 70% */
+.card.correct {
+    background: #e8f5e9 !important;
+    border-color: #4CAF50 !important;
+    border-width: 3px !important;
+    color: #2e7d32 !important;
+    transition: all 0.3s ease;
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
+}
+
+.card.correct .jp-word {
+    color: #2e7d32;
+}
+
+.card.correct .jp-furigana {
+    color: #4CAF50 !important;
+}
+
+/* Hiệu ứng biến mất dần */
+.card.fade-out {
+    animation: fadeOutScale 0.4s ease forwards;
+}
+
+@keyframes fadeOutScale {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+        background: rgba(76, 175, 80, 0.3);
+        border-color: #4CAF50;
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.7);
+        visibility: hidden;
+        display: none;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container.my-4 .d-flex {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .container.my-4 .d-flex div:first-child,
+    .container.my-4 .d-flex div:last-child {
+        width: auto !important;
+    }
+
+    .container.my-4 .d-flex h3 {
+        font-size: 1.3rem;
+        order: 2;
+    }
+
+    .container.my-4 .d-flex a {
+        order: 1;
+        align-self: center;
+    }
+
+    /* Game stats */
+    .game-stats {
+        gap: 15px;
+    }
+
+    .stat-card {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .stat-card i {
+        font-size: 14px;
+    }
+
+    /* Game board - vẫn giữ 2 cột */
+    .game-board {
+        gap: 6px;
+    }
+
+    /* Cards container - bỏ scroll, hiển thị toàn bộ */
+    .cards-container {
+        min-height: auto;
+        max-height: none;
+        overflow-y: visible;
+        padding: 12px 4px;
+        gap: 10px;
+    }
+
+    /* Cột */
+    .game-column {
+        border-radius: 16px;
+    }
+
+    .column-header {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    /* Thẻ bài - chiếm tối đa chiều rộng */
+    .card {
+        padding: 10px 4px;
+        font-size: 13px;
+        white-space: normal;
+        word-break: break-word;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Cho phép text xuống dòng đẹp */
+    .card span {
+        white-space: normal;
+        word-break: break-word;
+        display: inline;
+    }
+
+    /* Điều chỉnh furigana trên mobile */
+    .card span[style*="white-space: nowrap"] {
+        white-space: normal !important;
+        display: flex !important;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    /* Nút chơi lại */
+    .game-controls button {
+        font-size: 14px;
+        padding: 8px 20px;
+    }
+}
+
+/* Màn hình rất nhỏ (dưới 480px) */
+@media (max-width: 480px) {
+
+    .stat-card {
+        padding: 4px 8px;
+        font-size: 10px;
+    }
+
+    .card {
+        padding: 10px 6px;
+        font-size: 12px;
+    }
+
+    .column-header {
+        font-size: 12px;
+        padding: 8px;
+    }
+
+    .game-board {
+        gap: 8px;
+    }
+
+    .cards-container {
+        padding: 8px;
+        gap: 8px;
+    }
+}
+</style>
+
+<body>
+<th:block th:replace="~{layout :: navbar}"></th:block>
+
+<div class="container my-4">
+    <!-- Header quay lại -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a th:href="@{/study/lessons(id=${lesson.categoryId})}"
+           class="btn btn-warning text-white fw-bold px-4 rounded-pill shadow-sm">
+            <i class="fas fa-arrow-left me-2"></i>Quay lại bài học
+        </a>
+        <h3 class="fw-bold text-dark m-0">
+            <i class="fas fa-puzzle-piece me-2" style="color: #fb873f;"></i>
+            <span th:text="'Nối nghĩa - ' + ${lesson.lessonName}">Nối nghĩa</span>
+        </h3>
+        <div style="width: 120px;"></div> <!-- Spacer để cân bằng -->
+    </div>
+
+    <!-- Game Container -->
+    <div id="matching-game">
+        <div class="game-stats">
+            <div class="stat-card">
+                <i class="fas fa-hourglass-half"></i>
+                <span id="timer">01:00</span>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-chart-line" style="color: #2196F3;"></i>
+                <span id="accuracy">0%</span>
+                <small>(<span id="correct-count">0</span>/<span id="attempt-count">0</span>)</small>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-check-circle" style="color: #4CAF50;"></i>
+                <span id="matched-count">0</span>/<span id="total-pairs">10</span>
+            </div>
+        </div>
+
+        <div class="game-board">
+            <!-- Cột trái: Tiếng Nhật -->
+            <div class="game-column">
+                <div class="column-header">
+                    <i class="fas fa-language"></i> Tiếng Nhật
+                </div>
+                <div id="jp-cards" class="cards-container"></div>
+            </div>
+
+            <!-- Cột phải: Nghĩa tiếng Việt -->
+            <div class="game-column">
+                <div class="column-header">
+                    <i class="fas fa-book"></i> Nghĩa tiếng Việt
+                </div>
+                <div id="meaning-cards" class="cards-container"></div>
+            </div>
+        </div>
+
+        <div class="game-controls">
+            <button id="reset-btn" class="btn btn-warning text-white fw-bold px-4 rounded-pill shadow-sm">
+                <i class="fas fa-sync-alt me-2"></i>Chơi lại
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal kết thúc game -->
+<div class="modal fade" id="gameOverModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-4">
+            <div class="modal-body">
+                <i id="modal-icon" class="fas fa-trophy" style="font-size: 64px; color: #ffc107;"></i>
+                <h3 id="modal-title" class="mt-3">Hoàn thành!</h3>
+                <p id="modal-message" class="mt-2"></p>
+                <p id="modal-stats" class="fw-bold"></p>
+                <div class="d-flex justify-content-center gap-3 mt-3">
+                    <button id="modal-play-again"
+                            class="btn btn-warning text-white fw-bold px-4 rounded-pill shadow-sm">Chơi lại
+                    </button>
+                    <button id="modal-back-to-lesson"
+                            class="btn btn-warning text-white fw-bold px-4 rounded-pill shadow-sm">
+                        <i class="fas fa-arrow-left me-2"></i>Quay về bài học
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{layout :: footer}"></th:block>
+
+<script th:inline="javascript">
+    // Truyền dữ liệu từ server sang JavaScript
+    const lessonId = /*[[${lesson.id}]]*/ null;
+    const lessonName = /*[[${lesson.lessonName}]]*/ '';
+    const categoryId = /*[[${lesson.categoryId}]]*/ null;
+
+    // matching.js
+let gameState = {
+    vocabItems: [],        // {id, expression, meaning}
+    jpCards: [],           // {id, word, vocabId}
+    meaningCards: [],      // {id, meaning, vocabId}
+    matchedPairs: 0,
+    totalPairs: 0,
+    totalMatches: 0,
+    totalAttempts: 0,
+    selectedLeftIndex: null,
+    selectedRightIndex: null,
+    timeLeft: 60,
+    timer: null,
+    gameActive: true,
+    isProcessing: false
+};
+
+const winSound = new Audio('/sound/win.mp3');
+
+// DOM elements
+let jpContainer, meaningContainer, timerDisplay, accuracySpan;
+let correctCountSpan, attemptCountSpan, matchedCountSpan, totalPairsSpan;
+
+// Khởi tạo game
+async function initGame() {
+    showLoading();
+
+    try {
+        // Gọi API lấy 10 từ random
+        const response = await fetch(`/study/api/matching/random?lessonId=${lessonId}&limit=10`);
+        const vocabList = await response.json();
+
+        if (!vocabList || vocabList.length === 0) {
+            throw new Error('Không có dữ liệu từ vựng');
+        }
+
+        setupGameData(vocabList);
+        renderGame();
+        startTimer();
+        gameState.gameActive = true;
+
+    } catch (error) {
+        console.error('Lỗi:', error);
+        showToast('Không thể tải dữ liệu. Vui lòng thử lại!', 'error');
+    }
+}
+
+// Thiết lập dữ liệu game
+function setupGameData(vocabList) {
+    gameState.vocabItems = vocabList;
+    gameState.totalPairs = vocabList.length;
+    document.getElementById('total-pairs').textContent = vocabList.length;
+
+    // Tạo mảng từ tiếng Nhật (giữ nguyên thứ tự) - THÊM furigana
+    gameState.jpCards = vocabList.map((item, idx) => ({
+        id: idx,
+        word: item.expression,
+        furigana: item.kana || '',  // Lấy kana từ API
+        vocabId: item.id
+    }));
+
+    // Tạo mảng nghĩa và xáo trộn
+    let meanings = vocabList.map((item, idx) => ({
+        id: idx,
+        meaning: item.meaning,
+        vocabId: item.id
+    }));
+    gameState.meaningCards = shuffleArray([...meanings]);
+
+    // Reset game state
+    gameState.matchedPairs = 0;
+    gameState.totalMatches = 0;
+    gameState.totalAttempts = 0;
+    gameState.selectedLeftIndex = null;
+    gameState.selectedRightIndex = null;
+    gameState.isProcessing = false;
+
+    updateStatsDisplay();
+}
+
+// Xáo trộn mảng (Fisher-Yates)
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+// Render giao diện - Phiên bản đơn giản hơn
+function renderGame() {
+    // Render cột trái - Từ + furigana cùng hàng (thêm style white-space)
+    jpContainer.innerHTML = gameState.jpCards.map((card, idx) => {
+        const displayText = card.furigana ?
+            `<span style="white-space: nowrap;">${escapeHtml(card.word)} <span style="font-size:0.75em; color:#fb873f; margin-left:8px;">(${escapeHtml(card.furigana)})</span></span>` :
+            escapeHtml(card.word);
+
+        return `
+            <div class="card ${getCardClass('left', idx)}" data-left-idx="${idx}">
+                ${displayText}
+            </div>
+        `;
+    }).join('');
+
+    // Render cột phải
+    meaningContainer.innerHTML = gameState.meaningCards.map((card, idx) => `
+        <div class="card ${getCardClass('right', idx)}" data-right-idx="${idx}">
+            ${escapeHtml(card.meaning)}
+        </div>
+    `).join('');
+
+    // Gắn sự kiện
+    attachCardEvents();
+}
+
+function getCardClass(side, idx) {
+    if (side === 'left') {
+        if (gameState.selectedLeftIndex === idx) return 'selected';
+        if (gameState.jpCards[idx].matched) return 'matched';
+    } else {
+        if (gameState.selectedRightIndex === idx) return 'selected';
+        if (gameState.meaningCards[idx].matched) return 'matched';
+    }
+    return '';
+}
+
+function attachCardEvents() {
+    // Thẻ trái
+    document.querySelectorAll('#jp-cards .card').forEach(card => {
+        card.removeEventListener('click', handleLeftClick);
+        card.addEventListener('click', handleLeftClick);
+    });
+
+    // Thẻ phải
+    document.querySelectorAll('#meaning-cards .card').forEach(card => {
+        card.removeEventListener('click', handleRightClick);
+        card.addEventListener('click', handleRightClick);
+    });
+}
+
+function handleLeftClick(e) {
+    if (!gameState.gameActive || gameState.isProcessing) return;
+
+    const card = e.currentTarget;
+    const idx = parseInt(card.dataset.leftIdx);
+
+    // Kiểm tra thẻ đã được ghép chưa
+    if (gameState.jpCards[idx].matched) return;
+
+    // Nếu đang chọn thẻ phải, thử ghép
+    if (gameState.selectedRightIndex !== null) {
+        checkMatch(idx, gameState.selectedRightIndex);
+    }
+    // Nếu đang chọn thẻ trái khác, chuyển sang thẻ mới
+    else if (gameState.selectedLeftIndex !== null && gameState.selectedLeftIndex !== idx) {
+        gameState.selectedLeftIndex = idx;
+        renderGame();
+    }
+    // Chưa chọn thẻ nào hoặc chọn chính thẻ đó
+    else {
+        gameState.selectedLeftIndex = idx;
+        renderGame();
+    }
+}
+
+function handleRightClick(e) {
+    if (!gameState.gameActive || gameState.isProcessing) return;
+
+    const card = e.currentTarget;
+    const idx = parseInt(card.dataset.rightIdx);
+
+    if (gameState.meaningCards[idx].matched) return;
+
+    if (gameState.selectedLeftIndex !== null) {
+        checkMatch(gameState.selectedLeftIndex, idx);
+    } else if (gameState.selectedRightIndex !== null && gameState.selectedRightIndex !== idx) {
+        gameState.selectedRightIndex = idx;
+        renderGame();
+    } else {
+        gameState.selectedRightIndex = idx;
+        renderGame();
+    }
+}
+
+function checkMatch(leftIdx, rightIdx) {
+    gameState.isProcessing = true;
+    gameState.totalAttempts++;
+
+    const leftCard = gameState.jpCards[leftIdx];
+    const rightCard = gameState.meaningCards[rightIdx];
+
+    const isCorrect = (leftCard.vocabId === rightCard.vocabId);
+
+    if (isCorrect) {
+        // Ghép đúng
+        gameState.totalMatches++;
+        gameState.matchedPairs++;
+
+        // Lấy DOM elements
+        const leftCardElement = document.querySelector(`#jp-cards .card[data-left-idx="${leftIdx}"]`);
+        const rightCardElement = document.querySelector(`#meaning-cards .card[data-right-idx="${rightIdx}"]`);
+
+        // Thêm class correct (màu xanh)
+        if (leftCardElement) {
+            leftCardElement.classList.add('correct');
+            leftCardElement.style.pointerEvents = 'none';
+        }
+        if (rightCardElement) {
+            rightCardElement.classList.add('correct');
+            rightCardElement.style.pointerEvents = 'none';
+        }
+
+        // Reset selection
+        gameState.selectedLeftIndex = null;
+        gameState.selectedRightIndex = null;
+
+        updateStatsDisplay();
+
+        // Thêm hiệu ứng fade-out trước khi xóa
+        setTimeout(() => {
+            if (leftCardElement) leftCardElement.classList.add('fade-out');
+            if (rightCardElement) rightCardElement.classList.add('fade-out');
+        }, 300);
+
+        // Sau đó mới đánh dấu matched
+        setTimeout(() => {
+            leftCard.matched = true;
+            rightCard.matched = true;
+            renderGame();
+
+            if (gameState.matchedPairs === gameState.totalPairs) {
+                endGame(true);
+            }
+
+            gameState.isProcessing = false;
+        }, 600);
+
+
+    } else {
+        // Ghép sai - hiệu ứng đỏ
+        highlightWrongPair(leftIdx, rightIdx);
+
+        setTimeout(() => {
+            gameState.selectedLeftIndex = null;
+            gameState.selectedRightIndex = null;
+            renderGame();
+            gameState.isProcessing = false;
+        }, 500);
+    }
+
+    updateStatsDisplay();
+}
+
+function highlightWrongPair(leftIdx, rightIdx) {
+    const leftCard = document.querySelector(`#jp-cards .card[data-left-idx="${leftIdx}"]`);
+    const rightCard = document.querySelector(`#meaning-cards .card[data-right-idx="${rightIdx}"]`);
+
+    if (leftCard) leftCard.classList.add('wrong');
+    if (rightCard) rightCard.classList.add('wrong');
+
+    setTimeout(() => {
+        if (leftCard) leftCard.classList.remove('wrong');
+        if (rightCard) rightCard.classList.remove('wrong');
+    }, 500);
+}
+
+function updateStatsDisplay() {
+    const accuracy = gameState.totalAttempts > 0
+        ? ((gameState.totalMatches / gameState.totalAttempts) * 100).toFixed(1)
+        : 0;
+
+    if (accuracySpan) accuracySpan.textContent = `${accuracy}%`;
+    if (correctCountSpan) correctCountSpan.textContent = gameState.totalMatches;
+    if (attemptCountSpan) attemptCountSpan.textContent = gameState.totalAttempts;
+    if (matchedCountSpan) matchedCountSpan.textContent = gameState.matchedPairs;
+}
+
+function startTimer() {
+    if (gameState.timer) clearInterval(gameState.timer);
+
+    gameState.timer = setInterval(() => {
+        if (!gameState.gameActive) return;
+
+        if (gameState.timeLeft <= 1) {
+            endGame(false);
+        } else {
+            gameState.timeLeft--;
+            updateTimerDisplay();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(gameState.timeLeft / 60);
+    const seconds = gameState.timeLeft % 60;
+    timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+    // Cảnh báo khi còn 10 giây
+    if (gameState.timeLeft <= 10) {
+        timerDisplay.style.color = '#dc3545';
+    }
+}
+
+function endGame(isWin) {
+    gameState.gameActive = false;
+    if (gameState.timer) clearInterval(gameState.timer);
+
+    const modal = new bootstrap.Modal(document.getElementById('gameOverModal'));
+    const modalIcon = document.getElementById('modal-icon');
+    const modalTitle = document.getElementById('modal-title');
+    const modalMessage = document.getElementById('modal-message');
+    const modalStats = document.getElementById('modal-stats');
+
+    if (isWin) {
+    modalIcon.className = 'fas fa-trophy fa-bounce';
+    modalIcon.style.color = '#ffc107';
+    modalIcon.style.fontSize = '80px';
+    modalTitle.textContent = '🎉 CHÚC MỪNG! 🎉';
+    modalTitle.style.color = '#28a745';
+    modalTitle.style.fontWeight = 'bold';
+    modalMessage.textContent = '✨ Bạn đã ghép đúng tất cả các cặp! ✨';
+    modalMessage.style.color = '#28a745';
+    modalMessage.style.fontSize = '18px';
+    winSound.play();
+} else {
+    modalIcon.className = 'fas fa-hourglass-end fa-shake';
+    modalIcon.style.color = '#dc3545';
+    modalIcon.style.fontSize = '80px';
+    modalTitle.textContent = '⏰ HẾT GIỜ! ⏰';
+    modalTitle.style.color = '#dc3545';
+    modalTitle.style.fontWeight = 'bold';
+    modalMessage.textContent = `📊 Bạn mới ghép đúng ${gameState.matchedPairs}/${gameState.totalPairs} cặp.`;
+    modalMessage.style.color = '#dc3545';
+    modalMessage.style.fontSize = '18px';
+}
+
+// Thêm hiệu ứng cho stats
+const accuracy = gameState.totalAttempts > 0
+    ? ((gameState.totalMatches / gameState.totalAttempts) * 100).toFixed(1)
+    : 0;
+
+modalStats.innerHTML = `
+    <div style="background: white;
+                border: 2px solid #fb873f;
+                padding: 15px;
+                border-radius: 12px;
+                color: #333;
+                margin-top: 10px;
+                box-shadow: 0 2px 8px rgba(251,135,63,0.1);">
+        <div style="font-size: 20px; margin-bottom: 8px; color: #fb873f;">📈 Tỉ lệ đúng</div>
+        <div style="font-size: 32px; font-weight: bold;">${accuracy}%</div>
+        <div style="font-size: 14px; opacity: 0.9;">${gameState.totalMatches}/${gameState.totalAttempts} lượt ghép</div>
+    </div>
+`;
+    modal.show();
+}
+
+function resetGame() {
+    if (gameState.timer) clearInterval(gameState.timer);
+    gameState.timeLeft = 60;
+    gameState.gameActive = true;
+    updateTimerDisplay();
+    timerDisplay.style.color = '';
+    initGame();
+}
+
+function showLoading() {
+    jpContainer.innerHTML = '<div class="text-center p-5"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Đang tải...</p></div>';
+    meaningContainer.innerHTML = '<div class="text-center p-5"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Đang tải...</p></div>';
+}
+
+function showToast(message, type) {
+    // Bạn có thể thêm toast message ở đây
+    alert(message);
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+// DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    jpContainer = document.getElementById('jp-cards');
+    meaningContainer = document.getElementById('meaning-cards');
+    timerDisplay = document.getElementById('timer');
+    accuracySpan = document.getElementById('accuracy');
+    correctCountSpan = document.getElementById('correct-count');
+    attemptCountSpan = document.getElementById('attempt-count');
+    matchedCountSpan = document.getElementById('matched-count');
+
+    document.getElementById('reset-btn').addEventListener('click', resetGame);
+    document.getElementById('modal-play-again').addEventListener('click', () => {
+        bootstrap.Modal.getInstance(document.getElementById('gameOverModal')).hide();
+        resetGame();
+    });
+
+    initGame();
+});
+
+    // Quay về bài học
+document.getElementById('modal-back-to-lesson').addEventListener('click', () => {
+    window.location.href = `/study/lessons?id=${categoryId}`;
+});
+</script>
+
+</body>
+</html>

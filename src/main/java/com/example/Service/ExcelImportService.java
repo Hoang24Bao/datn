@@ -29,9 +29,7 @@ public class ExcelImportService {
     @Autowired
     private VocabularyRepository vocabularyRepository;
 
-    /**
-     * Đọc file Excel và trả về danh sách DTO
-     */
+    //Đọc file Excel và trả về danh sách DTO
     public List<ExcelImportDTO> readExcelFile(MultipartFile file) throws Exception {
         List<ExcelImportDTO> vocabList = new ArrayList<>();
 
@@ -47,7 +45,6 @@ public class ExcelImportService {
                     continue;
                 }
 
-                // Kiểm tra dòng trống
                 Cell firstCell = row.getCell(0);
                 if (firstCell == null || getCellValueAsString(firstCell).trim().isEmpty()) {
                     continue;
@@ -73,9 +70,7 @@ public class ExcelImportService {
         return vocabList;
     }
 
-    /**
-     * Import từ Excel, upload ảnh & audio lên Cloudinary
-     */
+    //Import từ Excel, upload ảnh & audio lên Cloudinary
     @Transactional
     public ImportResult importFromExcel(MultipartFile excelFile,
                                         MultipartFile[] imageFiles,
@@ -84,11 +79,9 @@ public class ExcelImportService {
         List<String> errors = new ArrayList<>();
 
         try {
-            // 1. Đọc file Excel
             List<ExcelImportDTO> vocabList = readExcelFile(excelFile);
             result.setTotal(vocabList.size());
 
-            // 2. Tạo map để tra nhanh file theo tên
             Map<String, MultipartFile> imageMap = new HashMap<>();
             Map<String, MultipartFile> audioMap = new HashMap<>();
 
@@ -96,10 +89,9 @@ public class ExcelImportService {
                 for (MultipartFile img : imageFiles) {
                     String fileName = img.getOriginalFilename();
                     if (fileName != null) {
-                        // Loại bỏ đường dẫn nếu có (chỉ lấy tên file)
                         String simpleName = fileName.substring(fileName.lastIndexOf("/") + 1);
                         imageMap.put(simpleName, img);
-                        imageMap.put(fileName, img); // cũng lưu cả đường dẫn đầy đủ
+                        imageMap.put(fileName, img);
                     }
                 }
             }
@@ -115,12 +107,10 @@ public class ExcelImportService {
                 }
             }
 
-            // 3. Xử lý từng từ vựng
             int index = 0;
             for (ExcelImportDTO dto : vocabList) {
                 index++;
                 try {
-                    // Kiểm tra trùng lặp (nếu đã tồn tại thì bỏ qua hoặc update tùy ý)
                     if (vocabularyRepository.existsByExpression(dto.getExpression())) {
                         logger.warn("Từ vựng đã tồn tại: {}", dto.getExpression());
                         errors.add("Dòng " + index + ": Từ vựng '" + dto.getExpression() + "' đã tồn tại trong database");
@@ -131,9 +121,7 @@ public class ExcelImportService {
                     String imageUrl = null;
                     String audioUrl = null;
 
-                    // Upload ảnh lên Cloudinary nếu có file
                     if (dto.getImageFileName() != null && !dto.getImageFileName().isEmpty()) {
-                        // Lấy tên file đơn giản (không đường dẫn)
                         String imageSimpleName = dto.getImageFileName();
                         if (imageSimpleName.contains("/")) {
                             imageSimpleName = imageSimpleName.substring(imageSimpleName.lastIndexOf("/") + 1);
@@ -141,7 +129,6 @@ public class ExcelImportService {
 
                         MultipartFile imageFile = imageMap.get(imageSimpleName);
                         if (imageFile == null) {
-                            // Thử tìm với tên gốc
                             imageFile = imageMap.get(dto.getImageFileName());
                         }
 
@@ -159,7 +146,6 @@ public class ExcelImportService {
                         }
                     }
 
-                    // Upload audio lên Cloudinary nếu có file
                     if (dto.getAudioFileName() != null && !dto.getAudioFileName().isEmpty()) {
                         String audioSimpleName = dto.getAudioFileName();
                         if (audioSimpleName.contains("/")) {
@@ -185,7 +171,6 @@ public class ExcelImportService {
                         }
                     }
 
-                    // Lưu vào database
                     saveVocabulary(dto, imageUrl, audioUrl);
                     result.incrementSuccess();
                     logger.info("Đã lưu từ vựng: {}", dto.getExpression());
@@ -209,9 +194,8 @@ public class ExcelImportService {
         return result;
     }
 
-    /**
-     * Lưu từ vựng vào database
-     */
+    //Lưu từ vựng vào database
+
     private void saveVocabulary(ExcelImportDTO dto, String imageUrl, String audioUrl) {
         Vocabulary vocab = new Vocabulary();
         vocab.setExpression(dto.getExpression());
@@ -223,14 +207,12 @@ public class ExcelImportService {
         vocab.setWordType(dto.getWordType());
         vocab.setExample(dto.getExample());
         vocab.setExampleVi(dto.getExampleVi());
-        vocab.setIsActive(true);  // Mặc định active
+        vocab.setIsActive(true);
 
         vocabularyRepository.save(vocab);
     }
 
-    /**
-     * Lấy giá trị Cell dưới dạng String
-     */
+
     private String getCellValueAsString(Cell cell) {
         if (cell == null) return "";
 
@@ -241,7 +223,6 @@ public class ExcelImportService {
                 if (DateUtil.isCellDateFormatted(cell)) {
                     return cell.getLocalDateTimeCellValue().toString();
                 }
-                // Kiểm tra nếu là số nguyên thì không hiển thị .0
                 double numValue = cell.getNumericCellValue();
                 if (numValue == (long) numValue) {
                     return String.valueOf((long) numValue);
@@ -260,7 +241,6 @@ public class ExcelImportService {
         }
     }
 
-    // ========== Inner Class ImportResult ==========
     public static class ImportResult {
         private int total;
         private int success;

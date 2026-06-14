@@ -35,7 +35,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         String requestURI = request.getRequestURI();
         logger.info("=== Processing request: {} ===", requestURI);
 
-        // Bỏ qua các request public
         if (requestURI.startsWith("/css/") || requestURI.startsWith("/js/") ||
                 requestURI.startsWith("/img/") || requestURI.startsWith("/lib/") ||
                 requestURI.equals("/") || requestURI.equals("/home") ||

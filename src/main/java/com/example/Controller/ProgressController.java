@@ -28,7 +28,6 @@ public class ProgressController {
     @Autowired
     private VocabularyRepository vocabularyRepository;
 
-    // Lấy current user
     private Users getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
@@ -141,7 +140,7 @@ public class ProgressController {
                 progress.setCorrectStreak(0);
             }
 
-            // Nếu có isCorrect, cập nhật memory và streak theo cơ chế mới
+            // Nếu có isCorrect, cập nhật memory và streak
             if (isCorrect != null) {
                 int currentLevel = progress.getMemoryLevel();
                 int currentStreak = progress.getCorrectStreak() != null ? progress.getCorrectStreak() : 0;
@@ -159,7 +158,6 @@ public class ProgressController {
                 progress.setMemoryLevel(newLevel);
                 progress.setCorrectStreak(newStreak);
 
-                // isLearned = memory >= 4 AND streak >= 3
                 boolean newIsLearned = (newLevel >= 4 && newStreak >= 3);
                 progress.setIsLearned(newIsLearned);
 

@@ -13,7 +13,6 @@ import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface CategoriesRepository extends JpaRepository<Categories, Integer> {
-    // JpaRepository đã có sẵn các hàm findAll(), findById()
     boolean existsByCategoryName(String categoryName);
 
     List<Categories> findByIsActiveTrue();
@@ -29,7 +28,8 @@ public interface CategoriesRepository extends JpaRepository<Categories, Integer>
             @Param("isActive") Boolean isActive,
             Pageable pageable);
 
-    // Lấy categories theo level (dùng cho filter)
+    // Lấy categories theo level
     @Query("SELECT c FROM Categories c WHERE c.jlptLevel = :level AND c.isActive = true")
     List<Categories> findByJlptLevel(@Param("level") String level);
+
 }

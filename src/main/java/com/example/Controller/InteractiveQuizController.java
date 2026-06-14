@@ -149,7 +149,6 @@ public class InteractiveQuizController {
         return ResponseEntity.ok(result);
     }
 
-    // Helper method: parse answered points từ JSON
     private Set<Integer> parseAnsweredPoints(String answeredPointsJson) {
         Set<Integer> result = new HashSet<>();
         if (answeredPointsJson == null || answeredPointsJson.isEmpty()) return result;
@@ -163,7 +162,6 @@ public class InteractiveQuizController {
         return result;
     }
 
-    // Helper method: tính tổng số point trong category
     private Integer getTotalPointsInCategory(Integer categoryId) {
         List<InteractiveScene> scenes = sceneRepository.findActiveScenesByCategory(categoryId);
         int total = 0;

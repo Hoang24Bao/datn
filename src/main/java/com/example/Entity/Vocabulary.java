@@ -36,7 +36,7 @@ public class Vocabulary {
     @JoinTable(name = "Lesson_Vocab",
             joinColumns = @JoinColumn(name = "vocab_id"),
             inverseJoinColumns = @JoinColumn(name = "lesson_id"))
-    @JsonIgnore  // THÊM DÒNG NÀY
+    @JsonIgnore
     private List<Lessons> lessons;
 
     @Column(name = "is_active")

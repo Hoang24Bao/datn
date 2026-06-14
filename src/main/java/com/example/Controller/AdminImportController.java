@@ -25,7 +25,6 @@ public class AdminImportController {
             @RequestParam(value = "audioFiles", required = false) MultipartFile[] audioFiles) {
 
         try {
-            // Validate file Excel
             if (excelFile == null || excelFile.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "File Excel không được để trống!"));
             }
@@ -35,7 +34,6 @@ public class AdminImportController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Chỉ hỗ trợ file Excel (.xlsx, .xls)"));
             }
 
-            // Thực hiện import
             ImportResult result = excelImportService.importFromExcel(excelFile, imageFiles, audioFiles);
 
             Map<String, Object> response = new HashMap<>();

@@ -48,7 +48,6 @@ public class UserTestResults {
     @Column(name = "answers_data", columnDefinition = "NVARCHAR(MAX)")
     private String answersData;
 
-    // Relationships
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private Users user;

@@ -17,7 +17,6 @@ import java.util.List;
 @Repository
 public interface LessonsRepository extends JpaRepository<Lessons, Integer> {
 
-    // ========== CÁC METHOD HIỆN CÓ ==========
 
     List<Lessons> findByCategoryIdAndIsActiveTrue(Integer categoryId);
 
@@ -116,13 +115,12 @@ public interface LessonsRepository extends JpaRepository<Lessons, Integer> {
     Integer getMaxDisplayOrder(@Param("lessonId") Integer lessonId);
 
 
-    //Đếm số lượng bài học đang active (is_active = true) theo category_id
     @Query("SELECT COUNT(l) FROM Lessons l WHERE l.categoryId = :categoryId AND l.isActive = true")
     int countByCategoryIdAndIsActiveTrue(@Param("categoryId") Integer categoryId);
 
     @Query(value = "SELECT COUNT(*) FROM Interactive_Points ip " +
             "INNER JOIN Interactive_Scenes ist ON ip.scene_id = ist.id " +
-            "WHERE ip.vocab_id = :vocabId AND ist.category_id = :categoryId",  // Đổi lesson_id → category_id
+            "WHERE ip.vocab_id = :vocabId AND ist.category_id = :categoryId",
             nativeQuery = true)
     int countInteractivePointsByVocabAndCategory(@Param("vocabId") Integer vocabId,
                                                  @Param("categoryId") Integer categoryId);
@@ -133,7 +131,6 @@ public interface LessonsRepository extends JpaRepository<Lessons, Integer> {
             "WHERE l.id = :lessonId", nativeQuery = true)
     int countInteractivePointsByLesson(@Param("lessonId") Integer lessonId);
 
-    // Method xóa tất cả (đã đúng)
     @Modifying
     @Query(value = "DELETE FROM Lesson_Vocab WHERE lesson_id = :lessonId", nativeQuery = true)
     int removeAllVocabFromLesson(@Param("lessonId") Integer lessonId);
