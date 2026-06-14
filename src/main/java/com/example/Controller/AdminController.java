@@ -136,8 +136,8 @@ public class AdminController {
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-        Integer activeInt = (active == null) ? null : (active ? 1 : 0);
-        Page<Users> usersPage = userRepository.findStudentsWithFilters(levelId, activeInt, search, dateLimit, pageable);
+        //Integer activeInt = (active == null) ? null : (active ? 1 : 0);
+        Page<Users> usersPage = userRepository.findStudentsWithFilters(levelId, active, search, dateLimit, pageable);
 
         return ResponseEntity.ok(usersPage);
     }

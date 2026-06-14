@@ -54,7 +54,7 @@ public interface UsersRepository extends JpaRepository<Users, Integer> {
             nativeQuery = true)
     Page<Users> findStudentsWithFilters(
             @Param("levelId") Integer levelId,
-            @Param("active") Integer active,
+            @Param("active") Boolean active,
             @Param("search") String search,
             @Param("dateLimit") java.time.LocalDateTime dateLimit,
             Pageable pageable);
