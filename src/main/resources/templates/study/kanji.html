@@ -1,9 +1,17 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="~{layout :: html_head(title='Học Kanji - Ganbatte')}"></head>
+<head th:replace="~{layout :: html_head(title='Học Kanji - Ganbatte')}">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap"
+          rel="stylesheet">
+</head>
 
 <style>
+    .kanji-char,
+.detail-kanji-char {
+    font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+    font-weight: 700;
+}
     /* Kanji Page Styles */
     .kanji-header {
         background: linear-gradient(135deg, #06BBCC 0%, #fb873f 100%);
@@ -164,11 +172,36 @@
         padding: 60px;
     }
 
-    /* Modal Detail */
+    /* Modal Detail - Cố định kích thước */
+    .modal-dialog {
+        max-height: 100vh;
+        margin: 1.75rem auto;
+    }
+
     .modal-content {
         border-radius: 20px;
         border: none;
         position: relative;
+        max-height: 95vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid var(--border);
+        padding: 10px 25px;
+        flex-shrink: 0;
+    }
+
+    .modal-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 25px;
+        max-height: calc(85vh - 130px);
+    }
+
+    .modal-footer {
+        flex-shrink: 0;
     }
 
     /* Nút điều hướng trong modal */
@@ -206,22 +239,23 @@
         right: 300px;
     }
 
-    .modal-header {
-        border-bottom: 1px solid var(--border);
-        padding: 10px 25px;
+    /* Layout kanji + GIF cùng hàng */
+    .detail-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
     }
 
-    .modal-body {
-        padding: 25px;
-    }
-
-    .detail-kanji {
+    .detail-kanji-section {
+        flex: 1;
         text-align: center;
-        margin-bottom: 20px;
     }
 
     .detail-kanji-char {
-        font-size: 90px;
+        font-size: 80px;
         font-weight: 800;
         color: var(--text-dark);
         line-height: 1;
@@ -248,6 +282,43 @@
         margin-left: 5px;
     }
 
+    .detail-gif-section {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+    }
+
+    .detail-gif-container {
+        width: 150px;
+        height: 150px;
+        background: #f8f9fa;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .detail-gif-img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .gif-placeholder {
+        width: 150px;
+        height: 150px;
+        background: #f8f9fa;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #adb5bd;
+        font-size: 14px;
+        text-align: center;
+        padding: 10px;
+    }
+
     .detail-section {
         margin-bottom: 20px;
     }
@@ -268,11 +339,32 @@
         font-weight: 600;
     }
 
-    /* Example Table - 3 columns */
+    /* Example Table - Chỉ phần này cuộn */
+    .examples-scrollable {
+        max-height: 300px;
+        overflow-y: auto;
+        margin-top: 10px;
+        padding-right: 5px;
+    }
+
+    /* Custom scrollbar cho examples */
+    .examples-scrollable::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .examples-scrollable::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .examples-scrollable::-webkit-scrollbar-thumb {
+        background: var(--teal);
+        border-radius: 10px;
+    }
+
     .example-table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 10px;
     }
 
     .example-table th {
@@ -284,6 +376,9 @@
         color: var(--text-muted);
         text-transform: uppercase;
         border-bottom: 2px solid var(--border);
+        position: sticky;
+        top: 0;
+        background: white;
     }
 
     .example-table td {
@@ -406,11 +501,71 @@
         .modal-nav-next {
             right: 10px;
         }
+
+        .modal-dialog {
+            margin: 0.5rem;
+            max-width: calc(100% - 1rem);
+        }
+
+        .modal-body {
+            padding: 15px;
+        }
+
+        .detail-kanji-char {
+            font-size: 50px;
+        }
+
+        .detail-gif-container,
+        .gif-placeholder {
+            width: 100px;
+            height: 100px;
+        }
+
+        .example-table th,
+        .example-table td {
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        .detail-section-title {
+            font-size: 12px;
+        }
+
+        .detail-content {
+            font-size: 16px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .detail-header-row {
+            flex-direction: column;
+        }
     }
 
     @media (max-width: 480px) {
         .kanji-grid {
             grid-template-columns: 1fr;
+        }
+
+        .detail-kanji-char {
+            font-size: 40px;
+        }
+
+        .detail-gif-container,
+        .gif-placeholder {
+            width: 80px;
+            height: 80px;
+            font-size: 10px;
+        }
+
+        .gif-placeholder i {
+            font-size: 20px;
+        }
+
+        .example-table th,
+        .example-table td {
+            padding: 6px;
+            font-size: 12px;
         }
     }
 </style>
@@ -481,7 +636,7 @@
 
 <!-- Modal Chi tiết Kanji -->
 <div class="modal fade" id="kanjiModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-md">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <button class="modal-nav-btn modal-nav-prev" id="navPrevBtn" title="Kanji trước (←)">
                 <i class="fas fa-chevron-left"></i>
@@ -497,9 +652,6 @@
                 <div id="kanjiDetail"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-custom btn-red me-auto" onclick="markAsLearned()">
-                    <i class="fas fa-check-circle me-2"></i>Đánh dấu đã học
-                </button>
                 <button type="button" class="btn-custom btn-teal" data-bs-dismiss="modal">Đóng</button>
             </div>
         </div>
@@ -798,40 +950,71 @@
             let examplesHtml = '';
             if (kanji.examples && kanji.examples.length > 0) {
                 examplesHtml = `
-                    <table class="example-table">
-                        <thead>
-                            <tr>
-                                <th>Từ vựng</th>
-                                <th>Cách đọc</th>
-                                <th>Ý nghĩa</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${kanji.examples.map(ex => `
+                    <div class="examples-scrollable">
+                        <table class="example-table">
+                            <thead>
                                 <tr>
-                                    <td class="example-word">${escapeHtml(ex.word)}</td>
-                                    <td class="example-reading">${escapeHtml(ex.reading || '---')}</td>
-                                    <td class="example-meaning">${escapeHtml(ex.meaning || '---')}</td>
+                                    <th>Từ vựng</th>
+                                    <th>Cách đọc</th>
+                                    <th>Ý nghĩa</th>
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                ${kanji.examples.map(ex => `
+                                    <tr>
+                                        <td class="example-word">${escapeHtml(ex.word)}</td>
+                                        <td class="example-reading">${escapeHtml(ex.reading || '---')}</td>
+                                        <td class="example-meaning">${escapeHtml(ex.meaning || '---')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
                 `;
             } else {
-                examplesHtml = '<p class="text-muted">Chưa có ví dụ</p>';
+                examplesHtml = '<p class="text-muted text-center py-3">Chưa có ví dụ</p>';
+            }
+
+            // Tạo phần GIF hoặc placeholder
+            let gifOrPlaceholder = '';
+            if (kanji.gifUrl) {
+                gifOrPlaceholder = `
+                    <div class="detail-gif-container">
+                        <img src="${escapeHtml(kanji.gifUrl)}"
+                             alt="Cách viết ${escapeHtml(kanji.character)}"
+                             class="detail-gif-img"
+                             onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'gif-placeholder\'><i class=\'fas fa-image fa-2x mb-2 d-block\'></i>Chưa có cách viết<br>kanji này</div>'">
+                    </div>
+                `;
+            } else {
+                gifOrPlaceholder = `
+                    <div class="gif-placeholder">
+                        <div>
+                            <i class="fas fa-image fa-2x mb-2 d-block"></i>
+                            Chưa có cách viết<br>kanji này
+                        </div>
+                    </div>
+                `;
             }
 
             detailContainer.innerHTML = `
-                <div class="detail-kanji">
-                    <div class="detail-kanji-char">${escapeHtml(kanji.character)}</div>
-                    <div class="kanji-info-row">
-                        <span class="kanji-level">${escapeHtml(kanji.jlptLevel || 'N5')}</span>
-                        <span> - </span>
-                        <span class="detail-stroke-count">Số nét: ${kanji.strokeCount || '---'}</span>
+                <!-- Kanji và GIF cùng hàng -->
+                <div class="detail-header-row">
+                    <div class="detail-kanji-section">
+                        <div class="detail-kanji-char">${escapeHtml(kanji.character)}</div>
+                        <div class="kanji-info-row">
+                            <span class="kanji-level">${escapeHtml(kanji.jlptLevel || 'N5')}</span>
+                            <span class="mx-1">•</span>
+                            <span class="detail-stroke-count">Số nét: ${kanji.strokeCount || '---'}</span>
+                        </div>
+                    </div>
+                    <div class="detail-gif-section">
+                        ${gifOrPlaceholder}
                     </div>
                 </div>
 
-                <div class="row">
+                <!-- Các thông tin bên dưới -->
+                <div class="row mt-3">
                     <div class="col-md-6">
                         <div class="detail-section">
                             <div class="detail-section-title">Âm Hán Việt</div>
@@ -861,7 +1044,9 @@
                     </div>
                 </div>
 
+                <!-- Phần ví dụ - chỉ phần này cuộn -->
                 <div class="detail-section">
+                    <div class="detail-section-title">Ví dụ & Từ vựng</div>
                     ${examplesHtml}
                 </div>
             `;
@@ -873,33 +1058,7 @@
 
         } catch (error) {
             console.error(error);
-            detailContainer.innerHTML = `<div class="text-center text-danger">Không thể tải chi tiết kanji</div>`;
-        }
-    }
-
-    // Đánh dấu đã học
-    async function markAsLearned() {
-        if (!currentKanjiId) return;
-
-        const token = localStorage.getItem('token');
-
-        try {
-            const response = await fetch(`/api/kanji/${currentKanjiId}/learn`, {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-
-            if (response.ok) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Đã đánh dấu!',
-                    text: 'Kanji đã được thêm vào danh sách đã học',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-            }
-        } catch (error) {
-            console.error(error);
+            detailContainer.innerHTML = `<div class="text-center text-danger py-5">Không thể tải chi tiết kanji</div>`;
         }
     }
 
@@ -953,7 +1112,6 @@
         initModalCleanup();
     });
 </script>
-
 
 </body>
 

@@ -11,4 +11,6 @@ public class CreateTestDTO {
     private Float passScore;
     private Integer questionCount;
     private String questionType;
+    private Boolean isActive;
+    private Boolean regenerateQuestions;
 }

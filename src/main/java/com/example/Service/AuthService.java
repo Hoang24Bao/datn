@@ -1,12 +1,16 @@
 package com.example.Service;
 
 import com.example.Entity.Roles;
+import com.example.Entity.UserCategoryUnlock;
 import com.example.Entity.Users;
 import com.example.Repository.RoleRepository;
+import com.example.Repository.UserCategoryUnlockRepository;
 import com.example.Repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 public class AuthService {
@@ -19,6 +23,9 @@ public class AuthService {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private UserCategoryUnlockRepository userCategoryUnlockRepository;
 
     public Users register(Users user) {
         // 1. Kiểm tra username đã tồn tại chưa
@@ -51,6 +58,7 @@ public class AuthService {
         }
 
         user.setActive(true);
+
 
         return userRepository.save(user);
     }

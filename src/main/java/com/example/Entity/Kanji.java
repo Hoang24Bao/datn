@@ -40,6 +40,9 @@ public class Kanji {
     @Column(name = "is_active")
     private Boolean isActive = true;
 
+    @Column(name = "gif_url")
+    private String gifUrl;
+
     @OneToMany(mappedBy = "kanji", fetch = FetchType.LAZY)
     @JsonIgnoreProperties("kanji")
     private List<KanjiExample> examples;

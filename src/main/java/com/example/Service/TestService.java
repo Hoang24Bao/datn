@@ -41,6 +41,9 @@ public class TestService {
     @Autowired
     private UserTestBestRepository userTestBestRepository;
 
+    @Autowired
+    private CategoryService categoryService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // TẠO TEST
@@ -65,6 +68,8 @@ public class TestService {
         Integer actualCount = testQuestionRepository.countByTestId(test.getId());
         test.setQuestionCount(actualCount);
         test = testRepository.save(test);
+
+        categoryService.updateAllCategoriesStats();
 
         return convertToResponseDTO(test, category.getCategoryName());
     }
@@ -402,6 +407,52 @@ public class TestService {
         System.out.println("IsPassed: " + isPassed);
 
         return result;
+    }
+
+    /**
+     * Cập nhật test (bao gồm khóa/mở khóa)
+     */
+    @Transactional
+    public TestResponseDTO updateTest(Integer testId, CreateTestDTO dto) throws Exception {
+        Tests test = testRepository.findById(testId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài test"));
+
+        Categories category = categoriesRepository.findById(dto.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chủ đề"));
+
+        // Cập nhật thông tin
+        test.setCategoryId(dto.getCategoryId());
+        test.setTitle(dto.getTitle());
+        test.setDurationMinutes(dto.getDurationMinutes());
+        test.setMaxScore(dto.getMaxScore());
+        test.setPassScore(dto.getPassScore());
+        test.setQuestionCount(dto.getQuestionCount());
+        // is_active có thể được cập nhật qua DTO
+        if (dto.getIsActive() != null) {
+            test.setIsActive(dto.getIsActive());
+        }
+
+        test = testRepository.save(test);
+
+        // CẬP NHẬT STATS CHO CATEGORY
+        categoryService.updateAllCategoriesStats();
+
+        return convertToResponseDTO(test, category.getCategoryName());
+    }
+
+    /**
+     * Khóa/mở khóa test
+     */
+    @Transactional
+    public void toggleTestStatus(Integer testId, Boolean isActive) {
+        Tests test = testRepository.findById(testId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài test"));
+
+        test.setIsActive(isActive);
+        testRepository.save(test);
+
+        // ← CẬP NHẬT STATS CHO CATEGORY
+        categoryService.updateAllCategoriesStats();
     }
 
     private TestResponseDTO convertToResponseDTO(Tests test, String categoryName) {

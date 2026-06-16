@@ -530,6 +530,9 @@ async function editVocab(id) {
                                         <option value="V" ${vocab.wordType === 'V' ? 'selected' : ''}>Động từ</option>
                                         <option value="A" ${vocab.wordType === 'A' ? 'selected' : ''}>Tính từ</option>
                                         <option value="Adv" ${vocab.wordType === 'Adv' ? 'selected' : ''}>Trạng từ</option>
+                                        <option value="Counter" ${vocab.wordType === 'Counter' ? 'selected' : ''}>Đơn vị đếm</option>
+                                        <option value="N/V" ${vocab.wordType === 'N/V' ? 'selected' : ''}>Danh từ/Động từ</option>
+                                        <option value="Pronoun" ${vocab.wordType === 'Pronoun' ? 'selected' : ''}>Đại từ</option>
                                     </select>
                                 </div>
                             </div>

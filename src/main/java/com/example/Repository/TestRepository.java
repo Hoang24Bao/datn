@@ -41,4 +41,8 @@ public interface TestRepository extends JpaRepository<Tests, Integer> {
 
     @Query("SELECT COUNT(t) FROM Tests t WHERE t.categoryId = :categoryId AND t.isActive = true")
     Integer countByCategoryId(@Param("categoryId") Integer categoryId);
+
+
+    @Query("SELECT SUM(CAST(t.passScore AS FLOAT)) FROM Tests t WHERE t.categoryId = :categoryId AND t.isActive = true")
+    Double getSumPassScoreByCategory(@Param("categoryId") Integer categoryId);
 }

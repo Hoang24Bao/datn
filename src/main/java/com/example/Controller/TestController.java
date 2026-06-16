@@ -214,4 +214,43 @@ public class TestController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    /**
+     * Cập nhật test (admin)
+     */
+    @PutMapping("/admin/update/{testId}")
+    public ResponseEntity<?> updateTest(@PathVariable Integer testId, @RequestBody CreateTestDTO dto) {
+        try {
+            TestResponseDTO test = testService.updateTest(testId, dto);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Cập nhật test thành công",
+                    "test", test
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Khóa/mở khóa test (admin)
+     */
+    @PatchMapping("/admin/toggle-status/{testId}")
+    public ResponseEntity<?> toggleTestStatus(@PathVariable Integer testId, @RequestParam Boolean isActive) {
+        try {
+            testService.toggleTestStatus(testId, isActive);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", isActive ? "Đã mở khóa test" : "Đã khóa test"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", e.getMessage()
+            ));
+        }
+    }
 }
